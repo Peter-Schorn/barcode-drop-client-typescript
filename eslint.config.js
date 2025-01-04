@@ -5,6 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import stylistic from "@stylistic/eslint-plugin";
+import jsdoc from "eslint-plugin-jsdoc";
 
 export default tseslint.config(
     { ignores: ["dist"] },
@@ -17,6 +18,7 @@ export default tseslint.config(
         extends: [
             eslint.configs.recommended,
             tseslint.configs.recommendedTypeChecked,
+            jsdoc.configs["flat/recommended-typescript"]
         ],
         plugins: {
             "react": react,
@@ -24,7 +26,8 @@ export default tseslint.config(
             "react-hooks": reactHooks,
             "react-refresh": reactRefresh,
             "@typescript-eslint": tseslint.plugin,
-            "@stylistic": stylistic
+            "@stylistic": stylistic,
+            "jsdoc": jsdoc,
         },
         files: [
             "**/*.{ts,tsx,js}",
@@ -56,6 +59,9 @@ export default tseslint.config(
                 "warn",
                 { allowConstantExport: true },
             ],
+
+            "jsdoc/require-jsdoc": "off",
+            "jsdoc/tag-lines": "off",
 
             "@typescript-eslint/explicit-function-return-type": "error",
             "@stylistic/semi": ["error", "always"],
