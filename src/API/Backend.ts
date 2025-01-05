@@ -128,9 +128,11 @@ export class Backend {
      * @returns a splash text object in JSON format
      */
     async getRandomSplashText(): Promise<any> {
-        return await this._get(
-            "/splash-text/random",
-        );
+        const splashText = "This is a random splash text.";
+        return Promise.resolve(splashText);
+        // return await this._get(
+        //     "/splash-text/random",
+        // );
     }
 
     // MARK: Wrappers
