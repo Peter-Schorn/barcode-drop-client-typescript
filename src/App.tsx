@@ -33,7 +33,7 @@ export default class App extends Component {
 
     }
 
-    componentDidMount(): void {
+    override componentDidMount(): void {
         console.log("App.componentDidMount():");
     }
 
@@ -44,21 +44,23 @@ export default class App extends Component {
                     <Routes>
 
                         {/* --- Home --- */}
-                        <Route 
-                            path="/" 
-                            element={<HomeView/>}
+                        <Route
+                            path="/"
+                            element={<HomeView />}
                         />
 
                         {/* --- Setup Instructions --- */}
                         <Route
                             path="/setup"
-                            element={<SetupView/>}
+                            element={
+                                <SetupView />
+                            }
                         />
 
                         {/* --- User Scans Table --- */}
-                        <Route 
-                            path="/scans/:user" 
-                            element={<UserScansRoot/>}
+                        <Route
+                            path="/scans/:user"
+                            element={<UserScansRoot />}
                         />
 
                     </Routes>

@@ -61,7 +61,7 @@ class HomeViewCore extends Component<HomeViewCoreProps, HomeViewCoreState> {
 
     }
 
-    componentDidMount(): void {
+    override componentDidMount(): void {
 
         this.usernameField?.current?.focus();
 
@@ -151,7 +151,7 @@ class HomeViewCore extends Component<HomeViewCoreProps, HomeViewCoreState> {
     }
 
 
-    render(): JSX.Element {
+    override render(): JSX.Element {
         return (
             <div className="vw-100 vh-100">
                 <MainNavbar />

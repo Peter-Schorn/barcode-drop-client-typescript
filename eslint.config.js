@@ -60,6 +60,11 @@ export default tseslint.config(
                 { allowConstantExport: true },
             ],
 
+            "react/no-unescaped-entities": ["error", {
+                // allow " characters
+                forbid: [">", "\\", "}"] 
+            }],
+
             "jsdoc/require-jsdoc": "off",
             "jsdoc/tag-lines": "off",
 
