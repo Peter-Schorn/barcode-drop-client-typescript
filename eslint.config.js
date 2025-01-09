@@ -62,7 +62,7 @@ export default tseslint.config(
 
             "react/no-unescaped-entities": ["error", {
                 // allow " characters
-                forbid: [">", "\\", "}"] 
+                forbid: [">", "\\", "}"]
             }],
 
             "jsdoc/require-jsdoc": "off",
@@ -80,6 +80,8 @@ export default tseslint.config(
                     requireLast: false
                 },
             }],
+            "@stylistic/no-trailing-spaces": "warn",
+
             quotes: ["error", "double", { avoidEscape: true }],
             "no-console": "off",
             "prefer-const": "error",

@@ -10,10 +10,6 @@ export default function SetupView(): JSX.Element {
 
     const icloudShortcutURL = "https://www.icloud.com/shortcuts/0f7f0a8a0bc3476f807324d922b44fe2";
 
-    const title = "Setup | BarcodeDrop";
-
-    document.title = prefixTitleWithDocumentHostIfPort(title);
-
     function newTabLink(url: string, body: JSX.Element): JSX.Element {
         return (
             <a
@@ -28,6 +24,9 @@ export default function SetupView(): JSX.Element {
 
     return (
         <div className="vw-100 vh-100">
+            <title>
+                {prefixTitleWithDocumentHostIfPort("Setup | BarcodeDrop")}
+            </title>
             <MainNavbar />
             <Container className="text-center px-3 pb-5" fluid="md">
 

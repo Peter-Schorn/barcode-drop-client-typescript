@@ -17,7 +17,7 @@ export default function MainNavbar(): JSX.Element {
                     </strong>
                 </a>
                 {/* --- </div> --- */}
-                
+
                 <button
                     className="navbar-toggler"
                     type="button"
