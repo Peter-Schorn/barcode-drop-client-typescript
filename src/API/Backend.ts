@@ -34,7 +34,7 @@ export class Backend {
 
     /**
      * Scan a barcode for a user.
-     * 
+     *
      * @param options the options for scanning a barcode
      * @param options.user the user to scan the barcode for
      * @param options.barcode the barcode to scan
@@ -61,7 +61,7 @@ export class Backend {
 
     /**
      * Delete scans by ID.
-     * 
+     *
      * @param scanIds an array of scan IDs to delete
      * @returns the response from the server
      */
@@ -112,7 +112,7 @@ export class Backend {
     // WARNING: NOT implemented on the backend
     /**
      * Gets all splash texts.
-     * 
+     *
      * @returns an array of splash text objects in JSON format
      */
     async getSplashTexts(): Promise<any> {
@@ -124,7 +124,7 @@ export class Backend {
     // WARNING: NOT implemented on the backend
     /**
      * Gets a random splash text.
-     * 
+     *
      * @returns a splash text object in JSON format
      */
     async getRandomSplashText(): Promise<any> {

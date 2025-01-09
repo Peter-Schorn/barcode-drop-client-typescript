@@ -1,12 +1,12 @@
 /**
  * Calls the function immediately, then calls it every `interval` milliseconds.
- * 
+ *
  * @param func The function to call.
  * @param interval The interval in milliseconds.
  * @returns The interval ID. (The same value returned by `setInterval()`.)
  */
 export function setIntervalImmediately(
-    func: () => void, 
+    func: () => void,
     interval: number
 ): number {
     func();
@@ -16,21 +16,21 @@ export function setIntervalImmediately(
 /**
  * Returns whether the platform is Apple. Apple platforms use the command key
  * as the platform modifier key, while other platforms use the control key.
- * 
+ *
  * @returns `true` if the platform is Apple, `false` otherwise.
  */
 export function isApplePlatform(): boolean {
     return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 }
 
-KeyboardEvent.prototype.isPlatformModifierKey = function(): boolean {
+KeyboardEvent.prototype.isPlatformModifierKey = function (): boolean {
     if (isApplePlatform()) {
         return this.metaKey;
     }
     return this.ctrlKey;
 };
 
-String.prototype.truncated = function(this: string, maxLength: number): string {
+String.prototype.truncated = function (this: string, maxLength: number): string {
     if (this.length <= maxLength) {
         return this;
     }
