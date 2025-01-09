@@ -104,14 +104,9 @@ export default function SetupView(): JSX.Element {
                     (replace {"<user>"} with your username):
                 </p>
 
-                {/* --- <code style={{ all: "revert"}}> --- */}
                 <code>
                     {"https://api.barcodedrop.com/scan/<user>"}
                 </code>
-
-                {/* <a href="https://api.barcodedrop.com/scan/<user>">
-                    {"https://api.barcodedrop.com/scan/<user>"}
-                </a> */}
 
                 <p className="pt-3">
                     <strong>Request Body:</strong>
@@ -122,7 +117,7 @@ export default function SetupView(): JSX.Element {
                     <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
                         {"barcode=<barcode>"}
                     </span>
-                    <span dangerouslySetInnerHTML={{ __html: " or " }} />
+                    or
                     <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
                         {"text=<barcode>"}
                     </span>
@@ -133,7 +128,7 @@ export default function SetupView(): JSX.Element {
                     <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
                         {'{ "barcode": "<barcode>" }'}
                     </span>
-                    <span dangerouslySetInnerHTML={{ __html: " or " }} />
+                    or
                     <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
                         {'{ "text": "<barcode>" }'}
                     </span>
