@@ -123,7 +123,7 @@ export default class ConfigureLinkModal extends Component<ConfigureLinkModalProp
                                 className="form-control"
                                 type="text"
                                 placeholder={this.exampleFormattedURL()}
-                                value={this.props.formattedLink || ""}
+                                value={this.props.formattedLink ?? ""}
                                 onChange={this.props.onChangeConfigureLinkInput}
                             />
                             {/* <label for="configure-link-input">

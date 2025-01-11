@@ -412,7 +412,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         clearTimeout(this.removeHighlightedBarcodeTimer);
         clearTimeout(this.copyBarcodeAfterDelayTimeout);
 
-        document.removeEventListener("hashchange", this.handleHashChange);
+        window.removeEventListener("hashchange", this.handleHashChange);
         document.removeEventListener("focusin", this.handleFocusIn);
         document.removeEventListener("focusout", this.handleFocusOut);
         document.removeEventListener("visibilitychange", this.handleVisibilityChange);
@@ -428,7 +428,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
         // MARK: Configure event listeners
 
-        document.addEventListener("hashchange", this.handleHashChange);
+        window.addEventListener("hashchange", this.handleHashChange);
         document.addEventListener("focusin", this.handleFocusIn);
         document.addEventListener("focusout", this.handleFocusOut);
         document.addEventListener("visibilitychange", this.handleVisibilityChange);
@@ -1430,6 +1430,12 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
+    /**
+     * Called every time the input field for the formatted link in
+     * `ConfigureLinkModal` changes.
+     *
+     * @param e the event
+     */
     onChangeConfigureLinkInput = (e: React.ChangeEvent<HTMLInputElement>): void => {
 
         const formattedLink = e.target.value;
@@ -1443,60 +1449,58 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
+    /**
+     * Called when the user submits the `ConfigureLinkModal` form.
+     *
+     * @param e the event
+     */
     onSubmitConfigureLinkForm = (
         e: React.FormEvent<HTMLFormElement>
-
     ): void => {
 
-        console.log("onSubmitConfigureLinkForm():", e);
+        console.log("onSubmitConfigureLinkForm()");
 
-        const formattedLink = this.state.formattedLink;
-        // const formattedLink = e.target.value;
-
-        console.log(
-            "onSubmitConfigureLinkForm(): formattedLink:",
-            formattedLink
-        );
+        // prevent the form from submitting
+        e.preventDefault();
 
         this.setState({
             showFormattedLinkModal: false,
-            formattedLink: formattedLink
         });
 
-        const urlFragmentParams = new URLSearchParams(
-            window.location.hash.slice(1)
-        );
-
-        if (!formattedLink) {
-            console.log(
-                "onSubmitConfigureLinkForm(): formatted link is null or undefined"
-            );
-            urlFragmentParams.delete("formatted-link");
-        }
-        else {
-            urlFragmentParams.set("formatted-link", formattedLink);
-        }
-        window.location.hash = urlFragmentParams.toString();
-
-        // TODO: Move to top of function?
-        e.preventDefault();
+        this.updateFormattedLinkInURLFragment();
 
     };
 
-    closeConfigureLinkModal = (e: React.MouseEvent | React.KeyboardEvent): void => {
+    /**
+     * Called when the user closes the `ConfigureLinkModal`.
+     */
+    closeConfigureLinkModal = (
+        // e: React.MouseEvent | React.KeyboardEvent
+    ): void => {
 
-        console.log("closeConfigureLinkModal():", e);
+        console.log("closeConfigureLinkModal()");
 
         this.setState({
             showFormattedLinkModal: false
         });
 
+        this.updateFormattedLinkInURLFragment();
+
+    };
+
+    /**
+     * Updates the formatted link in the URL fragment based on the value of the
+     * `formattedLink` state variable.
+     */
+    updateFormattedLinkInURLFragment = (): void => {
+
         const urlFragmentParams = new URLSearchParams(
             window.location.hash.slice(1)
         );
 
         const formattedLink = this.state.formattedLink;
 
+        // check if `formattedLink` is null or an empty string.
         if (!formattedLink) {
             urlFragmentParams.delete("formatted-link");
         }
