@@ -40,7 +40,7 @@ export default function HomeView(): JSX.Element {
         event.preventDefault();
         console.log(`HomeView.onSubmitForm(): user: "${user}"`);
         void navigate(`/scans/${user}`);
-    };
+    }
 
     function handleUserInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
         console.log(
@@ -50,7 +50,7 @@ export default function HomeView(): JSX.Element {
 
         setUser(event.target.value);
 
-    };
+    }
 
     function renderForm(): JSX.Element {
         return (

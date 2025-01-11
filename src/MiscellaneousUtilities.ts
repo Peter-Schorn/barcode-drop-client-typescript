@@ -45,3 +45,34 @@ export function prefixTitleWithDocumentHostIfPort(title: string): string {
     }
     return title;
 }
+
+/**
+ * Converts a set to a string.
+ *
+ * For example:
+ * ```ts
+ * const set = new Set(["a", "b", "c"]);
+ * console.log(setToString(set)); // "{a, b, c}"
+ * ```
+ * @param set The set to convert.
+ * @returns The string representation of the set.
+ */
+export function setToString<T>(set: Set<T>): string {
+
+    if (set.size === 0) {
+        return "{}";
+    }
+
+    let result = "{";
+    for (const value of set) {
+        const stringValue = value instanceof Object ?
+            JSON.stringify(value) :
+            value;
+
+        result += `${stringValue}, `;
+    }
+    // remove the last ", " from the string
+    result = result.slice(0, -2);
+    result += "}";
+    return result;
+}

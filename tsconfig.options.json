@@ -14,7 +14,7 @@
         /* Linting */
         "strict": true,
         // eslint configuration already has a rule for unused variables
-        // and has a pattern to ignore variables named `_`. 
+        // and has a pattern to ignore variables named `_`.
         "noUnusedLocals": false,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
@@ -23,11 +23,12 @@
         // eslint configuration already has a rule for unused variables
         // and has a pattern to ignore variables named `_`.
         "noUnusedParameters": false,
-        // Do not transform or elide any imports or exports not marked as 
-        // type-only, ensuring they are written in the output file's format 
+        // Do not transform or elide any imports or exports not marked as
+        // type-only, ensuring they are written in the output file's format
         // based on the 'module' setting. Requires `type` keyword for importing
         // types.
         "verbatimModuleSyntax": true,
-        
+        "noImplicitReturns": true
+
     },
 }

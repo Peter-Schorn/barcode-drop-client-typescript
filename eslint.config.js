@@ -6,6 +6,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import stylistic from "@stylistic/eslint-plugin";
 import jsdoc from "eslint-plugin-jsdoc";
+import * as importPlugin from "eslint-plugin-import";
+import "eslint-import-resolver-typescript";
 
 export default tseslint.config(
     { ignores: ["dist"] },
@@ -13,6 +15,12 @@ export default tseslint.config(
         settings: {
             react: {
                 version: "detect"
+            },
+            "import/resolver": {
+                typescript: true,
+                node: {
+                    extensions: [".js", ".jsx", ".ts", ".tsx"]
+                }
             }
         },
         extends: [
@@ -28,6 +36,7 @@ export default tseslint.config(
             "@typescript-eslint": tseslint.plugin,
             "@stylistic": stylistic,
             "jsdoc": jsdoc,
+            "import": importPlugin
         },
         files: [
             "**/*.{ts,tsx,js}",
@@ -70,6 +79,7 @@ export default tseslint.config(
 
             "@typescript-eslint/explicit-function-return-type": "error",
             "@stylistic/semi": ["error", "always"],
+            "@stylistic/no-extra-semi": "error",
             "@stylistic/member-delimiter-style": ["error", {
                 multiline: {
                     delimiter: "semi",
@@ -91,6 +101,22 @@ export default tseslint.config(
             }],
             eqeqeq: "error",
             "no-unreachable": "warn",
+            "@typescript-eslint/no-misused-promises": ["error", {
+                checksVoidReturn: {
+                    inheritedMethods: false
+                }
+            }],
+            // disallows c-style for-loops when a for-of loop could be used
+            // instead
+            "@typescript-eslint/prefer-for-of": "error",
+
+            // TODO: Can't get this to work
+            // "import/extensions": ["error", "ignorePackages", {
+            //     js: "never",
+            //     jsx: "never",
+            //     ts: "never",
+            //     tsx: "never"
+            // }],
 
             // TODO: Reenable this
             // "@stylistic/max-len": ["error", {
@@ -102,8 +128,11 @@ export default tseslint.config(
 
             "no-var": "error",
             "@typescript-eslint/ban-ts-comment": "off",
+            "func-style": ["error", "declaration", {
+                allowArrowFunctions: false
+            }],
 
-            // might want to reenable these
+            // TODO: might want to reenable these
             "@typescript-eslint/no-unsafe-member-access": "off",
             "@typescript-eslint/no-unsafe-assignment": "off",
             "@typescript-eslint/no-unsafe-call": "off",
