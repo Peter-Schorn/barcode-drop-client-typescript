@@ -66,6 +66,12 @@ export default function UserScansRoot(): JSX.Element {
 
 }
 
+type WriteBarcodeToClipboardOptions = {
+    showNotification: boolean;
+    highlight: boolean;
+    barcode: ScannedBarcodeResponse;
+};
+
 type UserScansRootCoreProps = {
     router: {
         params: Readonly<Partial<UserScansRootParams>>;
@@ -79,7 +85,7 @@ type UserScansRootCoreState = {
     clientScannedBarcodeIDs: Set<string>;
     lastAutoCopiedBarcode: ScannedBarcodeResponse | null;
     enableAutoCopy: boolean;
-    highlightedBarcode: string | null;
+    highlightedBarcode: ScannedBarcodeResponse | null;
     formattedLink: string | null;
     showFormattedLinkModal: boolean;
     showScanBarcodeView: boolean;
@@ -337,7 +343,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
             barcodes: [],
             // the ids of barcodes scanned directly in the client that we don't
             // want to auto-copy even if auto-copy is enabled
-            clientScannedBarcodeIDs: new Set(),
+            clientScannedBarcodeIDs: new Set<string>(),
             lastAutoCopiedBarcode: null,
             enableAutoCopy: enableAutoCopy,
             highlightedBarcode: null,
@@ -548,7 +554,8 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
                 );
                 const latestBarcode = this.state.barcodes[0];
                 if (latestBarcode !== null) {
-                    this._writeBarcodeToClipboard(latestBarcode, {
+                    this._writeBarcodeToClipboard({
+                        barcode: latestBarcode,
                         showNotification: true,
                         highlight: true
                     });
@@ -1060,7 +1067,8 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
             `Auto-copying most recent barcode: "${JSON.stringify(mostRecentBarcode)}"`
         );
 
-        this._writeBarcodeToClipboard(mostRecentBarcode, {
+        this._writeBarcodeToClipboard({
+            barcode: mostRecentBarcode,
             showNotification: true,
             highlight: true
         });
@@ -1093,7 +1101,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
      * @param options.user the user
      *
      */
-    getUserScans = ({ user }: { user: string; }): void => {
+    getUserScans = ({ user }: { user: string }): void => {
 
         const dateString = new Date().toISOString();
 
@@ -1214,7 +1222,8 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
                 `"${JSON.stringify(latestBarcode)}"`
             );
 
-            this._writeBarcodeToClipboard(latestBarcode, {
+            this._writeBarcodeToClipboard({
+                barcode: latestBarcode,
                 showNotification: true,
                 highlight: true
             });
@@ -1276,12 +1285,17 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
+    /**
+     * Makes a CSV string from the scanned barcodes for the user.
+     *
+     * @returns the CSV string.
+     */
     makeCSVString = (): string => {
         const csvString = csvStringify(this.state.barcodes, {
             header: true,
             columns: [
                 { key: "barcode", header: "Barcode" },
-                { key: "date", header: "Date" },
+                { key: "scanned_at", header: "Date" },
                 { key: "id", header: "ID" }
             ]
 
@@ -1495,7 +1509,9 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     // MARK: - Scan Barcode View -
 
-    onOpenScanBarcodeView = (e) => {
+    onOpenScanBarcodeView = (
+        e: React.MouseEvent<HTMLElement, MouseEvent>
+    ): void => {
 
         console.log("onOpenScanBarcodeView():", e);
 
@@ -1505,9 +1521,9 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
-    closeScanBarcodeView = (e) => {
+    closeScanBarcodeView = (): void => {
 
-        console.log("closeScanBarcodeView():", e);
+        console.log("closeScanBarcodeView()");
 
         this.setState({
             showScanBarcodeView: false
@@ -1515,10 +1531,10 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
-    insertClientScannedBarcodeID = (barcodeID) => {
+    insertClientScannedBarcodeID = (barcodeID: string): void => {
 
         this.setState((state) => {
-            let clientScannedBarcodeIDs = state.clientScannedBarcodeIDs;
+            const clientScannedBarcodeIDs = state.clientScannedBarcodeIDs;
             clientScannedBarcodeIDs.add(barcodeID);
             return {
                 clientScannedBarcodeIDs: clientScannedBarcodeIDs
@@ -1529,14 +1545,35 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     // MARK: Private Interface
 
-    _copyLastBarcodeIsDisabled = () => {
+    /**
+     * Determines if the "Copy Latest Barcode" button is disabled, which
+     * occurs when there are no barcodes.
+     *
+     * @returns `true` if the "Copy Latest Barcode" button is disabled.
+     */
+    _copyLastBarcodeIsDisabled = (): boolean => {
         return !this.state?.barcodes?.length;
     };
 
-    _writeBarcodeToClipboard = (barcode, { showNotification, highlight }) => {
+    /**
+     * Writes the barcode to the clipboard.
+     *
+     * @param options the options
+     * @param options.barcode the barcode to write to the clipboard
+     * @param options.showNotification whether or not to show a notification to
+     * the user
+     * @param options.highlight whether or not to highlight the barcode
+     */
+    _writeBarcodeToClipboard = (
+        {
+            barcode,
+            showNotification,
+            highlight
+        }: WriteBarcodeToClipboardOptions
+    ): void => {
 
-        let barcodeText = barcode?.barcode;
-        if (barcodeText == null) {
+        const barcodeText = barcode.barcode;
+        if (barcodeText === null || barcodeText === undefined) {
             console.error(
                 "_writeBarcodeToClipboard: barcode text is null or undefined"
             );
@@ -1578,7 +1615,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
     };
 
-    _setHighlightedBarcode = (barcode) => {
+    _setHighlightedBarcode = (barcode: ScannedBarcodeResponse): void => {
 
         this.setState({
             highlightedBarcode: barcode
