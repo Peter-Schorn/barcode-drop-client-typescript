@@ -33,7 +33,7 @@ export function ConfigureLinkModal(
 
     return (
         <Modal
-            className={"configure-link-modal rounded-3 m-5 mx-auto p-5 shadow-lg text-black border border-primary"}
+            className="configure-link-modal rounded-3 m-5 mx-auto p-5 shadow-lg text-black border border-primary"
             isOpen={props.showFormattedLinkModal}
             onRequestClose={props.closeConfigureLinkModal}
             style={{
