@@ -34,8 +34,6 @@ type UserScansRowProps = {
 type UserScansRowState = {
     dateDifference: string;
     generateBarcodeModalIsOpen: boolean;
-    // TODO: Why is isHighlighted in both props and state?
-    isHighlighted: boolean;
     isCopying: boolean;
 };
 
@@ -68,7 +66,6 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
         this.state = {
             dateDifference: dateDifference,
             generateBarcodeModalIsOpen: false,
-            isHighlighted: this.props.isHighlighted,
             isCopying: false
         };
 
@@ -164,10 +161,6 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
 
     }
 
-    isHighlighted(): boolean {
-        return this.props.isHighlighted || this.state.isHighlighted;
-    }
-
     onClickCopyButton = async (): Promise<void> => {
 
         const barcodeText = this.props.barcode.barcode;
@@ -244,7 +237,7 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
     };
 
     copyButtonStyle(): CSSProperties {
-        const isHighlighted = this.isHighlighted();
+        const isHighlighted = this.props.isHighlighted;
         return {
             backgroundColor: isHighlighted ? "#0fd626" : "lightblue",
 
@@ -255,7 +248,6 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
             borderLeft: "1px solid black",
             borderRight: "0.5px solid black",
             borderRadius: "5px 0px 0px 5px",
-            // rounded: "10px",  // probably don't need; should be `borderRadius`
             color: "black",
 
             // borderLeft: isHighlighted ? "1px solid green" : "1px solid",
