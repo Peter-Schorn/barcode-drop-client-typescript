@@ -88,6 +88,7 @@ type UserScansRootCoreState = {
 
 class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootCoreState> {
 
+    // TODO: Delete me
     static sampleBarcodes: ScannedBarcodesResponse = [
         {
             "id": "55a95a52-031f-48b9-af00-15c3c49e4438",
@@ -302,7 +303,7 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
     ];
 
     // TODO: Add second app context for UserScansRootCore to pass to child
-    // TODO: components
+    // TODO: components (or maybe not)
     static override contextType = AppContext;
 
     declare context: React.ContextType<typeof AppContext>;

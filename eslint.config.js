@@ -79,6 +79,7 @@ export default tseslint.config(
             "jsdoc/require-jsdoc": "off",
             "jsdoc/tag-lines": "off",
             "jsdoc/require-param": "off",
+            "jsdoc/require-returns": "off",
 
             "@typescript-eslint/explicit-function-return-type": "error",
             "@stylistic/semi": ["error", "always"],
@@ -138,6 +139,10 @@ export default tseslint.config(
             "@typescript-eslint/ban-ts-comment": "off",
             "func-style": ["error", "declaration", {
                 allowArrowFunctions: false
+            }],
+            "curly": "error",
+            "@typescript-eslint/switch-exhaustiveness-check": ["error", {
+                requireDefaultForNonUnion: true
             }],
 
             // TODO: might want to reenable these
