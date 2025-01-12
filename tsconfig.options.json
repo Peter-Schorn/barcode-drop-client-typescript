@@ -28,7 +28,7 @@
         // based on the 'module' setting. Requires `type` keyword for importing
         // types.
         "verbatimModuleSyntax": true,
-        "noImplicitReturns": true
-
+        "noImplicitReturns": true,
+        "noImplicitAny": true
     },
 }

@@ -20,7 +20,7 @@ export default function SetupView(): JSX.Element {
                 {body}
             </a>
         );
-    };
+    }
 
     return (
         <div className="vw-100 vh-100">

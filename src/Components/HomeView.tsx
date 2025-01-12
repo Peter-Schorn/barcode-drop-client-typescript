@@ -122,4 +122,4 @@ export default function HomeView(): JSX.Element {
         </div>
     );
 
-};
+}

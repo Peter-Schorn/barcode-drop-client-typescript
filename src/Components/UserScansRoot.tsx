@@ -29,7 +29,7 @@ import {
 import { SocketMessageTypes } from "../Model/SocketMessageTypes";
 
 import UserScansTable from "./UserScansTable";
-import ConfigureLinkModal from "./ConfigureLinkModal.tsx";
+import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";
 import { UserScansToast } from "./UserScansToast.tsx";
 import ScanBarcodeView from "./ScanBarcodeView.tsx";
 
