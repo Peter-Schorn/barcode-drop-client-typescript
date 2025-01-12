@@ -7,13 +7,13 @@ import { Button, Dropdown, Stack } from "react-bootstrap";
 
 import Modal from "react-modal";
 
-import bwipjs from "bwip-js";
+import bwipjs from "bwip-js/browser";
 // import { setIntervalImmediately } from "../MiscellaneousUtilities";
 
 export default class BarcodeImageModalView extends Component {
 
     static contextType = AppContext;
-    
+
     constructor(props) {
         super(props);
 
@@ -45,9 +45,9 @@ export default class BarcodeImageModalView extends Component {
     }
 
     configureBarcodePropsForCanvas = () => {
-        
+
         const barcodeText = this.props.barcode.barcode;
-        
+
         if (!barcodeText) {
             console.error(
                 "Barcode text is empty"
@@ -64,7 +64,7 @@ export default class BarcodeImageModalView extends Component {
             options: {}
         }
 
-        // Cannot differentiate between UPC-E and EAN-8, so don't 
+        // Cannot differentiate between UPC-E and EAN-8, so don't
         // automatically use either
 
         let symbology;
@@ -140,7 +140,7 @@ export default class BarcodeImageModalView extends Component {
         }
 
         const barcodeText = this.props.barcode.barcode;
-        
+
         if (!barcodeText) {
             console.error(
                 "Barcode text is empty"
@@ -149,8 +149,8 @@ export default class BarcodeImageModalView extends Component {
         }
 
         bwipjs.toCanvas(
-            canvas, 
-            this.canvasProps.options, 
+            canvas,
+            this.canvasProps.options,
             (error, canvas) => {
                 if (error) {
                     console.error(
@@ -180,7 +180,7 @@ export default class BarcodeImageModalView extends Component {
 
     formattedBarcodeText() {
         let barcodeText = this.props?.barcode?.barcode;
-        
+
         if (!barcodeText) {
             return " --- ";
         }
@@ -197,12 +197,12 @@ export default class BarcodeImageModalView extends Component {
         return barcodeText;
 
     }
-    
+
     render() {
         let header;
         if (this.canvasProps.is2DSymbology) {
             header = (
-                <h3 
+                <h3
                     className="text-break"
                     style={{
                         textAlign: "center",
