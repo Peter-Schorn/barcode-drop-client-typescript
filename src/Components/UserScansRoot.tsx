@@ -635,30 +635,30 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
     };
 
     handleFocusOut = (/* e: FocusEvent */): void => {
-        console.log(
-            "focusout: document does NOT have focus; " +
-            `visibility: ${document.visibilityState}`
-        );
+        // console.log(
+        //     "focusout: document does NOT have focus; " +
+        //     `visibility: ${document.visibilityState}`
+        // );
     };
 
     handleFocusIn = (/* e: FocusEvent */): void => {
-        console.log(
-            "focusin: document has focus; " +
-            `visibility: ${document.visibilityState}`
-        );
+        // console.log(
+        //     "focusin: document has focus; " +
+        //     `visibility: ${document.visibilityState}`
+        // );
     };
 
     handleVisibilityChange = (/* e: Event */): void => {
 
-        console.log(
-            `visibilitychange: document.hidden: ${document.hidden}; ` +
-            `focused: ${document.hasFocus()}`
-        );
+        // console.log(
+        //     `visibilitychange: document.hidden: ${document.hidden}; ` +
+        //     `focused: ${document.hasFocus()}`
+        // );
 
-        console.log(
-            `visibilitychange: document.hidden: ${document.hidden}; ` +
-            `focused: ${document.hasFocus()}`
-        );
+        // console.log(
+        //     `visibilitychange: document.hidden: ${document.hidden}; ` +
+        //     `focused: ${document.hasFocus()}`
+        // );
 
         if (!document.hidden) {
             console.log(
@@ -1757,13 +1757,13 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
                 {/* *** =====================-=== */}
                 {/* *** === Scan Barcode View === */}
                 {/* *** =====================-=== */}
-                {this.state.showScanBarcodeView ? (
-                    <ScanBarcodeView
-                        user={this.user}
-                        onClose={this.closeScanBarcodeView}
-                        insertClientScannedBarcodeID={this.insertClientScannedBarcodeID}
-                    />
-                ) : null}
+
+                <ScanBarcodeView
+                    showScanBarcodeModal={this.state.showScanBarcodeView}
+                    user={this.user}
+                    onClose={this.closeScanBarcodeView}
+                    insertClientScannedBarcodeID={this.insertClientScannedBarcodeID}
+                />
 
                 <ConfigureLinkModal
                     formattedLink={this.state.formattedLink}

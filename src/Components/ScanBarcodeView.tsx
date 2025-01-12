@@ -1,19 +1,17 @@
 import React, {
     type JSX,
     useContext,
-    useState,
-    useEffect
+    useState
 } from "react";
 
 import { AppContext } from "../Model/AppContext";
 
 import { Form, InputGroup } from "react-bootstrap";
 
-// TODO: Use Modal component so that we can detect clicks outside of the modal
-// TODO: and close the modal when the user clicks outside of it.
-// import Modal from "react-modal";
+import Modal from "react-modal";
 
 type ScanBarcodeViewProps = {
+    showScanBarcodeModal: boolean;
     user: string;
     onClose: () => void;
     insertClientScannedBarcodeID: (barcodeID: string) => void;
@@ -24,19 +22,6 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
     const context = useContext(AppContext);
 
     const [barcode, setBarcode] = useState("");
-
-    useEffect(() => {
-        console.log(
-            "ScanBarcodeView.useEffect(): adding keydown event listener"
-        );
-        document.addEventListener("keydown", handleKeyDown);
-        return (): void => {
-            console.log(
-                "ScanBarcodeView.useEffect(): removing keydown event listener"
-            );
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, []);
 
     /**
      * Called when the user types in the barcode input field.
@@ -64,14 +49,6 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
             `barcode: "${barcode}"`
         );
         await scanBarcode(barcode);
-    }
-
-    /**
-     * Closes the scan barcode view.
-     */
-    function onClose(): void {
-        console.log("ScanBarcodeView.onClose()");
-        props.onClose();
     }
 
     /**
@@ -107,25 +84,26 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
         }
     }
 
-    function handleKeyDown(event: KeyboardEvent): void {
-        if (event.key === "Escape") {
-            onClose();
-        }
-    }
-
     return (
-        <div
-            className="scan-barcode-container translate-middle top-50 start-50 position-absolute rounded z-index-1"
+        <Modal
+            className="translate-middle top-50 start-50 position-absolute rounded z-index-1"
+            isOpen={props.showScanBarcodeModal}
+            onRequestClose={props.onClose}
             style={{
-                zIndex: 1,
-                height: "38px",
-                width: "500px",
-                maxWidth: "90vw",
-                marginLeft: "auto",
-                marginRight: "10px",
-                marginTop: "-35vh",
-                backgroundColor: "lightgray",
-                border: "0px solid black",
+                overlay: {
+                    backgroundColor: "transparent"
+                },
+                content: {
+                    boxShadow: " 0px 0px 40px 2px rgba(0, 0, 0, 0.4)",
+                    height: "38px",
+                    width: "500px",
+                    maxWidth: "90vw",
+                    marginLeft: "auto",
+                    marginRight: "10px",
+                    marginTop: "-35vh",
+                    backgroundColor: "lightgray",
+                    border: "0px solid black",
+                }
             }}
         >
             <Form
@@ -134,14 +112,12 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
                 <div
                     className="d-flex"
                 >
-
-                    {/* COLUMN */}
                     <div
                         className=""
                     >
                         {/* *** === Close Button === *** */}
                         <button
-                            onClick={onClose}
+                            onClick={props.onClose}
                             className="scan-barcode-close-button"
                             type="button"
                             style={{
@@ -195,9 +171,7 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
                             />
                         </InputGroup>
                     </div>
-
                     <div
-                        className=""
                     >
                         {/* ============================== */}
                         {/* *** ==== SUBMIT BUTTON === *** */}
@@ -205,24 +179,13 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
                         <button
                             className="scan-barcode-submit-button"
                             type="submit"
-                            style={{
-                                maxWidth: "80px",
-                                height: "48px",
-                                position: "absolute",
-                                margin: "0px -63px",
-                                color: "gray",
-                                backgroundColor: "#f0eded",
-                                borderRadius: "0px 8px 8px 0px",
-                                border: "none",
-                                zIndex: 5
-                            }}
                         >
                             Submit
                         </button>
                     </div>
                 </div>
             </Form>
-        </div>
+        </Modal>
     );
 
 }
