@@ -31,7 +31,7 @@ import { SocketMessageTypes } from "../Model/SocketMessageTypes";
 import UserScansTable from "./UserScansTable";
 import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";
 import { UserScansToast } from "./UserScansToast.tsx";
-import ScanBarcodeView from "./ScanBarcodeView.tsx";
+import { ScanBarcodeView } from "./ScanBarcodeView.tsx";
 
 import {
     type ScannedBarcodeResponse,
@@ -1375,6 +1375,8 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         console.log("onClickOpenLink(): barcode:", barcode);
 
         const barcodeText = barcode.barcode;
+
+        // TODO: Probably don't need to check for null or undefined
         if (barcodeText === null || barcodeText === undefined) {
             console.error(
                 "onClickOpenLink(): barcode text is null or undefined"
@@ -1758,7 +1760,6 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
                 {this.state.showScanBarcodeView ? (
                     <ScanBarcodeView
                         user={this.user}
-                        viewportSize={this.state.viewportSize}
                         onClose={this.closeScanBarcodeView}
                         insertClientScannedBarcodeID={this.insertClientScannedBarcodeID}
                     />

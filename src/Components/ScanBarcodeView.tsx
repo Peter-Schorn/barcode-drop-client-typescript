@@ -1,355 +1,257 @@
-import React from "react";
+import React, {
+    type JSX,
+    useRef,
+    useState
+} from "react";
 import { Component } from "react";
 
 import { AppContext } from "../Model/AppContext";
 
-import { Button, Dropdown, Stack, Form, InputGroup, Col, Row } from "react-bootstrap";
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import { Form, InputGroup } from "react-bootstrap";
 
-import Modal from "react-modal";
+// TODO: Use Modal component so that we can detect clicks outside of the modal
+// TODO: and close the modal when the user clicks outside of it.
+// import Modal from "react-modal";
 
-export default class ScanBarcodeView extends Component {
+type ScanBarcodeViewProps = {
+    user: string;
+    onClose: () => void;
+    insertClientScannedBarcodeID: (barcodeID: string) => void;
+};
 
-    static contextType = AppContext;
+type ScanBarcodeViewState = {
+    barcode: string;
+};
 
-    constructor(props) {
+export function ScanBarcodeView_FC(): JSX.Element {
+
+    
+
+
+    return (
+        <div>
+            <h1>Scan Barcode</h1>
+        </div>
+    );
+}
+
+export class ScanBarcodeView extends Component<ScanBarcodeViewProps, ScanBarcodeViewState> {
+
+    static override contextType = AppContext;
+
+    declare context: React.ContextType<typeof AppContext>;
+
+    constructor(props: ScanBarcodeViewProps) {
         super(props);
 
         this.state = {
             barcode: ""
         };
 
-        this.barcodeField = React.createRef();
-
     }
 
-    componentDidMount() {
+    override componentDidMount(): void {
 
         console.log("ScanBarcodeView.componentDidMount()");
 
         document.addEventListener("keydown", this.handleKeyDown);
-        this.barcodeField?.current?.focus();
 
     }
 
-    componentWillUnmount() {
-        
+    override componentWillUnmount(): void {
+
         console.log("ScanBarcodeView.componentWillUnmount()");
         document.removeEventListener("keydown", this.handleKeyDown);
 
     }
 
-    handleInputChange = (event) => {
+    handleInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
 
-        const newBarcode = event?.target?.value;
+        const newBarcode = event.target.value;
 
         console.log(
-            `ScanBarcodeView.handleInputChange(): ` +
+            "ScanBarcodeView.handleInputChange(): " +
             `"${newBarcode}"`
         );
 
-        this.setState({ 
+        this.setState({
             barcode: newBarcode
         });
     };
 
-    onSubmitForm = (event) => {
+    onSubmitForm = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
 
         event.preventDefault();
-        
-        const barcode = this.state?.barcode;
+
+        const barcode = this.state.barcode;
 
         console.log(
-            `ScanBarcodeView.onSubmitForm(): user: "${this.state.user}"; ` +
+            `ScanBarcodeView.onSubmitForm(): user: "${this.props.user}"; ` +
             `barcode: "${barcode}"`
         );
-        
-        this.scanBarcode(barcode);
+
+        await this.scanBarcode(barcode);
 
     };
 
-    onClose = () => {
+    onClose = (): void => {
         console.log("ScanBarcodeView.onClose()");
         this.props.onClose();
-    }
+    };
 
-    scanBarcode = (barcode) => {
-        
-        const user = this.props?.user;
+    scanBarcode = async (barcode: string): Promise<void> => {
 
-        if (!user) {
-            console.error(
-                "ScanBarcodeView.scanBarcode(): user is EMPTY"
-            );
-            return;
-        }
-        if (!barcode) {
-            console.error(
-                "ScanBarcodeView.scanBarcode(): barcode is EMPTY"
-            );
-            return;
-        }
+        const user = this.props.user;
 
         const id = crypto.randomUUID();
         this.props.insertClientScannedBarcodeID(id);
 
         console.log(
-            `ScanBarcodeView.scanBarcode(): will scan barcode ` +
+            "ScanBarcodeView.scanBarcode(): will scan barcode " +
             `for user "${user}": "${barcode}" (id: "${id}")`
         );
 
-        this.context.api.scanBarcode({user, barcode, id})
-            .then((response) => {
-                console.log(
-                    `ScanBarcodeView.scanBarcode(): response: ` +
-                    `"${response}"`
-                );
-                // this.setState({ 
-                //     barcode: "" 
-                // });
-            })
-            .catch((error) => {
-                console.error(
-                    `ScanBarcodeView.scanBarcode(): error: ` +
-                    `"${error}"`
-                );
-                // this.setState({ 
-                //     barcode: "" 
-                // });
-            })
-            .finally(() => {
-                this.setState({ 
-                    barcode: "" 
-                });
+        try {
+
+            const response = await this.context.api!.scanBarcode({
+                user, barcode, id
             });
 
-
-
-    }
-
-    handleKeyDown = (event) => {
-        console.log(
-            `ScanBarcodeView.handleKeyDown(): ` +
-            `keyCode: "${event.keyCode}"`
-        );
-        if (event.key === "Escape") {
             console.log(
-                "ScanBarcodeView.handleKeyDown(): ESCAPE"
+                "ScanBarcodeView.scanBarcode(): response: " +
+                `"${response}"`
             );
-            event.preventDefault();
+
+        } catch (error) {
+            console.error(
+                "ScanBarcodeView.scanBarcode(): error: " +
+                `"${error}"`
+            );
+        } finally {
+            this.setState({
+                barcode: ""
+            });
+        }
+
+    };
+
+    handleKeyDown = (event: KeyboardEvent): void => {
+        if (event.key === "Escape") {
             this.onClose();
         }
-    }
+    };
 
-    render() {
+    override render(): JSX.Element {
         return (
-            <div 
+            <div
                 className="scan-barcode-container translate-middle top-50 start-50 position-absolute rounded z-index-1"
-                // className="scan-barcode-container position-absolute translate-middle rounded"
                 style={{
                     zIndex: 1,
-                    // width: "90%",
-                    // width: "100%",
                     height: "38px",
                     width: "500px",
                     maxWidth: "90vw",
                     marginLeft: "auto",
                     marginRight: "10px",
                     marginTop: "-35vh",
-                         /* top    | right | bottom | left */
-                    // margin: "120px   0px    10px      50%",
-                    // margin: "auto",
-                    // padding: "100px",
                     backgroundColor: "lightgray",
-
                     border: "0px solid black",
-
-                    // position: "absolute"
-
-                    // shadow: "2px 2px 2px 2px",
-                    // top: "40px",
-                    // left: "auto"
                 }}
             >
-                {/* <div
-                    // className="position-sticky "
-                    style={{
-                        top: 0,
-                        height: "200px"
-                        // maxWidth: "90vw"
-                    }}
-                > */}
-                    <Form
-                        onSubmit={this.onSubmitForm}
-                        
+                <Form
+                    onSubmit={this.onSubmitForm}
+                >
+                    <div
+                        className="d-flex"
                     >
-                        
-                        {/* <div 
-                            className="row justify-content-start"
-                        > */}
-                        <div 
-                            className="d-flex"
+
+                        {/* COLUMN */}
+                        <div
+                            className=""
                         >
-
-                                {/* COLUMN */}
-                                <div 
-                                    className=""
-                                >
-                                    {/* *** === Close Button === *** */}
-                                    <button 
-                                        onClick={this.onClose}
-                                        className="scan-barcode-close-button"
-                                        // variant="dark" 
-                                        // size="sm"
-                                        type="button"
-                                        style={{
-                                            width: "30px",
-                                            height: "48px",
-                                            position: "absolute",
-                                            margin: "0px 44px",
-                                            color: "gray",
-                                            // backgroundColor: "clear",
-                                            backgroundColor: "rgba(0, 0, 0, 0)",
-                                            // backgroundColor: "#f0eded",
-                                            // borderRadius: "0px 0px 0px 0px",
-                                            // borderRadius: "40px",
-                                            border: "none",
-                                            // opacity: "0.4"
-                                            zIndex: 6
-                                        }}
-                                    >
-                                        X
-                                    </button>
-                                </div>
-
-                                {/* COLUMN */}
-                                <div 
-                                    className="flex-fill"
-                                >
-                                        
-                                    <InputGroup>
-                                    
-                                        <InputGroup.Text
-                                            style={{
-                                                // width: "16px",
-                                                // height: "60px"
-                                                border: "2px solid white"
-                                            }}
-                                        >
-                                            <i
-                                                className="fa-solid fa-barcode"
-                                                style={{
-                                                    color: "black",
-                                                    width: "16px",
-                                                    height: "16px"
-                                                }}
-                                            >
-                                            </i>
-                                        </InputGroup.Text>
-
-                                        <Form.Control
-                                            ref={this.barcodeField}
-                                            type="text"
-                                            size="lg"
-                                            value={this.state.barcode}
-                                            onChange={this.handleInputChange}
-                                            placeholder="Enter Barcode"
-                                            className="scan-barcode-input"
-                                            style={{
-                                                // maxWidth: "300px"
-                                                paddingRight: "70px",
-                                                paddingLeft: "25px",
-                                                border: "0px solid black"
-                                            }}
-                                        >
-                                        </Form.Control>
-
-                                    </InputGroup>
-                                </div>
-                                
-                                {/* COLUMN */}
-                                <div 
-                                    className=""
-                                >
-                                    {/* ============================== */}
-                                    {/* *** ==== SUBMIT BUTTON === *** */}
-                                    {/* ============================== */}
-                                    <button 
-                                        className="scan-barcode-submit-button"
-                                        // variant="dark" 
-                                        // size="sm"
-                                        type="submit"
-                                        style={{
-                                            maxWidth: "80px",
-                                            height: "48px",
-                                            position: "absolute",
-                                            margin: "0px -63px",
-                                            color: "gray",
-                                            // backgroundColor: "rgba(0, 0, 0, 0.1)",
-                                            backgroundColor: "#f0eded",
-                                            borderRadius: "0px 8px 8px 0px",
-                                            border: "none",
-                                            // opacity: "0.43
-                                            // hidden: true
-                                            zIndex: 5
-                                        }}
-                                    >
-                                        Submit
-                                        {/* {"  ↳  "} */}
-                                    </button>
-                                </div>
+                            {/* *** === Close Button === *** */}
+                            <button
+                                onClick={this.onClose}
+                                className="scan-barcode-close-button"
+                                type="button"
+                                style={{
+                                    width: "30px",
+                                    height: "48px",
+                                    position: "absolute",
+                                    margin: "0px 44px",
+                                    color: "gray",
+                                    backgroundColor: "rgba(0, 0, 0, 0)",
+                                    border: "none",
+                                    zIndex: 6
+                                }}
+                            >
+                                X
+                            </button>
                         </div>
-                    </Form>
-                {/* </div> */}
+                        <div
+                            className="flex-fill"
+                        >
+                            <InputGroup>
+
+                                <InputGroup.Text
+                                    style={{
+                                        border: "2px solid white"
+                                    }}
+                                >
+                                    <i
+                                        className="fa-solid fa-barcode"
+                                        style={{
+                                            color: "black",
+                                            width: "16px",
+                                            height: "16px"
+                                        }}
+                                    >
+                                    </i>
+                                </InputGroup.Text>
+
+                                <Form.Control
+                                    autoFocus={true}
+                                    type="text"
+                                    size="lg"
+                                    value={this.state.barcode}
+                                    onChange={this.handleInputChange}
+                                    placeholder="Enter Barcode"
+                                    className="scan-barcode-input"
+                                    style={{
+                                        paddingRight: "70px",
+                                        paddingLeft: "25px",
+                                        border: "0px solid black"
+                                    }}
+                                />
+                            </InputGroup>
+                        </div>
+
+                        <div
+                            className=""
+                        >
+                            {/* ============================== */}
+                            {/* *** ==== SUBMIT BUTTON === *** */}
+                            {/* ============================== */}
+                            <button
+                                className="scan-barcode-submit-button"
+                                type="submit"
+                                style={{
+                                    maxWidth: "80px",
+                                    height: "48px",
+                                    position: "absolute",
+                                    margin: "0px -63px",
+                                    color: "gray",
+                                    backgroundColor: "#f0eded",
+                                    borderRadius: "0px 8px 8px 0px",
+                                    border: "none",
+                                    zIndex: 5
+                                }}
+                            >
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </Form>
             </div>
         );
     }
 }
-
-// className={
-//     "d-flex justify-content-center align-items-center " +
-//     "w-100 h-75 "
-//     // "bg-secondary"
-// }
-
-// <Form
-//     onSubmit={this.onSubmitForm}
-// >
-    
-//     <div className="row justify-content-start">
-//             <div className="col-sm-8">
-
-//                 {/* <FloatingLabel
-//                     controlId="floatingInput"
-//                     label="Enter Barcode"
-//                     className=""  // "mb-3"
-//                     size="sm"
-//                 > */}
-//                     <Form.Control
-//                         ref={this.barcodeField}
-//                         type="text"
-//                         // size="sm"
-//                         value={this.state.barcode}
-//                         onChange={this.handleInputChange}
-//                         placeholder="Enter Barcode"
-//                         style={{
-//                             maxWidth: "300px"
-//                         }}
-//                     />
-//                 {/* </FloatingLabel> */}
-//             </div>
-//             {/* <Col xs={3}> */}
-//             <div className="col-sm-2">
-//                 <Button 
-//                     // className="m-3" 
-//                     variant="dark" 
-//                     type="submit"
-//                     style={{
-//                         maxWidth: "80px"
-//                     }}
-//                 >
-//                     Submit
-//                 </Button>
-//             </div>
-//     </div>
-// </Form>

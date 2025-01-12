@@ -103,7 +103,12 @@ export default tseslint.config(
             "no-unreachable": "warn",
             "@typescript-eslint/no-misused-promises": ["error", {
                 checksVoidReturn: {
-                    inheritedMethods: false
+                    inheritedMethods: false,
+                    // Disables checking an asynchronous function passed as a
+                    // JSX attribute expected to be a function that returns
+                    // void.
+                    attributes: false,
+                    arguments: false
                 }
             }],
             // disallows c-style for-loops when a for-of loop could be used
