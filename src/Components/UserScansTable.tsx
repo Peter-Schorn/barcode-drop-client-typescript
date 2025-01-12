@@ -1,125 +1,87 @@
-import React from 'react';
-import { Component } from "react";
-import { useParams } from 'react-router-dom';
+import React, { type JSX } from "react";
 
-import { AppContext } from "../Model/AppContext";
-
-import { Button, Table } from 'react-bootstrap';
+import { Table } from "react-bootstrap";
 
 import UserScansRow from "./UserScanRow";
 
-import Badge from 'react-bootstrap/Badge';
+import {
+    type ScannedBarcodeResponse,
+    type ScannedBarcodesResponse
+} from "../types/ScannedBarcodesResponse";
 
-export default function UserScansTable(props) {
+import { type ViewportSize } from "../types/ViewportSize";
+import { type UserScansRootRouter } from "../types/UserScansRootRouter";
 
-    // https://reactrouter.com/en/main/start/faq#what-happened-to-withrouter-i-need-it
-
-    // let params = useParams();
-    // let location = useLocation();
-    // let navigate = useNavigate();
-
-    return (
-        <UserScansTableCore
-            {...props}
-            onClickOpenLink={props.onClickOpenLink}
-        />
-    );
-
+type UserScansTableProps = {
+    barcodes: ScannedBarcodesResponse;
+    user: string;
+    highlightedBarcode: ScannedBarcodeResponse | null;
+    viewportSize: ViewportSize;
+    // TODO: Don't pass router down through the component tree.
+    // TODO: Use `useParams` and `useSearchParams` instead.
+    router: UserScansRootRouter;
+    removeBarcodesFromState: (barcodeIDs: Set<string>) => void;
+    setHighlightedBarcode: (barcode: ScannedBarcodeResponse) => void;
+    onClickOpenLink: (url: ScannedBarcodeResponse) => void;
 };
 
-class UserScansTableCore extends Component {
 
-    static contextType = AppContext;
+export default function UserScansTable(props: UserScansTableProps): JSX.Element {
 
-    constructor(props) {
-
-        super(props);
-
-        /*
-         <UserScansTable
-             barcodes={this.state.barcodes}
-             user={this.user}
-             highlightedBarcode={this.state.highlightedBarcode}
-             viewportSize={this.state.viewportSize}
-             router={this.props.router}
-             removeBarcodesFromState={
-                 this.removeBarcodesFromState
-             }
-             setHighlightedBarcode={
-                 this._setHighlightedBarcode
-             }
-             onClickOpenLink={this.onClickOpenLink}
-         />
-
-         */
-
-        if (this.props.user) {
-            console.log(
-                `UserScansTableCore.constructor(): user: ${this.props.user}`
-            );
-        }
-        else {
-            console.error(
-                `UserScansTableCore.constructor(): invalid user: ${this.props.user}`
-            );
-        }
+    function barcodeIsHighlighted(
+        barcode: ScannedBarcodeResponse
+    ): boolean {
+        return props.highlightedBarcode?.id === barcode.id;
     }
 
-    barcodeIsHighlighted(barcode) {
-        return this.props.highlightedBarcode?.id === barcode.id;
-    }
-
-    render() {
-        console.log("UserScansTableCore.render()");
-        return (
-            <Table
-                className="barcode-table border-dark"
-                striped bordered hover
-                style={{ maxWidth: "100%" }}
-            >
-                <thead>
-                    <tr>
-                        <th
-                            style={{ width: "100px" }}
-                        >
-                            {/* --- Primary Buttons --- */}
-                        {/* </th> */}
-                        {/* <th style={{ width: "100px" }}> */}
-                            {/* --- Context Menu --- */}
-                        </th>
-                        <th>Barcode</th>
-                        { this.props.viewportSize.width > 600 ? (
-                            <th>Time</th>
-                        ) : null }
-                        { this.props.viewportSize.width > 800 ? (
-                            <th style={{ width: "80px" }}>Delete</th>
-                        ) : null }
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.props.barcodes.map((barcode, index) =>
-                        // TODO: These parameters could be passed automatically
-                        // TODO: by the parent component via context.
-                        <UserScansRow
-                            key={barcode.id}
-                            index={index}
-                            barcode={barcode}
-                            user={this.props.user}
-                            viewportSize={this.props.viewportSize}
-                            isHighlighted={this.barcodeIsHighlighted(barcode)}
-                            router={this.props.router}
-                            removeBarcodesFromState={
-                                this.props.removeBarcodesFromState
-                            }
-                            setHighlightedBarcode={
-                                this.props.setHighlightedBarcode
-                            }
-                            onClickOpenLink={this.props.onClickOpenLink}
-                        />
-                    )}
-                </tbody>
-            </Table>
-        );
-    }
+    return (
+        <Table
+            className="barcode-table border-dark"
+            striped bordered hover
+            style={{ maxWidth: "100%" }}
+        >
+            <thead>
+                <tr>
+                    <th
+                        style={{ width: "100px" }}
+                    >
+                        {/* --- Primary Buttons --- */}
+                    {/* </th> */}
+                    {/* <th style={{ width: "100px" }}> */}
+                        {/* --- Context Menu --- */}
+                    </th>
+                    <th>Barcode</th>
+                    { props.viewportSize.width > 600 ? (
+                        <th>Time</th>
+                    ) : null }
+                    { props.viewportSize.width > 800 ? (
+                        <th style={{ width: "80px" }}>Delete</th>
+                    ) : null }
+                </tr>
+            </thead>
+            <tbody>
+                {props.barcodes.map((barcode, index) =>
+                    // TODO: These parameters could be passed automatically
+                    // TODO: by the parent component via context.
+                    <UserScansRow
+                        key={barcode.id}
+                        index={index}
+                        barcode={barcode}
+                        user={props.user}
+                        viewportSize={props.viewportSize}
+                        isHighlighted={barcodeIsHighlighted(barcode)}
+                        router={props.router}
+                        removeBarcodesFromState={
+                            props.removeBarcodesFromState
+                        }
+                        setHighlightedBarcode={
+                            props.setHighlightedBarcode
+                        }
+                        onClickOpenLink={props.onClickOpenLink}
+                    />
+                )}
+            </tbody>
+        </Table>
+    );
 
 }

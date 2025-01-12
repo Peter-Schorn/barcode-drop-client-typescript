@@ -16,7 +16,7 @@ export class Backend {
     httpClient: AxiosInstance;
 
     constructor() {
-        this.backendURL = new URL(import.meta.env.VITE_BACKEND_URL as string);
+        this.backendURL = new URL(import.meta.env.VITE_BACKEND_URL);
         this.httpClient = axios.create();
     }
 

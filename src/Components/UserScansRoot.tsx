@@ -39,10 +39,8 @@ import {
 } from "../types/ScannedBarcodesResponse.ts";
 
 import { type ViewportSize } from "../types/ViewportSize.ts";
-
-type UserScansRootParams = {
-    user: string;
-};
+import { type UserScansRootParams } from "../types/UserScansRootParams.ts";
+import { type UserScansRootRouter } from "../types/UserScansRootRouter.ts";
 
 // MARK: path="/scans/:user"
 export default function UserScansRoot(): JSX.Element {
@@ -73,11 +71,7 @@ type WriteBarcodeToClipboardOptions = {
 };
 
 type UserScansRootCoreProps = {
-    router: {
-        params: Readonly<Partial<UserScansRootParams>>;
-        searchParams: URLSearchParams;
-        setSearchParams: (searchParams: URLSearchParams) => void;
-    };
+    router: UserScansRootRouter;
 };
 
 type UserScansRootCoreState = {
