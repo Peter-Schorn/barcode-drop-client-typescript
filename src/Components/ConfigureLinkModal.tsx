@@ -37,28 +37,15 @@ export function ConfigureLinkModal(
             isOpen={props.showFormattedLinkModal}
             onRequestClose={props.closeConfigureLinkModal}
             style={{
-                overlay: {
-                    position: "fixed",
-                    // TODO: Do we need to set the top, left, right, and bottom
-                    // TODO: properties to 0?
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: "rgba(255, 255, 255, 0.75)"
-                },
                 content: {
                     position: "fixed",
                     top: "20px",
                     left: offset,
                     right: offset,
                     background: "#cdcfd1",
-                    // overflow: "auto",
-                    // WebkitOverflowScrolling: "touch",
                     borderRadius: "4px",
                     outline: "none",
                     maxWidth: "1000px",
-                    // padding: "20px"
                 }
             }}
         >
@@ -97,9 +84,6 @@ export function ConfigureLinkModal(
                             value={props.formattedLink ?? ""}
                             onChange={props.onChangeConfigureLinkInput}
                         />
-                        {/* <label for="configure-link-input">
-                            Link:
-                        </label> */}
                         <label htmlFor="configure-link-input">
                             Link
                         </label>
