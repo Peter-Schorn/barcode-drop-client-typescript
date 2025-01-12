@@ -74,8 +74,11 @@ export default tseslint.config(
                 forbid: [">", "\\", "}"]
             }],
 
+            "react-hooks/exhaustive-deps": "off",
+
             "jsdoc/require-jsdoc": "off",
             "jsdoc/tag-lines": "off",
+            "jsdoc/require-param": "off",
 
             "@typescript-eslint/explicit-function-return-type": "error",
             "@stylistic/semi": ["error", "always"],
