@@ -7,7 +7,7 @@ import { Button, Dropdown, Stack } from "react-bootstrap";
 
 import { setIntervalImmediately } from "../MiscellaneousUtilities";
 
-import BarcodeImageModalView from "./BarcodeImageModalView";
+import { BarcodeImageModalView } from "./BarcodeImageModalView";
 
 import {
     type ScannedBarcodeResponse

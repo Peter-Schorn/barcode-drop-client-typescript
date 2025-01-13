@@ -1,74 +1,42 @@
-import React from "react";
+import React, {
+    type JSX
+} from "react";
 import { Component } from "react";
-
-import { AppContext } from "../Model/AppContext";
-
-import { Button, Dropdown, Stack } from "react-bootstrap";
 
 import Modal from "react-modal";
 
-import bwipjs from "bwip-js/browser";
-// import { setIntervalImmediately } from "../MiscellaneousUtilities";
+import bwipjs, {
+    type RenderOptions
+} from "bwip-js/browser";
 
-export default class BarcodeImageModalView extends Component {
+import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
-    static contextType = AppContext;
+type BarcodeImageModalViewProps = {
+    barcode: ScannedBarcodeResponse;
+    generateBarcodeModalIsOpen: boolean;
+    closeGenerateBarcodeModal: () => void;
+};
 
-    constructor(props) {
+export class BarcodeImageModalView extends Component<BarcodeImageModalViewProps> {
+
+    canvasRef: React.RefObject<HTMLCanvasElement | null>;
+
+    is2DSymbology: boolean;
+    canvasRenderOptions: RenderOptions;
+
+    constructor(props: BarcodeImageModalViewProps) {
         super(props);
 
-        this.customStyles = {
-            content: {
-                top: "50%",
-                left: "50%",
-                right: "auto",
-                bottom: "auto",
-                transform: "translate(-50%, -50%)",
-                maxWidth: "90vw",
-                maxHeight: "80vh",
-            },
-        };
-
-        this.canvasRef = React.createRef();
-        this.configureBarcodePropsForCanvas();
-
-    }
-
-    componentDidMount() {
-
-        console.log(
-            "BarcodeModalView.componentDidMount()"
-        );
-
-        this.configureBarcodePropsForCanvas();
-
-    }
-
-    configureBarcodePropsForCanvas = () => {
+        this.canvasRef = React.createRef<HTMLCanvasElement>();
 
         const barcodeText = this.props.barcode.barcode;
 
-        if (!barcodeText) {
-            console.error(
-                "Barcode text is empty"
-            );
-            return;
-        }
+        this.is2DSymbology = false;
 
-        this.canvasProps = {
-            is2DSymbology: false,
-            viewportSize: {
-                width: window.innerWidth,
-                height: window.innerHeight
-            },
-            options: {}
-        }
+        let symbology: string;
 
         // Cannot differentiate between UPC-E and EAN-8, so don't
         // automatically use either
-
-        let symbology;
-
         if (/^[0-9]{12}$/.test(barcodeText)) {
             symbology = "upca";
         }
@@ -80,10 +48,10 @@ export default class BarcodeImageModalView extends Component {
         }
         else {
             symbology = "datamatrix";
-            this.canvasProps.is2DSymbology = true;
+            this.is2DSymbology = true;
         }
 
-        this.canvasProps.options = {
+        this.canvasRenderOptions = {
             bcid: symbology,
             text: barcodeText,
             includetext: true,
@@ -94,42 +62,41 @@ export default class BarcodeImageModalView extends Component {
             paddingheight: 5
         };
 
-        if (this.canvasProps.is2DSymbology) {
-            if (this.canvasProps.viewportSize.width <= 600) {
-                this.canvasProps.options.scale = 2;
+        if (this.is2DSymbology) {
+            if (window.innerWidth <= 600) {
+                this.canvasRenderOptions.scale = 2;
             }
             else {
-                this.canvasProps.options.scale = 3;
+                this.canvasRenderOptions.scale = 3;
             }
         }
         else {
 
-            if (this.canvasProps.viewportSize.width <= 600) {
-                this.canvasProps.options.scale = 1;
+            if (window.innerWidth <= 600) {
+                this.canvasRenderOptions.scale = 1;
             }
-            else if (this.canvasProps.viewportSize.width <= 1024) {
-                this.canvasProps.options.scale = 2;
+            else if (window.innerWidth <= 1024) {
+                this.canvasRenderOptions.scale = 2;
             }
             else {
-                this.canvasProps.options.scale = 3
+                this.canvasRenderOptions.scale = 3;
             }
         }
 
-        if (this.canvasProps.is2DSymbology) {
+        if (this.is2DSymbology) {
             const size = 30;
-            this.canvasProps.options.width = size;
-            this.canvasProps.options.height = size;
+            this.canvasRenderOptions.width = size;
+            this.canvasRenderOptions.height = size;
         }
         else {
-            this.canvasProps.options.width = 60;
-            this.canvasProps.options.height = 20;
+            this.canvasRenderOptions.width = 60;
+            this.canvasRenderOptions.height = 20;
         }
 
     }
 
-    drawBarcodeToCanvas = () => {
+    drawBarcodeToCanvas = (): void => {
 
-        // const canvas = document.getElementById("barcode-image-canvas");
         const canvas = this.canvasRef.current;
 
         if (!canvas) {
@@ -139,46 +106,37 @@ export default class BarcodeImageModalView extends Component {
             return;
         }
 
-        const barcodeText = this.props.barcode.barcode;
-
-        if (!barcodeText) {
-            console.error(
-                "Barcode text is empty"
+        try {
+            bwipjs.toCanvas(
+                canvas,
+                this.canvasRenderOptions
             );
-            return;
+
+        } catch (error) {
+            console.error(
+                "Error drawing barcode to canvas:", error
+            );
+
         }
 
-        bwipjs.toCanvas(
-            canvas,
-            this.canvasProps.options,
-            (error, canvas) => {
-                if (error) {
-                    console.error(
-                        `Error drawing barcode "${barcodeText}" to canvas: ${error}`
-                    );
-                }
-                else {
-                    console.log(
-                        `Barcode drawn to canvas: "${barcodeText}"`
-                    );
-                }
-            }
-        );
 
     };
 
-    afterOpenGenerateBarcodeModal = () => {
+    /**
+     * Called after the Modal view for this component is opened.
+     */
+    afterOpenGenerateBarcodeModal = (): void => {
         console.log(
             "Generate Barcode Modal is now open"
         );
         this.drawBarcodeToCanvas();
     };
 
-    closeGenerateBarcodeModal = () => {
+    closeGenerateBarcodeModal = (): void => {
         this.props.closeGenerateBarcodeModal();
     };
 
-    formattedBarcodeText() {
+    formattedBarcodeText(): string {
         let barcodeText = this.props?.barcode?.barcode;
 
         if (!barcodeText) {
@@ -198,9 +156,9 @@ export default class BarcodeImageModalView extends Component {
 
     }
 
-    render() {
+    override render(): JSX.Element {
         let header;
-        if (this.canvasProps.is2DSymbology) {
+        if (this.is2DSymbology) {
             header = (
                 <h3
                     className="text-break"
@@ -222,7 +180,17 @@ export default class BarcodeImageModalView extends Component {
                 isOpen={this.props.generateBarcodeModalIsOpen}
                 onAfterOpen={this.afterOpenGenerateBarcodeModal}
                 onRequestClose={this.closeGenerateBarcodeModal}
-                style={this.customStyles}
+                style={{
+                    content: {
+                        top: "50%",
+                        left: "50%",
+                        right: "auto",
+                        bottom: "auto",
+                        transform: "translate(-50%, -50%)",
+                        maxWidth: "90vw",
+                        maxHeight: "80vh",
+                    }
+                }}
                 contentLabel="Barcode"
             >
                 <div
