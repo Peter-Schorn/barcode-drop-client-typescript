@@ -27,6 +27,9 @@ export default function HomeView(): JSX.Element {
 
     const [user, setUser] = useState("");
 
+    // Whether or not the form has been validated
+    const [validated, setValidated] = useState(false);
+
     const usernameFormBackground: CSSProperties = {
         background: "linear-gradient(to right, rgba(0, 210, 255, 0.9), rgba(58, 123, 213, 0.9))",
         // background: "rgb(0, 0, 0)"
@@ -39,10 +42,22 @@ export default function HomeView(): JSX.Element {
     function onSubmitForm(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
         console.log(`HomeView.onSubmitForm(): user: "${user}"`);
-        void navigate(`/scans/${user}`);
+
+        // Validate the form
+        const form = event.currentTarget;
+
+        if (form.checkValidity()) {
+            void navigate(`/scans/${user}`);
+        }
+
+        setValidated(true);
+
     }
 
-    function handleUserInputChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    function handleUserInputChange(
+        event: React.ChangeEvent<HTMLInputElement>
+    ): void {
+
         console.log(
             "HomeView.handleFormChange() event.target.value: " +
             `"${event.target.value}"`
@@ -62,12 +77,16 @@ export default function HomeView(): JSX.Element {
             >
                 <Form
                     className="username-form p-5 rounded text-center shine"
-                    onSubmit={onSubmitForm}
                     style={usernameFormBackground}
+                    onSubmit={onSubmitForm}
+                    noValidate
+                    validated={validated}
                 >
-                    <Form.Group className="" controlId="userForm.userInput">
+                    <Form.Group
+                        controlId="HomeView-username"
+                    >
                         <Form.Label>
-                            <h2 className=" mb-3"> Enter Your Username</h2>
+                            <h2 className="mb-3"> Enter Your Username</h2>
                         </Form.Label>
 
                         <Form.Control
@@ -77,8 +96,17 @@ export default function HomeView(): JSX.Element {
                             size="lg"
                             type="text"
                             placeholder=""
+                            value={user}
                             onChange={handleUserInputChange}
+                            required // requires a value
                         />
+
+                        <Form.Control.Feedback type="invalid">
+                            <strong>
+                                Please enter a username.
+                            </strong>
+                        </Form.Control.Feedback>
+
                     </Form.Group>
                     <Button
                         className="mt-4"
