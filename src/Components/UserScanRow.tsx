@@ -56,8 +56,7 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
 
         this.intervalID = undefined;
 
-        const date = new Date(this.props.barcode.scanned_at);
-        this.formattedDateString = date.toLocaleString();
+        this.formattedDateString = this.props.barcode.scanned_at.toLocaleString();
 
         const dateDifference = this.dateDifferenceFromNow(
             this.props.barcode.scanned_at
@@ -106,11 +105,10 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
      * Returns a string representing the difference between the current date
      * and the date passed in.
      */
-    dateDifferenceFromNow(dateString: string): string {
+    dateDifferenceFromNow(date: Date): string {
 
         const now = new Date();
-        const then = new Date(dateString);  // date passed in
-        const diffMS = now.getTime() - then.getTime();
+        const diffMS = now.getTime() - date.getTime();
         const diffSecs = Math.floor(diffMS / 1_000);
 
         if (diffSecs <= 3) {

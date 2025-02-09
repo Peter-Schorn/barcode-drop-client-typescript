@@ -6,7 +6,7 @@
  */
 export type ScannedBarcodeResponse = {
     id: string;
-    scanned_at: string;
+    scanned_at: Date;
     barcode: string;
     username: string;
 };

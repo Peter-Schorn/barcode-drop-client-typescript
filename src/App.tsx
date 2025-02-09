@@ -22,7 +22,7 @@ export default class App extends Component {
 
     static override contextType = AppContext;
 
-    constructor(props: any) {
+    constructor(props: Record<string, never>) {
         super(props);
 
         const api = new Backend();

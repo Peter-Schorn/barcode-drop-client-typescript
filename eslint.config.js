@@ -7,6 +7,7 @@ import tseslint from "typescript-eslint";
 import stylistic from "@stylistic/eslint-plugin";
 import jsdoc from "eslint-plugin-jsdoc";
 import * as importPlugin from "eslint-plugin-import";
+import sonarjs from "eslint-plugin-sonarjs";
 import "eslint-import-resolver-typescript";
 
 export default tseslint.config(
@@ -36,7 +37,8 @@ export default tseslint.config(
             "@typescript-eslint": tseslint.plugin,
             "@stylistic": stylistic,
             "jsdoc": jsdoc,
-            "import": importPlugin
+            "import": importPlugin,
+            "sonarjs": sonarjs,
         },
         files: [
             "**/*.{ts,tsx,js}",
@@ -145,11 +147,15 @@ export default tseslint.config(
                 requireDefaultForNonUnion: true
             }],
 
+            // do not allow ignoring the return value of a function
+            // https://sonarsource.github.io/rspec/#/rspec/S2201/javascript
+            "sonarjs/no-ignored-return": "error",
+
             // TODO: might want to reenable these
-            "@typescript-eslint/no-unsafe-member-access": "off",
-            "@typescript-eslint/no-unsafe-assignment": "off",
-            "@typescript-eslint/no-unsafe-call": "off",
-            "@typescript-eslint/no-unsafe-argument": "off",
+            // "@typescript-eslint/no-unsafe-member-access": "off",
+            // "@typescript-eslint/no-unsafe-assignment": "off",
+            // "@typescript-eslint/no-unsafe-call": "off",
+            // "@typescript-eslint/no-unsafe-argument": "off",
 
             // probably should stay off
             "@typescript-eslint/no-explicit-any": "off",
@@ -157,4 +163,12 @@ export default tseslint.config(
 
         },
     },
+    // Disables rules for the config file itself
+    {
+        files: ["eslint.config.js"],
+        rules: {
+            "@typescript-eslint/no-unsafe-assignment": "off",
+            "@typescript-eslint/no-unsafe-member-access": "off",
+        }
+    }
 );

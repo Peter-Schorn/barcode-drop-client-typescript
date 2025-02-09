@@ -1,9 +1,13 @@
-import { type Method } from "axios";
+import {
+    type Method,
+    type AxiosResponseTransformer
+} from "axios";
 
 /** The options for `Backend.prototype._get` */
 export type GetRequestOptions = {
     queryParams?: Record<string, string>;
     headers?: Record<string, string>;
+    responseTransformer?: AxiosResponseTransformer;
 };
 
 /** The options for `Backend.prototype._apiRequest` */
@@ -13,6 +17,7 @@ export type APIRequestOptions = {
     queryParams?: Record<string, string>;
     body?: any;
     headers?: Record<string, string>;
+    responseTransformer?: AxiosResponseTransformer;
 };
 
 /** The options for `Backend.prototype.deleteUserScans` */

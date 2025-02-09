@@ -8,7 +8,7 @@ import {
     type DeleteUserScansOptions,
     type ScanBarcodeOptions
 } from "../types/Backend.ts";
-
+import { scannedBarcodesReviver } from "../Model/parsing.ts";
 
 export class Backend {
 
@@ -28,8 +28,11 @@ export class Backend {
      */
     async getUserScans(user: string): Promise<ScannedBarcodesResponse> {
         return await this._get(
-            `/scans/${user}`
-        ) as ScannedBarcodesResponse;
+            `/scans/${user}`, {
+            responseTransformer: (data: string): any => {
+                return JSON.parse(data, scannedBarcodesReviver);
+            }
+        }) as ScannedBarcodesResponse;
     }
 
     /**
@@ -141,14 +144,16 @@ export class Backend {
         path: string,
         {
             queryParams,
-            headers
+            headers,
+            responseTransformer
         }: GetRequestOptions = {}
     ): Promise<any> {
         return await this._apiRequest({
             method: "GET",
             path: path,
             queryParams: queryParams,
-            headers: headers
+            headers: headers,
+            responseTransformer: responseTransformer
         });
     }
 
@@ -157,7 +162,8 @@ export class Backend {
         path,
         queryParams,
         body,
-        headers
+        headers,
+        responseTransformer
     }: APIRequestOptions): Promise<any> {
 
         const response = await this.httpClient.request({
@@ -166,9 +172,12 @@ export class Backend {
             url: path,
             headers: headers,
             params: queryParams,
-            data: body
+            data: body as unknown,
+            transformResponse: responseTransformer
         });
+
         return response.data;
+
     }
 
 }
