@@ -27,7 +27,7 @@ export class Backend {
      * @returns an array of scan objects in JSON format
      */
     async getUserScans(user: string): Promise<ScannedBarcodesResponse> {
-        return await this._get(
+        return await this.get(
             `/scans/${user}`, {
             responseTransformer: (data: string): any => {
                 return JSON.parse(data, scannedBarcodesReviver);
@@ -52,7 +52,7 @@ export class Backend {
         }: ScanBarcodeOptions
     ): Promise<string> {
 
-        return await this._apiRequest({
+        return await this.apiRequest({
             method: "POST",
             path: `/scan/${user}`,
             body: {
@@ -69,7 +69,7 @@ export class Backend {
      * @returns the response from the server
      */
     async deleteScans(scanIds: string[]): Promise<void> {
-        return await this._apiRequest({
+        return await this.apiRequest({
             method: "DELETE",
             path: "/scans",
             body: {
@@ -96,7 +96,7 @@ export class Backend {
     ): Promise<void> {
         // !olderThan returns false for 0
         if (olderThan !== undefined) {
-            return await this._apiRequest({
+            return await this.apiRequest({
                 method: "DELETE",
                 path: `/scans/${user}/older`,
                 queryParams: {
@@ -105,7 +105,7 @@ export class Backend {
             }) as void;
         }
         else {
-            return await this._apiRequest({
+            return await this.apiRequest({
                 method: "DELETE",
                 path: `/scans/${user}`
             }) as void;
@@ -119,7 +119,7 @@ export class Backend {
      * @returns an array of splash text objects in JSON format
      */
     async getSplashTexts(): Promise<any> {
-        return await this._get(
+        return await this.get(
             "/splash-text",
         );
     }
@@ -140,7 +140,7 @@ export class Backend {
 
     // MARK: Wrappers
 
-    async _get(
+    private async get(
         path: string,
         {
             queryParams,
@@ -148,7 +148,7 @@ export class Backend {
             responseTransformer
         }: GetRequestOptions = {}
     ): Promise<any> {
-        return await this._apiRequest({
+        return await this.apiRequest({
             method: "GET",
             path: path,
             queryParams: queryParams,
@@ -157,7 +157,7 @@ export class Backend {
         });
     }
 
-    async _apiRequest({
+    private async apiRequest({
         method,
         path,
         queryParams,
