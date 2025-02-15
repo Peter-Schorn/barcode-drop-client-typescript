@@ -76,7 +76,7 @@ export default tseslint.config(
                 forbid: [">", "\\", "}"]
             }],
 
-            "react-hooks/exhaustive-deps": "off",
+            // "react-hooks/exhaustive-deps": "off",
 
             "jsdoc/require-jsdoc": "off",
             "jsdoc/tag-lines": "off",
@@ -103,7 +103,8 @@ export default tseslint.config(
             "prefer-const": "error",
             "@typescript-eslint/no-unused-vars": ["warn", {
                 varsIgnorePattern: "^_+$",
-                argsIgnorePattern: "^_+$"
+                argsIgnorePattern: "^_+$",
+                ignoreRestSiblings: true
             }],
             eqeqeq: "error",
             "no-unreachable": "warn",

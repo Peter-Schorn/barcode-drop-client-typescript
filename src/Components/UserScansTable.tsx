@@ -2,7 +2,7 @@ import React, { type JSX } from "react";
 
 import { Table } from "react-bootstrap";
 
-import UserScansRow from "./UserScanRow";
+import { UserScansRow } from "./UserScanRow";
 
 import {
     type ScannedBarcodeResponse,
@@ -10,16 +10,12 @@ import {
 } from "../types/ScannedBarcodesResponse";
 
 import { type ViewportSize } from "../types/ViewportSize";
-import { type UserScansRootRouter } from "../types/UserScansRootRouter";
 
 type UserScansTableProps = {
     barcodes: ScannedBarcodesResponse;
     user: string;
     highlightedBarcode: ScannedBarcodeResponse | null;
     viewportSize: ViewportSize;
-    // TODO: Don't pass router down through the component tree.
-    // TODO: Use `useParams` and `useSearchParams` instead.
-    router: UserScansRootRouter;
     removeBarcodesFromState: (barcodeIDs: Set<string>) => void;
     setHighlightedBarcode: (barcode: ScannedBarcodeResponse) => void;
     onClickOpenLink: (url: ScannedBarcodeResponse) => void;
@@ -70,7 +66,6 @@ export default function UserScansTable(props: UserScansTableProps): JSX.Element 
                         user={props.user}
                         viewportSize={props.viewportSize}
                         isHighlighted={barcodeIsHighlighted(barcode)}
-                        router={props.router}
                         removeBarcodesFromState={
                             props.removeBarcodesFromState
                         }

@@ -1,19 +1,28 @@
-import React, { type CSSProperties, type JSX } from "react";
-import { Component } from "react";
+import React, {
+    useState,
+    useEffect,
+    useContext,
+    // useCallback,
+    type CSSProperties,
+    type JSX,
+    type ReactNode
+} from "react";
+
+import { useSearchParams } from "react-router-dom";
 
 import { AppContext } from "../Model/AppContext";
 
 import { Button, Dropdown, Stack } from "react-bootstrap";
 
-import { setIntervalImmediately } from "../MiscellaneousUtilities";
+import {
+    dateDifferenceFromNow
+ } from "../MiscellaneousUtilities";
 
 import { BarcodeImageModalView } from "./BarcodeImageModalView";
 
 import {
     type ScannedBarcodeResponse
 } from "../types/ScannedBarcodesResponse";
-
-import { type UserScansRootRouter } from "../types/UserScansRootRouter";
 
 import { type ViewportSize } from "../types/ViewportSize";
 
@@ -23,155 +32,65 @@ type UserScansRowProps = {
     user: string;
     viewportSize: ViewportSize;
     isHighlighted: boolean;
-    // TODO: Don't pass router down through the component tree.
-    // TODO: Use `useParams` and `useSearchParams` instead.
-    router: UserScansRootRouter;
     removeBarcodesFromState: (barcodeIDs: Set<string>) => void;
     setHighlightedBarcode: (barcode: ScannedBarcodeResponse) => void;
     onClickOpenLink: (url: ScannedBarcodeResponse) => void;
 };
 
-type UserScansRowState = {
-    dateDifference: string;
-    generateBarcodeModalIsOpen: boolean;
-    isCopying: boolean;
-};
+export function UserScansRow(props: UserScansRowProps): JSX.Element {
 
-export default class UserScansRow extends Component<UserScansRowProps, UserScansRowState> {
+    const context = useContext(AppContext);
 
-    static override contextType = AppContext;
+    const [searchParams, _] = useSearchParams();
 
-    declare context: React.ContextType<typeof AppContext>;
+    const [dateDifference, setDateDifference] = useState(
+        dateDifferenceFromNow(props.barcode.scanned_at)
+    );
 
-    // can't use `null` because `clearInterval` takes `number | undefined`
-    intervalID: number | undefined;
+    const [
+        generateBarcodeModalIsOpen,
+        setGenerateBarcodeModalIsOpen
+    ] = useState(false);
+
+    const [isCopying, setIsCopying] = useState(false);
+
 
     /**
      * A formatted string representing the date the barcode was scanned.
      */
-    formattedDateString: string;
+    const formattedDateString = props.barcode.scanned_at.toLocaleString();
 
-    constructor(props: UserScansRowProps) {
-        super(props);
+    useEffect(() => {
 
-        this.intervalID = undefined;
+        console.log("UserScansRow: useEffect(): begin");
 
-        this.formattedDateString = this.props.barcode.scanned_at.toLocaleString();
+        function updateDateDifference(): void {
+            console.log("UserScansRow: updateDateDifference()");
+            const dateDifference = dateDifferenceFromNow(
+                props.barcode.scanned_at
+            );
+            setDateDifference(dateDifference);
+        }
 
-        const dateDifference = this.dateDifferenceFromNow(
-            this.props.barcode.scanned_at
-        );
-
-        this.state = {
-            dateDifference: dateDifference,
-            generateBarcodeModalIsOpen: false,
-            isCopying: false
-        };
-
-    }
-
-    override componentDidMount(): void {
-        this.intervalID = setIntervalImmediately(
-            () => this.tick(),
+        const intervalID = setInterval(
+            updateDateDifference,
             5_000
         );
-    }
 
-    override componentWillUnmount(): void {
-        clearInterval(this.intervalID);
-    }
+        return (): void => {
+            console.log("UserScansRow: useEffect(): cleanup");
+            clearInterval(intervalID);
+        };
 
-    tick = (): void => {
-        this.updateDateDifference();
-    };
+    }, [props.barcode.scanned_at]);
 
-    updateDateDifference = (): void => {
-        const dateDifference = this.dateDifferenceFromNow(
-            this.props.barcode.scanned_at
-        );
+    async function onClickCopyButton(): Promise<void> {
 
-        this.setState({
-            dateDifference: dateDifference
-        });
-    };
+        const barcodeText = props.barcode.barcode;
 
-    rowStyleClassName(): string {
-        // TODO: figure out why table variants cover borders
-        // return this.props.index === 0 ? "table-success" : "";
-        return "";
-    }
-
-    /**
-     * Returns a string representing the difference between the current date
-     * and the date passed in.
-     */
-    dateDifferenceFromNow(date: Date): string {
-
-        const now = new Date();
-        const diffMS = now.getTime() - date.getTime();
-        const diffSecs = Math.floor(diffMS / 1_000);
-
-        if (diffSecs <= 3) {
-            return "Just now";
-        }
-        if (diffSecs <= 10 /* 3 - 10 seconds */) {
-            return "About 5 seconds ago";
-        }
-        if (diffSecs <= 20 /* 10 - 20 seconds */) {
-            return "About 15 seconds ago";
-        }
-        if (diffSecs <= 45 /* 20 - 45 seconds */) {
-            return "About 30 seconds ago";
-        }
-        if (diffSecs <= 120 /* (2 minutes) 45 seconds - 2 minutes */) {
-            return "About a minute ago";
-        }
-        if (diffSecs <= 300 /* (5 minutes) 2 - 5 minutes */) {
-            return "A few minutes ago";
-        }
-        if (diffSecs <= 600 /* (10 minutes) 5 - 10 minutes */) {
-            return "About 5 minutes ago";
-        }
-        if (diffSecs <= 900 /* (15 minutes) 10 - 15 minutes */) {
-            return "About 10 minutes ago";
-        }
-        if (diffSecs <= 1_800 /* (30 minutes) 15 - 30 minutes */) {
-            return "About 15 minutes ago";
-        }
-        if (diffSecs <= 3_600 /* (1 hours) 30 minutes - 1 hour */) {
-            return "About 30 minutes ago";
-        }
-        if (diffSecs <= 7_200 /* (2 hours) 1 - 2 hours */) {
-            return "About an hour ago";
-        }
-        if (diffSecs <= 14_400 /* (4 hours) 2 - 4 hours */) {
-            return "About two hours ago";
-        }
-        if (diffSecs <= 21_600 /* (6 hours) 4 - 6 hours */) {
-            return "About four hours ago";
-        }
-        if (diffSecs <= 86_400 /* (24 hours) 6 - 24 hours */) {
-            return "More than six hours ago";
-        }
-
-        // > 24 hours
-        return "More than one day ago";
-
-    }
-
-    onClickCopyButton = async (): Promise<void> => {
-
-        const barcodeText = this.props.barcode.barcode;
-
-        this.setState({
-            isCopying: true
-        });
+        setIsCopying(true);
 
         try {
-            // TODO: Use UserScansRootCore._writeBarcodeToClipboard instead
-            // TODO: of duplicating the logic here.
-            // one difference in this method is that it uses the `isCopying`
-            // state variable to animate the position of the copy button.
 
             await navigator.clipboard.writeText(barcodeText);
             // throw new Error("Test cannot copy to clipboard");
@@ -180,11 +99,9 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
                 "UserScansRow: Copied barcode to clipboard: " +
                 `"${barcodeText}"`
             );
-            this.props.setHighlightedBarcode(this.props.barcode);
+            props.setHighlightedBarcode(props.barcode);
             setTimeout(() => {
-                this.setState({
-                    isCopying: false
-                });
+                setIsCopying(false);
             }, 250);
 
         } catch (error) {
@@ -192,22 +109,20 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
                 "UserScansRow: Error copying barcode to clipboard: " +
                 `"${barcodeText}": ${error}`
             );
-            this.setState({
-                isCopying: false
-            });
+            setIsCopying(false);
         }
 
-    };
+    }
 
-    onClickDeleteButton = async (): Promise<void> => {
+    async function onClickDeleteButton(): Promise<void> {
 
-        const barcodeID = this.props.barcode.id;
-        this.props.removeBarcodesFromState(new Set([barcodeID]));
+        const barcodeID = props.barcode.id;
+        props.removeBarcodesFromState(new Set([barcodeID]));
 
-        const barcodeString = JSON.stringify(this.props.barcode);
+        const barcodeString = JSON.stringify(props.barcode);
 
         try {
-            const result = await this.context.api!.deleteScans([barcodeID]);
+            const result = await context.api!.deleteScans([barcodeID]);
             console.log(
                 `Delete barcode ${barcodeString} result: ${result}`
             );
@@ -217,28 +132,22 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
             );
         }
 
-    };
+    }
 
-    didClickGenerateBarcode = (): void => {
-        this.setState({
-            generateBarcodeModalIsOpen: true
-        });
-    };
+    function didClickGenerateBarcode(): void {
+        setGenerateBarcodeModalIsOpen(true);
+    }
 
-    closeGenerateBarcodeModal = (): void => {
-        this.setState({
-            generateBarcodeModalIsOpen: false
-        });
+    function closeGenerateBarcodeModal(): void {
+        setGenerateBarcodeModalIsOpen(false);
         console.log(
             "Generate Barcode Modal is now closed"
         );
-    };
+    }
 
-    copyButtonStyle(): CSSProperties {
-        const isHighlighted = this.props.isHighlighted;
+    function copyButtonStyle(): CSSProperties {
         return {
-            backgroundColor: isHighlighted ? "#0fd626" : "lightblue",
-
+            backgroundColor: props.isHighlighted ? "#0fd626" : "lightblue",
             padding: "6px 15px",
             margin: "0px 0px 0px 0px",
             borderTop: "1px solid black",
@@ -251,36 +160,23 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
             // borderLeft: isHighlighted ? "1px solid green" : "1px solid",
             // borderTop: isHighlighted ? "1px solid green" : "1px solid",
             // borderBottom: isHighlighted ? "1px solid green" : "1px solid",
-            transform: this.state.isCopying ? "translateY(3px)" : undefined,
+            transform: isCopying ? "translateY(3px)" : undefined,
             transition: "all 0.5s ease-out"
         };
     }
 
-    linkButtonStyle(): CSSProperties {
-        return {
-            padding: "6px 10px",
-            margin: "0px 0px 0px 0px",
-            color: "black",
-            backgroundColor: "grey",
-            borderTop: "1px solid black",
-            borderBottom: "1px solid black",
-            borderLeft: "0.5px solid black",
-            borderRight: "1px solid black",
-            borderRadius: "0px 5px 5px 0px"
-        };
-    }
+    // MARK: - Components -
 
-    barcodeIDdebugText(smallSize: boolean): JSX.Element | null {
-        const queryParams = this.props.router.searchParams;
+    function barcodeIDdebugText(smallSize: boolean): ReactNode {
 
-        if (queryParams.get("debug") === "true") {
+        if (searchParams.get("debug") === "true") {
             return (
                 <span
                     className="text-secondary"
                     style={{ fontSize: "12px" }}
                 >
                     {smallSize ? "•" : null}
-                    {` (${this.props.barcode.id})`}
+                    {` (${props.barcode.id})`}
                 </span>
             );
         }
@@ -290,28 +186,24 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
 
     }
 
-    // MARK: - Barcode Image Modal -
-
-    // MARK: - Components -
-
-    renderDeleteButton(): JSX.Element {
+    function renderDeleteButton(): JSX.Element {
         return (
             <Button
                 style={{
                     margin: "5px 5px",
                     backgroundColor: "#e84846"
                 }}
-                onClick={this.onClickDeleteButton}
+                onClick={onClickDeleteButton}
             >
                 <i className="fa fa-trash"></i>
             </Button>
         );
     }
 
-    renderBarcodeCell(): JSX.Element {
+    function renderBarcodeCell(): JSX.Element {
 
         let smallSize = false;
-        if (this.props.viewportSize.width <= 600) {
+        if (props.viewportSize.width <= 600) {
             smallSize = true;
         }
 
@@ -320,7 +212,7 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
                 <span
                     className="barcode-text line display-linebreaks text-break"
                 >
-                    {this.props.barcode.barcode}
+                    {props.barcode.barcode}
                 </span>
                 {smallSize ? (
                     // <div>
@@ -331,17 +223,17 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
                         }}
                     >
                         {"• "}
-                        {this.state.dateDifference}
+                        {dateDifference}
                     </span>
                     // </div>
                 ) : null}
                 {/* --- BARCODE ID --- */}
-                {this.barcodeIDdebugText(smallSize)}
+                {barcodeIDdebugText(smallSize)}
             </td>
         );
     }
 
-    renderDropdownMenu(): JSX.Element {
+    function renderDropdownMenu(): JSX.Element {
         return (
             <Dropdown className="ms-1">
                 <Dropdown.Toggle variant="success" className="text-center">
@@ -350,7 +242,7 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
 
                 <Dropdown.Menu>
                     <Dropdown.Item
-                        onClick={this.didClickGenerateBarcode}
+                        onClick={didClickGenerateBarcode}
                         style={{
                             color: "#076b05"
                         }}
@@ -375,7 +267,7 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
                             // color: "white",
                             // backgroundColor: "#ed432d"
                         }}
-                        onClick={this.onClickDeleteButton}
+                        onClick={onClickDeleteButton}
                     >
                         <div
                             className="hstack gap-3"
@@ -400,96 +292,104 @@ export default class UserScansRow extends Component<UserScansRowProps, UserScans
         );
     }
 
+    return (
+        <tr
+            data-barcode-id={props.barcode.id}
+            key={props.barcode.id}
+        >
+            {/* {this.renderBarcodeImageModal()} */}
 
-    override render(): JSX.Element {
-        return (
-            <tr
-                data-barcode-id={this.props.barcode.id}
-                key={this.props.barcode.id}
-                className={this.rowStyleClassName()}
-            >
-                {/* {this.renderBarcodeImageModal()} */}
+            <BarcodeImageModalView
+                barcode={props.barcode}
+                generateBarcodeModalIsOpen={generateBarcodeModalIsOpen}
+                closeGenerateBarcodeModal={closeGenerateBarcodeModal}
+            />
 
-                <BarcodeImageModalView
-                    barcode={this.props.barcode}
-                    generateBarcodeModalIsOpen={this.state.generateBarcodeModalIsOpen}
-                    closeGenerateBarcodeModal={this.closeGenerateBarcodeModal}
-                />
+            <td style={{
+                textAlign: "center",
+                // minWidth: "120px",
+                // maxHeight: "10px"
+                // height: "20px"
+                // margin: "2px !important",
+                // padding: "2px !important"
+            }}>
 
-                <td style={{
-                    textAlign: "center",
-                    // minWidth: "120px",
-                    // maxHeight: "10px"
-                    // height: "20px"
-                    // margin: "2px !important",
-                    // padding: "2px !important"
-                }}>
-
-                    <Stack
-                        direction="horizontal"
-                        className=""
-                        gap={0}
+                <Stack
+                    direction="horizontal"
+                    className=""
+                    gap={0}
+                >
+                    {/* --- Copy Button --- */}
+                    <button
+                        // variant=""
+                        className="copy-button"
+                        style={copyButtonStyle()}
+                        onClick={onClickCopyButton}
                     >
-                        {/* --- Copy Button --- */}
-                        <button
-                            // variant=""
-                            className="copy-button"
-                            style={this.copyButtonStyle()}
-                            onClick={this.onClickCopyButton}
-                        >
-                            {/* span>Copy</span> */}
-                            <i className="fa-solid fa-copy"></i>
-                        </button>
-                        {/* --- Link Button --- */}
-                        <button
-                            className="link-button"
-                            onClick={() => {
-                                return this.props.onClickOpenLink(
-                                    this.props.barcode
-                                );
-                            }}
-                            style={this.linkButtonStyle()}
-                        >
-                            <i className="fa fa-link"></i>
-                        </button>
+                        {/* span>Copy</span> */}
+                        <i className="fa-solid fa-copy"></i>
+                    </button>
+                    {/* --- Link Button --- */}
+                    <button
+                        className="link-button"
+                        onClick={() => {
+                            return props.onClickOpenLink(
+                                props.barcode
+                            );
+                        }}
+                        style={{
+                            padding: "6px 10px",
+                            margin: "0px 0px 0px 0px",
+                            color: "black",
+                            backgroundColor: "grey",
+                            borderTop: "1px solid black",
+                            borderBottom: "1px solid black",
+                            borderLeft: "0.5px solid black",
+                            borderRight: "1px solid black",
+                            borderRadius: "0px 5px 5px 0px"
+                        }}
+                    >
+                        <i className="fa fa-link"></i>
+                    </button>
 
-                        {this.renderDropdownMenu()}
+                    {renderDropdownMenu()}
 
-                    </Stack>
-                    {/* --- Barcode Image Modal --- */}
-                </td>
-                {/* --- Barcode Cell --- */}
-                {this.renderBarcodeCell()}
-                {/* --- Time Cell (>600px) --- */}
-                {
-                    this.props.viewportSize?.width > 600 ? (
-                        <td
-                            data-toggle="tooltip"
-                            data-placement="top"
-                            title={this.formattedDateString}
-                        >
-                            {this.state.dateDifference}
-                        </td>
-                    ) : null
-                }
+                </Stack>
+                {/* --- Barcode Image Modal --- */}
+            </td>
+            {/* --- Barcode Cell --- */}
+            {renderBarcodeCell()}
+            {/* --- Time Cell (>600px) --- */}
+            {
+                props.viewportSize?.width > 600 ? (
+                    <td
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title={formattedDateString}
+                    >
+                        {dateDifference}
+                    </td>
+                ) : null
+            }
 
-                {/* --- Delete Button (>800px) --- */}
-                {
-                    this.props.viewportSize?.width > 800 ? (
-                        <td
-                            style={{
-                                textAlign: "center",
-                            }}
-                            data-toggle="tooltip"
-                            data-placement="top"
-                            title="Delete this barcode"
-                        >
-                            {this.renderDeleteButton()}
-                        </td>
-                    ) : null
-                }
-            </tr>
-        );
-    }
+            {/* --- Delete Button (>800px) --- */}
+            {
+                props.viewportSize?.width > 800 ? (
+                    <td
+                        style={{
+                            textAlign: "center",
+                        }}
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title="Delete this barcode"
+                    >
+                        {/* TODO: ternary for viewport size should be within
+                        renderDeleteButton */}
+                        {renderDeleteButton()}
+                    </td>
+                ) : null
+            }
+        </tr>
+    );
 
 }

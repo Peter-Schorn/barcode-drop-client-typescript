@@ -2,7 +2,7 @@ import React, {
     type JSX,
     Component,
 } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 import { AppContext } from "../Model/AppContext";
 
@@ -43,26 +43,18 @@ import {
 
 import { type ViewportSize } from "../types/ViewportSize.ts";
 import { type UserScansRootParams } from "../types/UserScansRootParams.ts";
-import { type UserScansRootRouter } from "../types/UserScansRootRouter.ts";
 
 import { scannedBarcodesReviver } from "../Model/parsing.ts";
 
 // MARK: path="/scans/:user"
 export default function UserScansRoot(): JSX.Element {
 
-    // https://reactrouter.com/en/main/start/faq#what-happened-to-withrouter-i-need-it
-
     const params = useParams<UserScansRootParams>();
-    const [searchParams, setSearchParams] = useSearchParams();
-    // const location = useLocation();
-    // const navigate = useNavigate();
 
     return (
         <UserScansRootCore
             router={{
-                params: params,
-                searchParams: searchParams,
-                setSearchParams: setSearchParams
+                params: params
             }}
         />
     );
@@ -76,7 +68,9 @@ type WriteBarcodeToClipboardOptions = {
 };
 
 type UserScansRootCoreProps = {
-    router: UserScansRootRouter;
+    router: {
+        params: Readonly<Partial<UserScansRootParams>>;
+    };
 };
 
 type UserScansRootCoreState = {
@@ -1623,7 +1617,6 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
                         user={this.user}
                         highlightedBarcode={this.state.highlightedBarcode}
                         viewportSize={this.state.viewportSize}
-                        router={this.props.router}
                         removeBarcodesFromState={
                             this.removeBarcodesFromState
                         }
