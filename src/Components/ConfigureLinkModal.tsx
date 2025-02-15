@@ -81,6 +81,8 @@ export function ConfigureLinkModal(
                             id="configure-link-input"
                             className="form-control"
                             type="text"
+                            // placeholder is required for floating label to
+                            // work
                             placeholder={exampleFormattedURL}
                             value={props.formattedLink ?? ""}
                             onChange={props.onChangeConfigureLinkInput}
