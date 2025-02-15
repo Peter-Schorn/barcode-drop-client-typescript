@@ -81,6 +81,7 @@ export function ConfigureLinkModal(
                             id="configure-link-input"
                             className="form-control"
                             type="text"
+                            placeholder={exampleFormattedURL}
                             value={props.formattedLink ?? ""}
                             onChange={props.onChangeConfigureLinkInput}
                         />
