@@ -36,7 +36,7 @@ type UserScansRowProps = {
     onClickOpenLink: (url: ScannedBarcodeResponse) => void;
 };
 
-export function UserScansRow(props: UserScansRowProps): JSX.Element {
+export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     const context = useContext(AppContext);
 

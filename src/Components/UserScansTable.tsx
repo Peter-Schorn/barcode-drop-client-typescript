@@ -2,7 +2,7 @@ import React, { type JSX } from "react";
 
 import { Table } from "react-bootstrap";
 
-import { UserScansRow } from "./UserScanRow";
+import { UserScanRow } from "./UserScanRow";
 
 import {
     type ScannedBarcodeResponse,
@@ -59,7 +59,7 @@ export default function UserScansTable(props: UserScansTableProps): JSX.Element 
                 {props.barcodes.map((barcode, index) =>
                     // TODO: These parameters could be passed automatically
                     // TODO: by the parent component via context.
-                    <UserScansRow
+                    <UserScanRow
                         key={barcode.id}
                         index={index}
                         barcode={barcode}
