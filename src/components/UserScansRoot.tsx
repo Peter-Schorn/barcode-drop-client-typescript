@@ -4,7 +4,7 @@ import React, {
 } from "react";
 import { useParams } from "react-router-dom";
 
-import { AppContext } from "../model/AppContext";
+import { AppContext } from "../model/AppContext.ts";
 
 import { Container, Button, Dropdown, Stack } from "react-bootstrap";
 // import Toast from 'react-bootstrap/Toast';
@@ -13,7 +13,7 @@ import { toast } from "react-hot-toast";
 // import csv from 'csv'
 import { stringify as csvStringify } from "csv-stringify/browser/esm/sync";
 
-import MainNavbar from "./MainNavbar";
+import MainNavbar from "./MainNavbar.tsx";
 // import UserScansTable from "./UserScansTable";
 
 import { WebSocket } from "partysocket";
@@ -29,9 +29,9 @@ import {
     prefixTitleWithDocumentHostIfPort,
     setToString
 } from "../utils/MiscellaneousUtilities.ts";
-import { SocketMessageTypes } from "../model/SocketMessageTypes";
+import { SocketMessageTypes } from "../model/SocketMessageTypes.ts";
 
-import UserScansTable from "./UserScansTable";
+import UserScansTable from "./UserScansTable.tsx";
 import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";
 import { UserScansToast } from "./UserScansToast.tsx";
 import { ScanBarcodeView } from "./ScanBarcodeView.tsx";
@@ -192,11 +192,12 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         clearTimeout(this.copyBarcodeAfterDelayTimeout);
 
         window.removeEventListener("hashchange", this.handleHashChange);
-        document.removeEventListener("focusin", this.handleFocusIn);
-        document.removeEventListener("focusout", this.handleFocusOut);
         document.removeEventListener("visibilitychange", this.handleVisibilityChange);
         document.removeEventListener("keydown", this.handleKeyDown);
         window.removeEventListener("resize", this.windowDidResize);
+
+        this.socket.current?.close();
+
     }
 
     override componentDidMount(): void {
@@ -208,8 +209,6 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         // MARK: Configure event listeners
 
         window.addEventListener("hashchange", this.handleHashChange);
-        document.addEventListener("focusin", this.handleFocusIn);
-        document.addEventListener("focusout", this.handleFocusOut);
         document.addEventListener("visibilitychange", this.handleVisibilityChange);
         document.addEventListener("keydown", this.handleKeyDown);
         window.addEventListener("resize", this.windowDidResize);
@@ -412,20 +411,6 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
 
         }
 
-    };
-
-    handleFocusOut = (/* e: FocusEvent */): void => {
-        // console.log(
-        //     "focusout: document does NOT have focus; " +
-        //     `visibility: ${document.visibilityState}`
-        // );
-    };
-
-    handleFocusIn = (/* e: FocusEvent */): void => {
-        // console.log(
-        //     "focusin: document has focus; " +
-        //     `visibility: ${document.visibilityState}`
-        // );
     };
 
     handleVisibilityChange = (/* e: Event */): void => {
