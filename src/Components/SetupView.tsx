@@ -1,7 +1,7 @@
 import { type JSX } from "react";
 import { Container } from "react-bootstrap";
 import MainNavbar from "./MainNavbar";
-import { prefixTitleWithDocumentHostIfPort } from "../MiscellaneousUtilities";
+import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities";
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";

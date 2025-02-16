@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import MainNavbar from "./MainNavbar";
 
-import { prefixTitleWithDocumentHostIfPort } from "../MiscellaneousUtilities.ts";
+import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities.ts";
 
 import barcodeDropBackground from "../assets/images/barcode_drop_background.svg";
 

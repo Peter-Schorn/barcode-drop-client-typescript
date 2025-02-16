@@ -28,7 +28,7 @@ import {
     isApplePlatform,
     prefixTitleWithDocumentHostIfPort,
     setToString
-} from "../MiscellaneousUtilities";
+} from "../utils/MiscellaneousUtilities.ts";
 import { SocketMessageTypes } from "../Model/SocketMessageTypes";
 
 import UserScansTable from "./UserScansTable";
@@ -44,7 +44,7 @@ import {
 import { type ViewportSize } from "../types/ViewportSize.ts";
 import { type UserScansRootParams } from "../types/UserScansRootParams.ts";
 
-import { scannedBarcodesReviver } from "../Model/parsing.ts";
+import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
 // MARK: path="/scans/:user"
 export default function UserScansRoot(): JSX.Element {

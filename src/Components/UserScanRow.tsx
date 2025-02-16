@@ -15,7 +15,7 @@ import { Button, Dropdown, Stack } from "react-bootstrap";
 
 import {
     dateDifferenceFromNow
-} from "../MiscellaneousUtilities";
+} from "../utils/MiscellaneousUtilities";
 
 import { BarcodeImageModalView } from "./BarcodeImageModalView";
 

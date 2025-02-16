@@ -8,7 +8,7 @@ import {
     type DeleteUserScansOptions,
     type ScanBarcodeOptions
 } from "../types/Backend.ts";
-import { scannedBarcodesReviver } from "../Model/parsing.ts";
+import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
 export class Backend {
 
