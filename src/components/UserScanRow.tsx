@@ -9,7 +9,7 @@ import React, {
 
 import { useSearchParams } from "react-router-dom";
 
-import { AppContext } from "../Model/AppContext";
+import { AppContext } from "../model/AppContext";
 
 import { Button, Dropdown, Stack } from "react-bootstrap";
 

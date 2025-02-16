@@ -1,13 +1,13 @@
 import { type JSX } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import HomeView from "./Components/HomeView.tsx";
-import UserScansRoot from "./Components/UserScansRoot.tsx";
-import SetupView from "./Components/SetupView.tsx";
+import HomeView from "./components/HomeView.tsx";
+import UserScansRoot from "./components/UserScansRoot.tsx";
+import SetupView from "./components/SetupView.tsx";
 
-import { AppContext } from "./Model/AppContext.ts";
+import { AppContext } from "./model/AppContext.ts";
 
-import { Backend } from "./API/Backend.ts";
+import { Backend } from "./api/Backend.ts";
 
 import Modal from "react-modal";
 

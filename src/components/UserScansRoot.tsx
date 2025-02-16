@@ -4,7 +4,7 @@ import React, {
 } from "react";
 import { useParams } from "react-router-dom";
 
-import { AppContext } from "../Model/AppContext";
+import { AppContext } from "../model/AppContext";
 
 import { Container, Button, Dropdown, Stack } from "react-bootstrap";
 // import Toast from 'react-bootstrap/Toast';
@@ -29,7 +29,7 @@ import {
     prefixTitleWithDocumentHostIfPort,
     setToString
 } from "../utils/MiscellaneousUtilities.ts";
-import { SocketMessageTypes } from "../Model/SocketMessageTypes";
+import { SocketMessageTypes } from "../model/SocketMessageTypes";
 
 import UserScansTable from "./UserScansTable";
 import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";

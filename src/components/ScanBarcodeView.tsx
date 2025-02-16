@@ -4,7 +4,7 @@ import React, {
     useState
 } from "react";
 
-import { AppContext } from "../Model/AppContext";
+import { AppContext } from "../model/AppContext";
 
 import { Form, InputGroup } from "react-bootstrap";
 

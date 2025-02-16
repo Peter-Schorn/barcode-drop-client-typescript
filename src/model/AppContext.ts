@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { type Backend } from "../API/Backend";
+import { type Backend } from "../api/Backend";
 
 export type AppContextType = {
     api?: Backend;

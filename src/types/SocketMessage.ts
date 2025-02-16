@@ -1,4 +1,4 @@
-import { type SocketMessageTypes } from "../Model/SocketMessageTypes";
+import { type SocketMessageTypes } from "../model/SocketMessageTypes";
 import { type ScannedBarcodesResponse } from "./ScannedBarcodesResponse";
 
 export interface UpsertScansSocketMessage {
