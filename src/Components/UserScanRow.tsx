@@ -2,7 +2,6 @@ import React, {
     useState,
     useEffect,
     useContext,
-    // useCallback,
     type CSSProperties,
     type JSX,
     type ReactNode
@@ -16,7 +15,7 @@ import { Button, Dropdown, Stack } from "react-bootstrap";
 
 import {
     dateDifferenceFromNow
- } from "../MiscellaneousUtilities";
+} from "../MiscellaneousUtilities";
 
 import { BarcodeImageModalView } from "./BarcodeImageModalView";
 
@@ -64,18 +63,13 @@ export function UserScansRow(props: UserScansRowProps): JSX.Element {
 
         console.log("UserScansRow: useEffect(): begin");
 
-        function updateDateDifference(): void {
+        const intervalID = setInterval(() => {
             console.log("UserScansRow: updateDateDifference()");
             const dateDifference = dateDifferenceFromNow(
                 props.barcode.scanned_at
             );
             setDateDifference(dateDifference);
-        }
-
-        const intervalID = setInterval(
-            updateDateDifference,
-            5_000
-        );
+        }, 5_000);
 
         return (): void => {
             console.log("UserScansRow: useEffect(): cleanup");
