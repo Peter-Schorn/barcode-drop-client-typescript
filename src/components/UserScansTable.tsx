@@ -41,10 +41,6 @@ export default function UserScansTable(props: UserScansTableProps): JSX.Element 
                     <th
                         style={{ width: "100px" }}
                     >
-                        {/* --- Primary Buttons --- */}
-                    {/* </th> */}
-                    {/* <th style={{ width: "100px" }}> */}
-                        {/* --- Context Menu --- */}
                     </th>
                     <th>Barcode</th>
                     { props.viewportSize.width > 600 ? (

@@ -146,11 +146,6 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         this.copyBarcodeAfterDelayTimeout = undefined;
         this.user = props.router.params.user!;
 
-        // MARK: Document Title
-        // TODO: Use HTML title element instead
-        const title = `Scans for ${this.user} | BarcodeDrop`;
-        document.title = prefixTitleWithDocumentHostIfPort(title);
-
         if (this.user) {
             console.log(
                 `UserScansRootCore.constructor(): user: ${this.user}`
@@ -869,11 +864,11 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
             });
 
         })
-            .catch((error) => {
-                console.error(
-                    `UserScansRootCore.getUserScans(): error: ${error}`
-                );
-            });
+        .catch((error) => {
+            console.error(
+                `UserScansRootCore.getUserScans(): error: ${error}`
+            );
+        });
 
     };
 
@@ -1495,7 +1490,11 @@ class UserScansRootCore extends Component<UserScansRootCoreProps, UserScansRootC
         return (
             <div className="vw-100 vh-100">
 
-                <div dangerouslySetInnerHTML={{ __html: `<!-- fetch("https://api.barcodedrop.com/scan/${this.user}?barcode=barcode", { method: "POST" }) -->` }} />
+                <title>
+                    {prefixTitleWithDocumentHostIfPort(
+                        `Scans for ${this.user} | BarcodeDrop`
+                    )}
+                </title>
 
                 {/* if (process.env?.NODE_ENV === "development") {
                     <DebugBreakpointView />
