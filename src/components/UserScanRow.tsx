@@ -61,10 +61,10 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     useEffect(() => {
 
-        console.log("UserScansRow: useEffect(): begin");
+        // console.log("UserScansRow: useEffect(): begin");
 
         const intervalID = setInterval(() => {
-            console.log("UserScansRow: updateDateDifference()");
+            // console.log("UserScansRow: updateDateDifference()");
             const dateDifference = dateDifferenceFromNow(
                 props.barcode.scanned_at
             );
@@ -72,7 +72,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
         }, 5_000);
 
         return (): void => {
-            console.log("UserScansRow: useEffect(): cleanup");
+            // console.log("UserScansRow: useEffect(): cleanup");
             clearInterval(intervalID);
         };
 
