@@ -2,7 +2,7 @@ import { type JSX } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import HomeView from "./components/HomeView.tsx";
-import { UserScansRootNew } from "./components/UserScansRoot.tsx";
+import { UserScansRoot } from "./components/UserScansRoot.tsx";
 import SetupView from "./components/SetupView.tsx";
 
 import { AppContext } from "./model/AppContext.ts";
@@ -39,7 +39,7 @@ export function App(): JSX.Element {
                     {/* --- User Scans Table --- */}
                     <Route
                         path="/scans/:user"
-                        element={<UserScansRootNew />}
+                        element={<UserScansRoot />}
                     />
 
                 </Routes>
