@@ -1,3 +1,5 @@
+import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
+
 /**
  * Calls the function immediately, then calls it every `interval` milliseconds.
  *
@@ -137,4 +139,61 @@ export function dateDifferenceFromNow(date: Date): string {
     // > 24 hours
     return "More than one day ago";
 
+}
+
+/**
+ * Determines if the current barcode is different from the previous barcode AND
+ * if the current barcode is *NEWER* (the scanned date is more recent) than the
+ * previous barcode.
+ *
+ * @param previousBarcode the previous barcode
+ * @param currentBarcode the current barcode
+ * @returns `true` if the current barcode is different from the previous barcode
+ * AND if the current barcode is *NEWER* than the previous barcode; otherwise,
+ * `false`. If `true`, then `currentBarcode` is non-nullish.
+ */
+export function latestBarcodeChanged(
+    previousBarcode: ScannedBarcodeResponse | null | undefined,
+    currentBarcode: ScannedBarcodeResponse | null | undefined
+): currentBarcode is ScannedBarcodeResponse {
+
+    if (!currentBarcode || currentBarcode.id === previousBarcode?.id) {
+        console.log(
+            "UserScansRoot.latestBarcodeChanged(): " +
+            "most recent barcode has *NOT* changed at all/is null: " +
+            `${JSON.stringify(currentBarcode)}`
+        );
+        return false;
+    }
+
+    /*
+     We only want to auto-copy the most recent barcode if the most recent
+     barcode is **NEWER** than the previously auto-copied barcode.
+
+     For example, if the user deletes a barcode, then the most recent
+     barcode will be older than the previously auto-copied barcode. In this
+     case, we do *NOT* want to auto-copy the most recent barcode.
+     */
+
+    if (
+        !previousBarcode ||
+        currentBarcode.scanned_at >= previousBarcode.scanned_at
+    ) {
+        console.log(
+            "UserScansRoot.latestBarcodeChanged(): " +
+            "most *RECENT* barcode *HAS* changed from " +
+            `${JSON.stringify(previousBarcode)} to ` +
+            `${JSON.stringify(currentBarcode)}`
+        );
+        return true;
+    }
+    else {
+        console.log(
+            "UserScansRoot.latestBarcodeChanged(): " +
+            "most *RECENT* barcode has *NOT* changed from " +
+            `${JSON.stringify(previousBarcode)} to ` +
+            `${JSON.stringify(currentBarcode)}`
+        );
+        return false;
+    }
 }

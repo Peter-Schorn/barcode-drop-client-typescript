@@ -10,7 +10,7 @@
  * @returns the value converted to a `Date` object if the key is `scanned_at`;
  * otherwise, the original value
  */
-export function scannedBarcodesReviver(key: string, value: any): any {
+export function scannedBarcodesReviver(key: string, value: unknown): unknown {
     if (key === "scanned_at" && typeof value === "string") {
         return new Date(value);
     }

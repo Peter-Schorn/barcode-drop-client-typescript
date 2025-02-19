@@ -5,7 +5,8 @@ import React, {
     useState,
     useRef,
     useEffect,
-    useCallback
+    useCallback,
+    useMemo
 } from "react";
 import { useParams } from "react-router-dom";
 
@@ -34,7 +35,8 @@ import {
 import {
     isApplePlatform,
     prefixTitleWithDocumentHostIfPort,
-    setToString
+    setToString,
+    latestBarcodeChanged
 } from "../utils/MiscellaneousUtilities.ts";
 import { SocketMessageTypes } from "../model/SocketMessageTypes.ts";
 
@@ -130,11 +132,10 @@ export function UserScansRootNew(): JSX.Element {
 
     // MARK: End State
 
-    const deleteIDs = new Set<string>();
+    const deleteIDs = useMemo(() => new Set<string>(), []);
     // clearInterval takes number | undefined, so we can't use null for
-    // pingPongInterval, removeHighlightedBarcodeTimer, and
-    // copyBarcodeAfterDelayTimeout
-    let removeHighlightedBarcodeTimer: number | undefined = undefined;
+    // removeHighlightedBarcodeTimer
+    const removeHighlightedBarcodeTimer = useRef<number | undefined>(undefined);
 
     // it should not be possible to navigate to this component without a user in
     // the path parameters
@@ -157,77 +158,485 @@ export function UserScansRootNew(): JSX.Element {
 
     const socket = useRef<WebSocket>(null);
 
+    // MARK: - useCallback -
+
+    /**
+     * Get the user's scans and assign the result to state.barcodes.
+     *
+     * @param options the options
+     * @param options.user the user
+     *
+     */
+    const getUserScans = useCallback(({ user }: { user: string }): void => {
+
+        const dateString = new Date().toISOString();
+
+        console.log(
+            "UserScansRoot.getUserScans(): Getting scans for " +
+            `user "${user}" at date ${dateString}`
+        );
+
+        context.api!.getUserScans(user)
+            .then((result) => {
+
+                console.log(
+                    "UserScansRoot.getUserScans(): result:", result
+                );
+                setBarcodes(result);
+
+            }).catch((error) => {
+                console.error(
+                    `UserScansRoot.getUserScans(): error: ${error}`
+                );
+            });
+
+    }, [context.api]);
+
+    const deleteAllUserBarcodes = useCallback((): void => {
+
+        console.log(
+            "UserScansRoot.deleteAllUserBarcodes(): " +
+            "Deleting all user barcodes"
+        );
+
+        // delete the barcodes
+        setBarcodes([]);
+
+        context.api!.deleteUserScans({ user: user })
+            .then((result) => {
+                console.log(
+                    "UserScansRoot.deleteAllUserBarcodes(): " +
+                    `result: ${result}`
+                );
+            })
+            .catch((error) => {
+                console.error(
+                    "UserScansRoot.deleteAllUserBarcodes(): " +
+                    `could not delete all user barcodes: ${error}`
+                );
+            });
+
+    }, [context.api, user]);
+
+    const removeBarcodesFromState = useCallback((barcodeIDs: Set<string>): void => {
+        const barcodeIDsString = setToString(barcodeIDs);
+        console.log(
+            `Removing barcode with IDs from state: ${barcodeIDsString}`
+        );
+
+        setBarcodes((prevBarcodes) => {
+            barcodeIDs.forEach(element => deleteIDs.add(element));
+
+            console.log(
+                `removeBarcodesFromState(): ${deleteIDs.size} deleteIDs:`,
+                deleteIDs
+            );
+
+            const newBarcodes = prevBarcodes.filter((barcode) => {
+                return !deleteIDs.has(barcode.id);
+            });
+
+            return newBarcodes;
+
+        });
+
+    }, [deleteIDs]);
+
+    /**
+     * Determines if the "Copy Latest Barcode" button is disabled, which
+     * occurs when there are no barcodes.
+     *
+     * @returns `true` if the "Copy Latest Barcode" button is disabled.
+     */
+    const _copyLastBarcodeIsDisabled = useCallback((): boolean => {
+        return barcodes.length === 0;
+    }, [barcodes]);
+
+    const _setHighlightedBarcode = useCallback((barcode: ScannedBarcodeResponse): void => {
+
+        setHighlightedBarcode(barcode);
+
+        clearTimeout(removeHighlightedBarcodeTimer.current);
+        removeHighlightedBarcodeTimer.current = setTimeout(() => {
+            setHighlightedBarcode(null);
+        }, 5_000);
+
+    }, []);
+
+    /**
+     * Writes the barcode to the clipboard.
+     *
+     * @param options the options
+     * @param options.barcode the barcode to write to the clipboard
+     * @param options.showNotification whether or not to show a notification to
+     * the user
+     * @param options.highlight whether or not to highlight the barcode
+     */
+    const _writeBarcodeToClipboard = useCallback((
+        {
+            barcode,
+            showNotification,
+            highlight
+        }: WriteBarcodeToClipboardOptions
+    ): void => {
+
+        const barcodeText = barcode.barcode;
+        if (barcodeText === null || barcodeText === undefined) {
+            console.error(
+                "_writeBarcodeToClipboard: barcode text is null or undefined"
+            );
+            return;
+        }
+
+        navigator.clipboard.writeText(barcodeText)
+            .then(() => {
+
+                console.log(
+                    "_writeTextToClipboard: Copied text to clipboard: " +
+                    `"${barcodeText}"`
+                );
+
+                if (showNotification) {
+                    console.log(
+                        "_writeTextToClipboard: " +
+                        "--- SHOWING BARCODE COPIED TOAST ---" +
+                        `(id: ${barcode?.id})`
+                    );
+                    showBarcodeCopiedToast(barcodeText);
+                }
+
+                if (highlight) {
+                    console.log(
+                        "_writeTextToClipboard: --- HIGHLIGHT --- " +
+                        `(id: ${barcode?.id})`
+                    );
+                    _setHighlightedBarcode(barcode);
+                }
+
+            })
+            .catch((error) => {
+                console.error(
+                    "_writeTextToClipboard: Could not copy text to clipboard: " +
+                    `"${barcodeText}": ${error}`
+                );
+            });
+
+    }, [_setHighlightedBarcode]);
+
+    /**
+     * Makes a CSV string from the scanned barcodes for the user.
+     *
+     * @returns the CSV string.
+     */
+    const makeCSVString = useCallback((): string => {
+        const csvString = csvStringify(barcodes, {
+            cast: {
+                // specify how to convert Date objects to strings
+                date: (value) => value.toLocaleString()
+            },
+            header: true,
+            columns: [
+                { key: "barcode", header: "Barcode" },
+                { key: "scanned_at", header: "Date" },
+                { key: "id", header: "ID" }
+            ]
+
+        });
+        return csvString;
+    }, [barcodes]);
+
+    const copyAsCSV = useCallback((): void => {
+
+        console.log("copyAsCSV()");
+
+        if (_copyLastBarcodeIsDisabled()) {
+            console.error(
+                "copyAsCSV(): cannot copy CSV to clipboard: no barcodes"
+            );
+            return;
+        }
+
+        const csvString = makeCSVString();
+
+        console.log("copyAsCSV(): csvString:", csvString);
+
+        navigator.clipboard.writeText(csvString)
+            .then(() => {
+                console.log("copyAsCSV(): copied CSV to clipboard");
+                toast.success("Copied CSV to clipboard");
+            })
+            .catch((error) => {
+                console.error(
+                    `copyAsCSV(): could not copy CSV to clipboard: ${error}`
+                );
+                toast.error("Could not copy CSV to clipboard");
+            });
+
+    }, [_copyLastBarcodeIsDisabled, makeCSVString]);
+
+    const exportAsCSV = useCallback((): void => {
+
+        console.log(
+            "exportAsCSV(): barcodes:", barcodes
+        );
+
+        if (_copyLastBarcodeIsDisabled()) {
+            console.error(
+                "exportAsCSV(): cannot export CSV: no barcodes"
+            );
+            return;
+        }
+
+        const date = new Date();
+        const dateString = date.toISOString();
+
+        const csvString = makeCSVString();
+
+        console.log("exportAsCSV(): csvString:", csvString);
+
+        const blob = new Blob([csvString], { type: "text/csv" });
+        const blobURL = URL.createObjectURL(blob);
+
+        const blobLinkElement = document.createElement("a");
+
+        blobLinkElement.download = `barcodes-${dateString}.csv`;
+        blobLinkElement.href = blobURL;
+
+        blobLinkElement.click();
+
+    }, [_copyLastBarcodeIsDisabled, barcodes, makeCSVString]);
+
+    // MARK: Auto-Copy
+    /** Copies the given barcode to the clipboard if auto copy is enabled. */
+    const autoCopyIfEnabled = useCallback((
+        barcode: ScannedBarcodeResponse
+    ): void => {
+
+        if (!enableAutoCopy) {
+            console.log(
+                "Auto-copy is disabled; not copying latest barcode"
+            );
+            return;
+        }
+
+        if (clientScannedBarcodeIDs.has(barcode.id)) {
+            console.log(
+                "will NOT copy barcode scanned from CLIENT:",
+                barcode
+            );
+            return;
+        }
+
+        setLastAutoCopiedBarcode(barcode);
+
+        console.log(
+            `Auto-copying most recent barcode: "${JSON.stringify(barcode)}"`
+        );
+
+        _writeBarcodeToClipboard({
+            barcode: barcode,
+            showNotification: true,
+            highlight: true
+        });
+
+    }, [
+        _writeBarcodeToClipboard,
+        clientScannedBarcodeIDs,
+        enableAutoCopy,
+    ]);
+
     // MARK: - Effects -
 
+    // MARK: handleHashChange effect
     useEffect(() => {
 
-        console.log("UserScansRoot.useEffect(): begin");
+        console.log("UserScansRoot: useEffect: handleHashChange: begin");
 
-        getUserScans({ user: user });
+        function handleHashChange(): void {
+            console.log(
+                "UserScansRoot.handleHashChange(): " +
+                `hash: ${window.location.hash}`
+            );
+            const urlFragmentParams = new URLSearchParams(
+                window.location.hash.slice(1)
+            );
+            const enableAutoCopy = urlFragmentParams.get("auto-copy") === "true";
+            const formattedLink = urlFragmentParams.get("formatted-link");
 
-        configureSocket();
+            console.log(
+                "UserScansRoot.handleHashChange(): " +
+                `enableAutoCopy: ${enableAutoCopy}`
+            );
+
+            setEnableAutoCopy(enableAutoCopy);
+            setFormattedLink(formattedLink);
+
+        }
 
         window.addEventListener("hashchange", handleHashChange);
-        window.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("resize", windowDidResize);
-
-        promptForClipboardPermission();
 
         return (): void => {
-            console.log("UserScansRoot.useEffect(): cleanup");
-
-            clearTimeout(removeHighlightedBarcodeTimer);
-
+            console.log("UserScansRoot: useEffect: handleHashChange: cleanup");
             window.removeEventListener("hashchange", handleHashChange);
-            window.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("resize", windowDidResize);
-
-            socket.current?.close();
-
         };
 
     }, []);
 
-    function handleHashChange(): void {
-        console.log(
-            "UserScansRootCore.handleHashChange(): " +
-            `hash: ${window.location.hash}`
-        );
-        const urlFragmentParams = new URLSearchParams(
-            window.location.hash.slice(1)
-        );
-        const enableAutoCopy = urlFragmentParams.get("auto-copy") === "true";
-        const formattedLink = urlFragmentParams.get("formatted-link");
+    // MARK: handleKeyDown effect
+    useEffect(() => {
 
-        console.log(
-            "UserScansRootCore.handleHashChange(): " +
-            `enableAutoCopy: ${enableAutoCopy}`
-        );
+        console.log("UserScansRoot: useEffect: handleKeyDown: begin");
 
-        setEnableAutoCopy(enableAutoCopy);
-        setFormattedLink(formattedLink);
+        function handleKeyDown(e: KeyboardEvent): void {
 
-    }
+            // console.log(
+            //     `UserScansRoot.handleKeyDown(): key: ${e.key}; code: ${e.code}; ` +
+            //     `ctrlKey: ${e.ctrlKey}; metaKey: ${e.metaKey}; ` +
+            //     `altKey: ${e.altKey}; shiftKey: ${e.shiftKey}`
+            // );
 
-    function windowDidResize(): void {
+            // if the user is holding down a key, then events will repeatedly be
+            // generated; we only want to handle the first event
+            if (e.repeat) {
+                return;
+            }
 
-        const size = {
-            width: window.innerWidth,
-            height: window.innerHeight
+            if (e.isPlatformModifierKey()) {
+
+                if (e.key === "k" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"k\" pressed: copying barcode"
+                    );
+                    const latestBarcode = barcodes[0];
+                    if (latestBarcode) {
+                        _writeBarcodeToClipboard({
+                            barcode: latestBarcode,
+                            showNotification: true,
+                            highlight: true
+                        });
+                        e.preventDefault();
+                    }
+                    else {
+                        console.log(
+                            "UserScansRoot.handleKeyDown(): " +
+                            "latest barcode is null or undefined"
+                        );
+                    }
+                }
+                else if (e.key === "d" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"d\" pressed: DELETING all barcodes"
+                    );
+                    deleteAllUserBarcodes();
+                    e.preventDefault();
+                }
+                else if (e.key === "e" && e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + shift + \"e\" pressed: EXPORTING all barcodes as CSV"
+                    );
+                    exportAsCSV();
+                    e.preventDefault();
+                }
+                else if (e.key === "e" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"e\" pressed: COPYING all barcodes as CSV"
+                    );
+                    copyAsCSV();
+                    e.preventDefault();
+                }
+                else if (e.key === "l" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"l\" pressed: " +
+                        "SHOWING formatted link"
+                    );
+                    setShowFormattedLinkModal(true);
+                    e.preventDefault();
+                }
+                else if (e.key === "z" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"a\" pressed: " +
+                        "toggling auto copy"
+                    );
+                    toggleAutoCopy();
+                    e.preventDefault();
+                }
+                else if (e.key === "s" && !e.shiftKey && !e.altKey) {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        "Platform modifier key + \"s\" pressed: " +
+                        "SHOWING scan barcode view"
+                    );
+                    setShowScanBarcodeView(true);
+                    e.preventDefault();
+                }
+                else {
+                    console.log(
+                        "UserScansRoot.handleKeyDown(): " +
+                        `Platform modifier key + "${e.key}" pressed`
+                    );
+                }
+
+            }
+
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return (): void => {
+            console.log("UserScansRoot: useEffect: handleKeyDown: cleanup");
+            window.removeEventListener("keydown", handleKeyDown);
         };
 
+    }, [
+        _writeBarcodeToClipboard,
+        barcodes,
+        copyAsCSV,
+        deleteAllUserBarcodes,
+        exportAsCSV
+    ]);
+
+    // MARK: windowDidResize effect
+    useEffect(() => {
+
+        console.log("UserScansRoot: useEffect: windowDidResize: begin");
+
+        function windowDidResize(): void {
+
+            const size = {
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+
+            console.log(
+                "UserScansTableCore.windowDidResize(): size:",
+                size
+            );
+
+            setViewportSize(size);
+
+        }
+
+        window.addEventListener("resize", windowDidResize);
+
+        return (): void => {
+            console.log("UserScansRoot: useEffect: windowDidResize: cleanup");
+            window.removeEventListener("resize", windowDidResize);
+        };
+
+    }, []);
+
+    // MARK: promptForClipboardPermission effect
+    useEffect(() => {
+
         console.log(
-            "UserScansTableCore.windowDidResize(): size:",
-            size
+            "UserScansRoot: useEffect: promptForClipboardPermission: begin"
         );
-
-        setViewportSize(size);
-
-    }
-
-    function promptForClipboardPermission(): void {
-
-        console.log("promptForClipboardPermission");
 
         // clipboard-write is supported by some browsers, but not all
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -249,108 +658,114 @@ export function UserScansRootNew(): JSX.Element {
                 );
             });
 
-    }
+    }, []);
 
-    function handleKeyDown(e: KeyboardEvent): void {
+    // MARK: getUserScans effect
+    useEffect(() => {
+        console.log("UserScansRoot: useEffect: getUserScans: begin");
+        getUserScans({ user: user });
+    }, [getUserScans, user]);
 
-        // console.log(
-        //     `UserScansRootCore.handleKeyDown(): key: ${e.key}; code: ${e.code}; ` +
-        //     `ctrlKey: ${e.ctrlKey}; metaKey: ${e.metaKey}; ` +
-        //     `altKey: ${e.altKey}; shiftKey: ${e.shiftKey}`
-        // );
+    // MARK: configureSocket effect
+    useEffect(() => {
 
-        // if the user is holding down a key, then events will repeatedly be
-        // generated; we only want to handle the first event
-        if (e.repeat) {
-            return;
-        }
+        console.log("UserScansRoot: useEffect: configureSocket: begin");
 
-        if (e.isPlatformModifierKey()) {
+        function receiveSocketMessage(event: MessageEvent): void {
 
-            if (e.key === "k" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"k\" pressed: copying barcode"
+            console.log(
+                `[${new Date().toISOString()}] ` +
+                "UserScansRoot.receiveSocketMessage(): " +
+                "event:", event
+            );
+
+            let message: SocketMessage; // the parsed JSON message
+            try {
+                message = JSON.parse(
+                    event.data as string,
+                    scannedBarcodesReviver
+                ) as SocketMessage;
+            }
+            catch (error) {
+                console.error(
+                    "UserScansRoot.receiveSocketMessage(): " +
+                    "could not parse JSON message:", error
                 );
-                const latestBarcode = barcodes[0];
-                if (latestBarcode) {
-                    _writeBarcodeToClipboard({
-                        barcode: latestBarcode,
-                        showNotification: true,
-                        highlight: true
-                    });
-                    e.preventDefault();
-                }
-                else {
+                return;
+            }
+
+            switch (message.type) {
+                // MARK: Insert new scans
+                case SocketMessageTypes.UpsertScans: {
+                    const newScans = message.newScans;
+
                     console.log(
-                        "UserScansRootCore.handleKeyDown(): " +
-                        "latest barcode is null or undefined"
+                        "UserScansRoot.receiveSocketMessage(): " +
+                        `will insert newScans for user ${user}:`, newScans
+                    );
+
+                    setBarcodes((prevBarcodes) => {
+                        // MARK: insert the new scans in sorted order by date
+                        // and remove any existing scans with the same ID
+
+                        const newBarcodes = prevBarcodes
+                            .filter((barcode) => {
+                                for (const newScan of newScans) {
+                                    if (barcode.id === newScan.id) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                            .concat(newScans);
+
+                        newBarcodes.sort((lhs, rhs) => {
+                            return rhs.scanned_at.getTime() -
+                                lhs.scanned_at.getTime();
+                        });
+
+                        console.log(
+                            "UserScansRoot.receiveSocketMessage(): " +
+                            "Returning new barcodes:", newBarcodes
+                        );
+                        return newBarcodes;
+
+                    });
+
+                    break;
+                }
+                // MARK: Delete scans
+                case SocketMessageTypes.DeleteScans: {
+                    const ids = message.ids;
+
+                    console.log(
+                        `socket will delete barcodes with IDs ${ids}`
+                    );
+                    const idsSet = new Set(ids);
+                    removeBarcodesFromState(idsSet);
+                    break;
+                }
+                // MARK: Replace all scans
+                case SocketMessageTypes.ReplaceAllScans: {
+                    const scans = message.scans;
+
+                    console.log(
+                        `socket will replace all scans for user ${user}:`,
+                        scans
+                    );
+                    setBarcodes(scans);
+                    deleteIDs.clear();
+                    break;
+                }
+                default: {
+                    console.error(
+                        "UserScansRoot.receiveSocketMessage(): " +
+                        "socket could not handle message:", message
                     );
                 }
             }
-            else if (e.key === "d" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"d\" pressed: DELETING all barcodes"
-                );
-                deleteAllUserBarcodes();
-                e.preventDefault();
-            }
-            else if (e.key === "e" && e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + shift + \"e\" pressed: EXPORTING all barcodes as CSV"
-                );
-                exportAsCSV();
-                e.preventDefault();
-            }
-            else if (e.key === "e" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"e\" pressed: COPYING all barcodes as CSV"
-                );
-                copyAsCSV();
-                e.preventDefault();
-            }
-            else if (e.key === "l" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"l\" pressed: " +
-                    "SHOWING formatted link"
-                );
-                setShowFormattedLinkModal(true);
-                e.preventDefault();
-            }
-            else if (e.key === "z" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"a\" pressed: " +
-                    "toggling auto copy"
-                );
-                toggleAutoCopy();
-                e.preventDefault();
-            }
-            else if (e.key === "s" && !e.shiftKey && !e.altKey) {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    "Platform modifier key + \"s\" pressed: " +
-                    "SHOWING scan barcode view"
-                );
-                setShowScanBarcodeView(true);
-                e.preventDefault();
-            }
-            else {
-                console.log(
-                    "UserScansRootCore.handleKeyDown(): " +
-                    `Platform modifier key + "${e.key}" pressed`
-                );
-            }
 
         }
-
-    }
-
-    function configureSocket(): void {
 
         if (import.meta.env.VITE_DISABLE_WEBSOCKET === "true") {
             return;
@@ -420,212 +835,41 @@ export function UserScansRootNew(): JSX.Element {
 
         };
 
-    }
+        return (): void => {
+            console.log("UserScansRoot: useEffect: configureSocket: cleanup");
+            socket.current?.close();
+        };
 
-    function receiveSocketMessage(event: MessageEvent): void {
+    }, [
+        deleteIDs,
+        getUserScans,
+        removeBarcodesFromState,
+        socketURL.href, user
+    ]);
 
-        console.log(
-            `[${new Date().toISOString()}] ` +
-            "UserScansRoot.receiveSocketMessage(): " +
-            "event:", event
-        );
+    // MARK: Barcodes changed effect
+    useEffect(() => {
 
-        let message: SocketMessage; // the parsed JSON message
-        try {
-            message = JSON.parse(
-                event.data as string,
-                scannedBarcodesReviver
-            ) as SocketMessage;
-        }
-        catch (error) {
-            console.error(
-                "UserScansRoot.receiveSocketMessage(): " +
-                "could not parse JSON message:", error
-            );
+        console.log("UserScansRoot: useEffect: barcodes changed: begin");
+
+        // fast path; might improve performance
+        if (barcodes.length === 0) {
             return;
         }
 
-        switch (message.type) {
-            // MARK: Insert new scans
-            case SocketMessageTypes.UpsertScans: {
-                const newScans = message.newScans;
+        // const previousBarcode = lastAutoCopiedBarcode;
+        const currentBarcode = barcodes[0];
 
-                console.log(
-                    "UserScansRoot.receiveSocketMessage(): " +
-                    `will insert newScans for user ${user}:`, newScans
-                );
-
-                setBarcodes((prevBarcodes) => {
-                    // MARK: insert the new scans in sorted order by date
-                    // and remove any existing scans with the same ID
-
-                    const newBarcodes = prevBarcodes
-                        .filter((barcode) => {
-                            for (const newScan of newScans) {
-                                if (barcode.id === newScan.id) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        })
-                        .concat(newScans);
-
-                    newBarcodes.sort((lhs, rhs) => {
-                        return rhs.scanned_at.getTime() -
-                            lhs.scanned_at.getTime();
-                    });
-
-                    console.log(
-                        "UserScansRoot.receiveSocketMessage(): " +
-                        "Returning new barcodes:", newBarcodes
-                    );
-                    return newBarcodes;
-
-                });
-
-                break;
-            }
-            // MARK: Delete scans
-            case SocketMessageTypes.DeleteScans: {
-                const ids = message.ids;
-
-                console.log(
-                    `socket will delete barcodes with IDs ${ids}`
-                );
-                const idsSet = new Set(ids);
-                removeBarcodesFromState(idsSet);
-                break;
-            }
-            // MARK: Replace all scans
-            case SocketMessageTypes.ReplaceAllScans: {
-                const scans = message.scans;
-
-                console.log(
-                    `socket will replace all scans for user ${user}:`,
-                    scans
-                );
-                setBarcodes(scans);
-                deleteIDs.clear();
-                break;
-            }
-            default: {
-                console.error(
-                    "UserScansRootCore.receiveSocketMessage(): " +
-                    "socket could not handle message:", message
-                );
-            }
+        if (latestBarcodeChanged(lastAutoCopiedBarcode, currentBarcode)) {
+            // auto-copy the most recent barcode if auto-copy is enabled
+            autoCopyIfEnabled(currentBarcode);
         }
 
-    }
-
-    /**
-     * Determines if the current barcode is different from the previous barcode
-     * AND if the current barcode is *NEWER* than the previous barcode.
-     *
-     * @param previousBarcode the previous barcode
-     * @param currentBarcode the current barcode
-     * @returns `true` if the current barcode is different from the
-     * previous barcode AND if the current barcode is *NEWER* than the previous
-     * barcode; otherwise, `false`
-     */
-    function latestBarcodeChanged(
-        previousBarcode: ScannedBarcodeResponse | null | undefined,
-        currentBarcode: ScannedBarcodeResponse | null | undefined
-    ): boolean {
-
-        if (!currentBarcode || currentBarcode.id === previousBarcode?.id) {
-            console.log(
-                "UserScansRootCore.latestBarcodeChanged(): " +
-                "most recent barcode has *NOT* changed at all/is null: " +
-                `${JSON.stringify(currentBarcode)}`
-            );
-            return false;
-        }
-
-        /*
-         We only want to auto-copy the most recent barcode if the most recent
-         barcode is **NEWER** than the previously auto-copied barcode.
-
-         For example, if the user deletes a barcode, then the most recent
-         barcode will be older than the previously auto-copied barcode. In this
-         case, we do *NOT* want to auto-copy the most recent barcode.
-         */
-
-        if (
-            !previousBarcode ||
-            currentBarcode.scanned_at >= previousBarcode.scanned_at
-        ) {
-            console.log(
-                "UserScansRootCore.latestBarcodeChanged(): " +
-                "most *RECENT* barcode *HAS* changed from " +
-                `${JSON.stringify(previousBarcode)} to ` +
-                `${JSON.stringify(currentBarcode)}`
-            );
-            return true;
-        }
-        else {
-            console.log(
-                "UserScansRootCore.latestBarcodeChanged(): " +
-                "most *RECENT* barcode has *NOT* changed from " +
-                `${JSON.stringify(previousBarcode)} to ` +
-                `${JSON.stringify(currentBarcode)}`
-            );
-            return false;
-        }
-    }
-
-    // MARK: - Auto-Copy -
-    // copies the most recent barcode to the clipboard
-    function autoCopyIfEnabled(): void {
-
-        if (!enableAutoCopy) {
-            console.log(
-                "Auto-copy is disabled; not copying latest barcode"
-            );
-            return;
-        }
-
-        // `barcodes` could be empty, in which case indexing into the
-        // array will return undefined
-        const mostRecentBarcode = barcodes[0];
-        if (!mostRecentBarcode) {
-            console.log(
-                "Auto-copy failed: most recent barcode is null or undefined"
-            );
-            return;
-        }
-
-        if (clientScannedBarcodeIDs.has(mostRecentBarcode.id)) {
-            console.log(
-                "will NOT copy barcode scanned from CLIENT:",
-                mostRecentBarcode
-            );
-            return;
-        }
-
-        if (lastAutoCopiedBarcode?.id === mostRecentBarcode.id) {
-            console.log(
-                "AUTO-Copy failed: most recent barcode is the same as the " +
-                "last auto-copied barcode:",
-                mostRecentBarcode
-            );
-            return;
-
-        }
-
-        setLastAutoCopiedBarcode(mostRecentBarcode);
-
-        console.log(
-            `Auto-copying most recent barcode: "${JSON.stringify(mostRecentBarcode)}"`
-        );
-
-        _writeBarcodeToClipboard({
-            barcode: mostRecentBarcode,
-            showNotification: true,
-            highlight: true
-        });
-
-    }
+    }, [
+        barcodes,
+        autoCopyIfEnabled,
+        lastAutoCopiedBarcode
+    ]);
 
     function showBarcodeCopiedToast(barcodeText: string): void {
         console.log(`showBarcodeCopiedToast(): barcode: ${barcodeText}`);
@@ -646,93 +890,11 @@ export function UserScansRootNew(): JSX.Element {
 
     }
 
-    /**
-     * Get the user's scans and assign the result to state.barcodes.
-     *
-     * @param options the options
-     * @param options.user the user
-     *
-     */
-    function getUserScans({ user }: { user: string }): void {
-
-        const dateString = new Date().toISOString();
-
-        console.log(
-            "UserScansRootCore.getUserScans(): Getting scans for " +
-            `user "${user}" at date ${dateString}`
-        );
-
-        context.api!.getUserScans(user)
-            .then((result) => {
-
-                console.log(
-                    "UserScansRootCore.getUserScans(): result:", result
-                );
-                setBarcodes(result);
-
-            }).catch((error) => {
-                console.error(
-                    `UserScansRootCore.getUserScans(): error: ${error}`
-                );
-            });
-
-    }
-
-    function deleteAllUserBarcodes(): void {
-
-        console.log(
-            "UserScansRootCore.deleteAllUserBarcodes(): " +
-            "Deleting all user barcodes"
-        );
-
-        // delete the barcodes
-        setBarcodes([]);
-
-        context.api!.deleteUserScans({ user: user })
-            .then((result) => {
-                console.log(
-                    "UserScansRootCore.deleteAllUserBarcodes(): " +
-                    `result: ${result}`
-                );
-            })
-            .catch((error) => {
-                console.error(
-                    "UserScansRootCore.deleteAllUserBarcodes(): " +
-                    `could not delete all user barcodes: ${error}`
-                );
-            });
-
-    }
-
-    function removeBarcodesFromState(barcodeIDs: Set<string>): void {
-        const barcodeIDsString = setToString(barcodeIDs);
-        console.log(
-            `Removing barcode with IDs from state: ${barcodeIDsString}`
-        );
-
-        setBarcodes((prevBarcodes) => {
-            barcodeIDs.forEach(element => deleteIDs.add(element));
-
-            console.log(
-                `removeBarcodesFromState(): ${deleteIDs.size} deleteIDs:`,
-                deleteIDs
-            );
-
-            const newBarcodes = prevBarcodes.filter((barcode) => {
-                return !deleteIDs.has(barcode.id);
-            });
-
-            return newBarcodes;
-
-        });
-
-    }
-
     function handleAutoCopyChange(e: React.ChangeEvent<HTMLInputElement>): void {
 
         const enableAutoCopy = e.target.checked;
         console.log(
-            "UserScansRootCore.handleAutoCopyChange(): " +
+            "UserScansRoot.handleAutoCopyChange(): " +
             `e.target.checked (enable auto-copy): ${enableAutoCopy}`
         );
 
@@ -744,7 +906,7 @@ export function UserScansRootNew(): JSX.Element {
         window.location.hash = urlFragmentParams.toString();
 
         console.log(
-            "UserScansRootCore.handleAutoCopyChange(): " +
+            "UserScansRoot.handleAutoCopyChange(): " +
             `set URL fragment to: ${window.location.hash}`
         );
 
@@ -759,7 +921,7 @@ export function UserScansRootNew(): JSX.Element {
         if (latestBarcode) {
 
             console.log(
-                "UserScansRootCore.copyLastBarcodeToClipboard(): " +
+                "UserScansRoot.copyLastBarcodeToClipboard(): " +
                 "Copying latest barcode to clipboard: " +
                 `"${JSON.stringify(latestBarcode)}"`
             );
@@ -772,7 +934,7 @@ export function UserScansRootNew(): JSX.Element {
         }
         else {
             console.log(
-                "UserScansRootCore.copyLastBarcodeToClipboard(): " +
+                "UserScansRoot.copyLastBarcodeToClipboard(): " +
                 "latest barcode is null or undefined"
             );
         }
@@ -827,89 +989,6 @@ export function UserScansRootNew(): JSX.Element {
 
             return newValue;
         });
-
-    }
-
-    /**
-     * Makes a CSV string from the scanned barcodes for the user.
-     *
-     * @returns the CSV string.
-     */
-    function makeCSVString(): string {
-        const csvString = csvStringify(barcodes, {
-            cast: {
-                // specify how to convert Date objects to strings
-                date: (value) => value.toLocaleString()
-            },
-            header: true,
-            columns: [
-                { key: "barcode", header: "Barcode" },
-                { key: "scanned_at", header: "Date" },
-                { key: "id", header: "ID" }
-            ]
-
-        });
-        return csvString;
-    }
-
-    function copyAsCSV(): void {
-
-        console.log("copyAsCSV()");
-
-        if (_copyLastBarcodeIsDisabled()) {
-            console.error(
-                "copyAsCSV(): cannot copy CSV to clipboard: no barcodes"
-            );
-            return;
-        }
-
-        const csvString = makeCSVString();
-
-        console.log("copyAsCSV(): csvString:", csvString);
-
-        navigator.clipboard.writeText(csvString)
-            .then(() => {
-                console.log("copyAsCSV(): copied CSV to clipboard");
-                toast.success("Copied CSV to clipboard");
-            })
-            .catch((error) => {
-                console.error(
-                    `copyAsCSV(): could not copy CSV to clipboard: ${error}`
-                );
-                toast.error("Could not copy CSV to clipboard");
-            });
-
-    }
-
-    function exportAsCSV(): void {
-
-        console.log(
-            "exportAsCSV(): barcodes:", barcodes
-        );
-
-        if (_copyLastBarcodeIsDisabled()) {
-            console.error(
-                "exportAsCSV(): cannot export CSV: no barcodes"
-            );
-            return;
-        }
-
-        const date = new Date();
-        const dateString = date.toISOString();
-
-        const csvString = makeCSVString();
-
-        console.log("exportAsCSV(): csvString:", csvString);
-
-        const blob = new Blob([csvString], { type: "text/csv" });
-        const blobURL = URL.createObjectURL(blob);
-
-        const blobLinkElement = document.createElement("a");
-
-        blobLinkElement.download = `barcodes-${dateString}.csv`;
-        blobLinkElement.href = blobURL;
-
-        blobLinkElement.click();
 
     }
 
@@ -1057,88 +1136,6 @@ export function UserScansRootNew(): JSX.Element {
             ids.add(barcodeID);
             return ids;
         });
-    }
-
-    // MARK: Private Interface
-
-    /**
-     * Determines if the "Copy Latest Barcode" button is disabled, which
-     * occurs when there are no barcodes.
-     *
-     * @returns `true` if the "Copy Latest Barcode" button is disabled.
-     */
-    function _copyLastBarcodeIsDisabled(): boolean {
-        return barcodes.length === 0;
-    }
-
-    /**
-     * Writes the barcode to the clipboard.
-     *
-     * @param options the options
-     * @param options.barcode the barcode to write to the clipboard
-     * @param options.showNotification whether or not to show a notification to
-     * the user
-     * @param options.highlight whether or not to highlight the barcode
-     */
-    function _writeBarcodeToClipboard(
-        {
-            barcode,
-            showNotification,
-            highlight
-        }: WriteBarcodeToClipboardOptions
-    ): void {
-
-        const barcodeText = barcode.barcode;
-        if (barcodeText === null || barcodeText === undefined) {
-            console.error(
-                "_writeBarcodeToClipboard: barcode text is null or undefined"
-            );
-            return;
-        }
-
-        navigator.clipboard.writeText(barcodeText)
-            .then(() => {
-
-                console.log(
-                    "_writeTextToClipboard: Copied text to clipboard: " +
-                    `"${barcodeText}"`
-                );
-
-                if (showNotification) {
-                    console.log(
-                        "_writeTextToClipboard: " +
-                        "--- SHOWING BARCODE COPIED TOAST ---" +
-                        `(id: ${barcode?.id})`
-                    );
-                    showBarcodeCopiedToast(barcodeText);
-                }
-
-                if (highlight) {
-                    console.log(
-                        "_writeTextToClipboard: --- HIGHLIGHT --- " +
-                        `(id: ${barcode?.id})`
-                    );
-                    _setHighlightedBarcode(barcode);
-                }
-
-            })
-            .catch((error) => {
-                console.error(
-                    "_writeTextToClipboard: Could not copy text to clipboard: " +
-                    `"${barcodeText}": ${error}`
-                );
-            });
-
-    }
-
-    function _setHighlightedBarcode(barcode: ScannedBarcodeResponse): void {
-
-        setHighlightedBarcode(barcode);
-
-        clearTimeout(removeHighlightedBarcodeTimer);
-        removeHighlightedBarcodeTimer = setTimeout(() => {
-            setHighlightedBarcode(null);
-        }, 5_000);
     }
 
     // MARK: --- Rendering ---
