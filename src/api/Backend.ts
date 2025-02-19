@@ -29,7 +29,7 @@ export class Backend {
     async getUserScans(user: string): Promise<ScannedBarcodesResponse> {
         return await this.get(
             `/scans/${user}`, {
-            responseTransformer: (data: string): any => {
+            responseTransformer: (data: string): unknown => {
                 return JSON.parse(data, scannedBarcodesReviver);
             }
         }) as ScannedBarcodesResponse;
@@ -147,7 +147,7 @@ export class Backend {
             headers,
             responseTransformer
         }: GetRequestOptions = {}
-    ): Promise<any> {
+    ): Promise<unknown> {
         return await this.apiRequest({
             method: "GET",
             path: path,
@@ -164,7 +164,7 @@ export class Backend {
         body,
         headers,
         responseTransformer
-    }: APIRequestOptions): Promise<any> {
+    }: APIRequestOptions): Promise<unknown> {
 
         const response = await this.httpClient.request({
             baseURL: this.backendURL.toString(),
@@ -172,7 +172,7 @@ export class Backend {
             url: path,
             headers: headers,
             params: queryParams,
-            data: body as unknown,
+            data: body,
             transformResponse: responseTransformer
         });
 

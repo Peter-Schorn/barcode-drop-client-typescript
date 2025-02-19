@@ -15,7 +15,7 @@ export type APIRequestOptions = {
     method: Method;
     path: string;
     queryParams?: Record<string, string>;
-    body?: any;
+    body?: unknown;
     headers?: Record<string, string>;
     responseTransformer?: AxiosResponseTransformer;
 };
