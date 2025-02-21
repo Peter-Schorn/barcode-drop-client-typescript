@@ -117,6 +117,9 @@ export function UserScansRoot(): JSX.Element {
         height: window.innerHeight
     });
 
+    /** The ID of the current toast show on the screen */
+    const [currentToastID, setCurrentToastID] = useState<string | null>(null);
+
     // MARK: End State
 
     const deleteIDs = useMemo(() => new Set<string>(), []);
@@ -250,6 +253,34 @@ export function UserScansRoot(): JSX.Element {
 
     }, []);
 
+    const showToast = useCallback((
+        message: string,
+        type: "success" | "error" = "success"
+    ): void => {
+
+        if (currentToastID) {
+            toast.dismiss(currentToastID);
+        }
+
+        // we will use the toast ID to dismiss the toast later
+        const toastID = toast[type](
+            message,
+            { duration: 5_000 }
+        );
+
+        setCurrentToastID(toastID);
+
+    }, [currentToastID]);
+
+    const showBarcodeCopiedToast = useCallback((barcodeText: string): void => {
+        console.log(`showBarcodeCopiedToast(): barcode: ${barcodeText}`);
+
+        const formattedBarcodeText = barcodeText.truncated(30);
+        const message = `Copied "${formattedBarcodeText}" to the Clipboard`;
+
+        showToast(message);
+    }, [showToast]);
+
     /**
      * Writes the barcode to the clipboard.
      *
@@ -308,7 +339,7 @@ export function UserScansRoot(): JSX.Element {
                 );
             });
 
-    }, [setHighlightedBarcode]);
+    }, [setHighlightedBarcode, showBarcodeCopiedToast]);
 
     const copyLastBarcodeToClipboard = useCallback((): void => {
 
@@ -376,16 +407,16 @@ export function UserScansRoot(): JSX.Element {
         navigator.clipboard.writeText(csvString)
             .then(() => {
                 console.log("copyAsCSV(): copied CSV to clipboard");
-                toast.success("Copied CSV to clipboard");
+                showToast("Copied CSV to clipboard");
             })
             .catch((error) => {
                 console.error(
                     `copyAsCSV(): could not copy CSV to clipboard: ${error}`
                 );
-                toast.error("Could not copy CSV to clipboard");
+                showToast("Could not copy CSV to clipboard", "error");
             });
 
-    }, [copyLastBarcodeIsDisabled, makeCSVString]);
+    }, [copyLastBarcodeIsDisabled, makeCSVString, showToast]);
 
     const exportAsCSV = useCallback((): void => {
 
@@ -871,25 +902,6 @@ export function UserScansRoot(): JSX.Element {
         lastAutoCopiedBarcode
     ]);
 
-    function showBarcodeCopiedToast(barcodeText: string): void {
-        console.log(`showBarcodeCopiedToast(): barcode: ${barcodeText}`);
-
-        const barcodeTextMessage = barcodeText.truncated(30);
-
-        // we will use the toast ID to dismiss the toast later
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const toastID = toast.success(
-            `Copied "${barcodeTextMessage}" to the Clipboard`,
-            {
-                duration: 5_000
-            }
-        );
-
-        // TODO: Toast can be dismissed by clicking on it
-        // toast.dismiss(toastID);
-
-    }
-
     function handleAutoCopyChange(e: ChangeEvent<HTMLInputElement>): void {
 
         const enableAutoCopy = e.target.checked;
@@ -1113,7 +1125,7 @@ export function UserScansRoot(): JSX.Element {
                 closeConfigureLinkModal={closeConfigureLinkModal}
                 onSubmitConfigureLinkForm={onSubmitConfigureLinkForm}
             />
-            <UserScansToast />
+            <UserScansToast currentToastID={currentToastID} />
 
             <MainNavbar />
 

@@ -1,11 +1,21 @@
 import { type JSX } from "react";
-import { Toaster, /* ToastBar */ } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
-export function UserScansToast(): JSX.Element {
+type UserScansToastProps = {
+    currentToastID: string | null;
+};
+
+export function UserScansToast(props: UserScansToastProps): JSX.Element {
+
+    function onClick(): void {
+        console.log("UserScansToast.onClick() called");
+        if (props.currentToastID) {
+            toast.remove(props.currentToastID);
+        }
+    }
 
     return (
-        // TODO: Is this top-level div necessary?
-        <div style={{ /* height: "50px" */ }}>
+        <div onClick={onClick}>
             <Toaster
                 gutter={10}
                 toastOptions={{
