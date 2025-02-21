@@ -1,5 +1,7 @@
-import React, {
+import {
     type JSX,
+    type ChangeEvent,
+    type FormEvent,
     useContext,
     useState,
     useRef,
@@ -11,14 +13,14 @@ import { useParams } from "react-router-dom";
 
 import { AppContext } from "../model/AppContext.ts";
 
-import { Container, Button, Dropdown, Stack } from "react-bootstrap";
+import { Container, Button, Stack } from "react-bootstrap";
 // import Toast from 'react-bootstrap/Toast';
 import { toast } from "react-hot-toast";
 
 // import csv from 'csv'
 import { stringify as csvStringify } from "csv-stringify/browser/esm/sync";
 
-import MainNavbar from "./MainNavbar.tsx";
+import { MainNavbar } from "./MainNavbar.tsx";
 // import UserScansTable from "./UserScansTable";
 
 import { WebSocket } from "partysocket";
@@ -39,10 +41,12 @@ import {
 } from "../utils/MiscellaneousUtilities.ts";
 import { SocketMessageTypes } from "../model/SocketMessageTypes.ts";
 
-import UserScansTable from "./UserScansTable.tsx";
+import { UserScansTable } from "./UserScansTable.tsx";
 import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";
 import { UserScansToast } from "./UserScansToast.tsx";
 import { ScanBarcodeView } from "./ScanBarcodeView.tsx";
+import { MainDropdownMenu } from "./MainDropdownMenu.tsx";
+import { DebugBreakpointView } from "./DebugBreakpointView.tsx";
 
 import {
     type ScannedBarcodeResponse,
@@ -91,8 +95,7 @@ export function UserScansRoot(): JSX.Element {
         setLastAutoCopiedBarcode
     ] = useState<ScannedBarcodeResponse | null>(null);
 
-    // TODO: Renamed to autoCopyIsEnabled
-    const [enableAutoCopy, setEnableAutoCopy] = useState<boolean>(
+    const [autoCopyIsEnabled, setAutoCopyIsEnabled] = useState<boolean>(
         enableAutoCopyValue
     );
 
@@ -105,9 +108,9 @@ export function UserScansRoot(): JSX.Element {
         formattedLinkValue
     );
 
-    const [showFormattedLinkModal, setShowFormattedLinkModal] = useState(false);
+    const [configureLinkModalIsOpen, setConfigureLinkModalIsOpen] = useState(false);
 
-    const [showScanBarcodeView, setShowScanBarcodeView] = useState(false);
+    const [scanBarcodeViewIsOpen, setScanBarcodeViewIsOpen] = useState(false);
 
     const [viewportSize, setViewportSize] = useState<ViewportSize>({
         width: window.innerWidth,
@@ -307,6 +310,32 @@ export function UserScansRoot(): JSX.Element {
 
     }, [setHighlightedBarcode]);
 
+    const copyLastBarcodeToClipboard = useCallback((): void => {
+
+        const latestBarcode = barcodes[0];
+
+        if (latestBarcode) {
+
+            console.log(
+                "UserScansRoot.copyLastBarcodeToClipboard(): " +
+                "Copying latest barcode to clipboard: " +
+                `"${JSON.stringify(latestBarcode)}"`
+            );
+
+            writeBarcodeToClipboard({
+                barcode: latestBarcode,
+                showNotification: true,
+                highlight: true
+            });
+        }
+        else {
+            console.log(
+                "UserScansRoot.copyLastBarcodeToClipboard(): " +
+                "latest barcode is null or undefined"
+            );
+        }
+    }, [barcodes, writeBarcodeToClipboard]);
+
     /**
      * Makes a CSV string from the scanned barcodes for the user.
      *
@@ -396,7 +425,7 @@ export function UserScansRoot(): JSX.Element {
         barcode: ScannedBarcodeResponse
     ): void => {
 
-        if (!enableAutoCopy) {
+        if (!autoCopyIsEnabled) {
             console.log(
                 "Auto-copy is disabled; not copying latest barcode"
             );
@@ -426,7 +455,7 @@ export function UserScansRoot(): JSX.Element {
     }, [
         writeBarcodeToClipboard,
         clientScannedBarcodeIDs,
-        enableAutoCopy,
+        autoCopyIsEnabled,
     ]);
 
     // MARK: - Effects -
@@ -452,7 +481,7 @@ export function UserScansRoot(): JSX.Element {
                 `enableAutoCopy: ${enableAutoCopy}`
             );
 
-            setEnableAutoCopy(enableAutoCopy);
+            setAutoCopyIsEnabled(enableAutoCopy);
             setFormattedLink(formattedLink);
 
         }
@@ -492,21 +521,8 @@ export function UserScansRoot(): JSX.Element {
                         "UserScansRoot.handleKeyDown(): " +
                         "Platform modifier key + \"k\" pressed: copying barcode"
                     );
-                    const latestBarcode = barcodes[0];
-                    if (latestBarcode) {
-                        writeBarcodeToClipboard({
-                            barcode: latestBarcode,
-                            showNotification: true,
-                            highlight: true
-                        });
-                        e.preventDefault();
-                    }
-                    else {
-                        console.log(
-                            "UserScansRoot.handleKeyDown(): " +
-                            "latest barcode is null or undefined"
-                        );
-                    }
+                    copyLastBarcodeToClipboard();
+                    e.preventDefault();
                 }
                 else if (e.key === "d" && !e.shiftKey && !e.altKey) {
                     console.log(
@@ -536,9 +552,9 @@ export function UserScansRoot(): JSX.Element {
                     console.log(
                         "UserScansRoot.handleKeyDown(): " +
                         "Platform modifier key + \"l\" pressed: " +
-                        "SHOWING formatted link"
+                        "SHOWING configure link"
                     );
-                    setShowFormattedLinkModal(true);
+                    showConfigureLinkModal();
                     e.preventDefault();
                 }
                 else if (e.key === "z" && !e.shiftKey && !e.altKey) {
@@ -556,7 +572,7 @@ export function UserScansRoot(): JSX.Element {
                         "Platform modifier key + \"s\" pressed: " +
                         "SHOWING scan barcode view"
                     );
-                    setShowScanBarcodeView(true);
+                    openScanBarcodeView();
                     e.preventDefault();
                 }
                 else {
@@ -578,7 +594,7 @@ export function UserScansRoot(): JSX.Element {
         };
 
     }, [
-        writeBarcodeToClipboard,
+        copyLastBarcodeToClipboard,
         barcodes,
         copyAsCSV,
         deleteAllUserBarcodes,
@@ -874,7 +890,7 @@ export function UserScansRoot(): JSX.Element {
 
     }
 
-    function handleAutoCopyChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    function handleAutoCopyChange(e: ChangeEvent<HTMLInputElement>): void {
 
         const enableAutoCopy = e.target.checked;
         console.log(
@@ -894,58 +910,12 @@ export function UserScansRoot(): JSX.Element {
             `set URL fragment to: ${window.location.hash}`
         );
 
-        setEnableAutoCopy(enableAutoCopy);
+        setAutoCopyIsEnabled(enableAutoCopy);
 
-    }
-
-    function copyLastBarcodeToClipboard(): void {
-
-        const latestBarcode = barcodes[0];
-
-        if (latestBarcode) {
-
-            console.log(
-                "UserScansRoot.copyLastBarcodeToClipboard(): " +
-                "Copying latest barcode to clipboard: " +
-                `"${JSON.stringify(latestBarcode)}"`
-            );
-
-            writeBarcodeToClipboard({
-                barcode: latestBarcode,
-                showNotification: true,
-                highlight: true
-            });
-        }
-        else {
-            console.log(
-                "UserScansRoot.copyLastBarcodeToClipboard(): " +
-                "latest barcode is null or undefined"
-            );
-        }
     }
 
     function deleteAllUserBarcodesKeyboardShortcutString(): string {
         return isApplePlatform() ? "⌘D" : "Ctrl+D";
-    }
-
-    function copyAsCSVKeyboardShortcutString(): string {
-        return isApplePlatform() ? "⌘E" : "Ctrl+E";
-    }
-
-    function exportAsCSVKeyboardShortcutString(): string {
-        return isApplePlatform() ? "⌘⇧E" : "Ctrl+Shift+E";
-    }
-
-    function copyLastBarcodeKeyboardShortcutString(): string {
-        return isApplePlatform() ? "⌘K" : "Ctrl+K";
-    }
-
-    function configureLinkKeyboardShortcutString(): string {
-        return isApplePlatform() ? "⌘L" : "Ctrl+L";
-    }
-
-    function scanBarcodeKeyboardShortcutString(): string {
-        return isApplePlatform() ? "⌘S" : "Ctrl+S";
     }
 
     function toggleAutoCopyKeyboardShortcutString(): string {
@@ -954,7 +924,7 @@ export function UserScansRoot(): JSX.Element {
 
     function toggleAutoCopy(): void {
 
-        setEnableAutoCopy((enableAutoCopy) => {
+        setAutoCopyIsEnabled((enableAutoCopy) => {
             const newValue = !enableAutoCopy;
             console.log(
                 `UserScansRoot.toggleAutoCopy(): set to ${newValue}`
@@ -1026,7 +996,7 @@ export function UserScansRoot(): JSX.Element {
 
     function showConfigureLinkModal(): void {
         console.log("showConfigureLinkModal():");
-        setShowFormattedLinkModal(true);
+        setConfigureLinkModalIsOpen(true);
     }
 
     /**
@@ -1035,7 +1005,7 @@ export function UserScansRoot(): JSX.Element {
      *
      * @param e the event
      */
-    function onChangeConfigureLinkInput(e: React.ChangeEvent<HTMLInputElement>): void {
+    function onChangeConfigureLinkInput(e: ChangeEvent<HTMLInputElement>): void {
 
         const formattedLink = e.target.value;
         console.log(
@@ -1052,7 +1022,7 @@ export function UserScansRoot(): JSX.Element {
      * @param e the event
      */
     function onSubmitConfigureLinkForm(
-        e: React.FormEvent<HTMLFormElement>
+        e: FormEvent<HTMLFormElement>
     ): void {
 
         console.log("onSubmitConfigureLinkForm()");
@@ -1060,7 +1030,7 @@ export function UserScansRoot(): JSX.Element {
         // prevent the form from submitting
         e.preventDefault();
 
-        setShowFormattedLinkModal(false);
+        setConfigureLinkModalIsOpen(false);
 
         updateFormattedLinkInURLFragment();
 
@@ -1071,7 +1041,7 @@ export function UserScansRoot(): JSX.Element {
      */
     function closeConfigureLinkModal(): void {
         console.log("closeConfigureLinkModal()");
-        setShowFormattedLinkModal(false);
+        setConfigureLinkModalIsOpen(false);
         updateFormattedLinkInURLFragment();
     }
 
@@ -1098,13 +1068,13 @@ export function UserScansRoot(): JSX.Element {
 
     // MARK: - Scan Barcode View -
 
-    function onOpenScanBarcodeView(): void {
-        setShowScanBarcodeView(true);
+    function openScanBarcodeView(): void {
+        setScanBarcodeViewIsOpen(true);
     }
 
     function closeScanBarcodeView(): void {
         console.log("closeScanBarcodeView()");
-        setShowScanBarcodeView(false);
+        setScanBarcodeViewIsOpen(false);
     }
 
     function insertClientScannedBarcodeID(barcodeID: string): void {
@@ -1116,107 +1086,6 @@ export function UserScansRoot(): JSX.Element {
 
     // MARK: --- Rendering ---
 
-    function renderMainContextMenu(): JSX.Element {
-        return (
-            <Dropdown>
-                <Dropdown.Toggle variant="success">
-                    <i className="fa fa-ellipsis-v px-2"></i>
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                    <Dropdown.Item
-                        className={disabledClassIfZeroBarcodes()}
-                        onClick={copyAsCSV}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa fa-file-csv"></i>
-                            <span>Copy as CSV</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {copyAsCSVKeyboardShortcutString()}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                        className={disabledClassIfZeroBarcodes()}
-                        onClick={exportAsCSV}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa-solid fa-file-export"></i>
-                            <span>Export as CSV</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {exportAsCSVKeyboardShortcutString()}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider className="" />
-                    <Dropdown.Item
-                        className={disabledClassIfZeroBarcodes()}
-                        onClick={copyLastBarcodeToClipboard}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa-solid fa-copy"></i>
-                            <span>Copy Latest Barcode</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {copyLastBarcodeKeyboardShortcutString()}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider className="" />
-                    {/* *** === Open Scan Barcode View === *** */}
-                    <Dropdown.Item
-                        onClick={onOpenScanBarcodeView}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa-solid fa-camera"></i>
-                            <span>Scan Barcode...</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {scanBarcodeKeyboardShortcutString()}
-                            </span>
-
-                        </div>
-                    </Dropdown.Item>
-                    {/* *** === Configure Link *** === */}
-                    <Dropdown.Item
-                        onClick={showConfigureLinkModal}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa fa-link"></i>
-                            <span>Configure Link...</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {configureLinkKeyboardShortcutString()}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                </Dropdown.Menu>
-            </Dropdown>
-        );
-    }
-
     return (
         <div className="vw-100 vh-100">
 
@@ -1226,21 +1095,11 @@ export function UserScansRoot(): JSX.Element {
                 )}
             </title>
 
-            {/* if (process.env?.NODE_ENV === "development") {
-                <DebugBreakpointView />
-            } */}
-
-            {/* {process.env?.NODE_ENV === "development" ?
-                <DebugBreakpointView /> :
-                null
-            } */}
-
-            {/* *** =====================-=== */}
-            {/* *** === Scan Barcode View === */}
-            {/* *** =====================-=== */}
+            {/* only shows when VITE_SHOW_BREAKPOINT_VIEW = true */}
+            <DebugBreakpointView />
 
             <ScanBarcodeView
-                showScanBarcodeModal={showScanBarcodeView}
+                showScanBarcodeModal={scanBarcodeViewIsOpen}
                 user={user}
                 onClose={closeScanBarcodeView}
                 insertClientScannedBarcodeID={insertClientScannedBarcodeID}
@@ -1248,7 +1107,7 @@ export function UserScansRoot(): JSX.Element {
 
             <ConfigureLinkModal
                 formattedLink={formattedLink}
-                showFormattedLinkModal={showFormattedLinkModal}
+                showFormattedLinkModal={configureLinkModalIsOpen}
                 viewportSize={viewportSize}
                 onChangeConfigureLinkInput={onChangeConfigureLinkInput}
                 closeConfigureLinkModal={closeConfigureLinkModal}
@@ -1294,7 +1153,14 @@ export function UserScansRoot(): JSX.Element {
                         {/* *** ==================================== *** */}
                         {/* *** === Dropdown - Main Context Menu === *** */}
                         {/* *** ==================================== *** */}
-                        {renderMainContextMenu()}
+                        <MainDropdownMenu
+                            disabledClassIfZeroBarcodes={disabledClassIfZeroBarcodes}
+                            copyAsCSV={copyAsCSV}
+                            exportAsCSV={exportAsCSV}
+                            copyLastBarcodeToClipboard={copyLastBarcodeToClipboard}
+                            openScanBarcodeView={openScanBarcodeView}
+                            showConfigureLinkModal={showConfigureLinkModal}
+                        />
                     </div>
                     <div className="p-1">
                         {/* Auto-Copy */}
@@ -1310,7 +1176,7 @@ export function UserScansRoot(): JSX.Element {
                                 type="checkbox"
                                 name="enable-auto-copy"
                                 id="enable-auto-copy"
-                                checked={enableAutoCopy}
+                                checked={autoCopyIsEnabled}
                                 onChange={handleAutoCopyChange}
                             />
                             <span style={{ marginLeft: "5px" }}>

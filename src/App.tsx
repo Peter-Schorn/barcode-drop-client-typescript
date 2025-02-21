@@ -1,9 +1,9 @@
 import { type JSX } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import HomeView from "./components/HomeView.tsx";
+import { HomeView } from "./components/HomeView.tsx";
 import { UserScansRoot } from "./components/UserScansRoot.tsx";
-import SetupView from "./components/SetupView.tsx";
+import { SetupView } from "./components/SetupView.tsx";
 
 import { AppContext } from "./model/AppContext.ts";
 

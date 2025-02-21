@@ -11,13 +11,13 @@ import { Form, Button } from "react-bootstrap";
 
 import { useNavigate } from "react-router-dom";
 
-import MainNavbar from "./MainNavbar";
+import { MainNavbar } from "./MainNavbar";
 
 import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities.ts";
 
 import barcodeDropBackground from "../assets/images/barcode_drop_background.svg";
 
-export default function HomeView(): JSX.Element {
+export function HomeView(): JSX.Element {
 
     // const context = useContext(AppContext);
 

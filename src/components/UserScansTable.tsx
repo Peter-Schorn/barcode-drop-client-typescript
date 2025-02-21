@@ -22,7 +22,7 @@ type UserScansTableProps = {
 };
 
 
-export default function UserScansTable(props: UserScansTableProps): JSX.Element {
+export function UserScansTable(props: UserScansTableProps): JSX.Element {
 
     function barcodeIsHighlighted(
         barcode: ScannedBarcodeResponse

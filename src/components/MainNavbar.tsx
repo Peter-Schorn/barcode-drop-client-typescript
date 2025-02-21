@@ -1,6 +1,6 @@
 import { type JSX } from "react";
 
-export default function MainNavbar(): JSX.Element {
+export function MainNavbar(): JSX.Element {
 
     return (
         <nav className="navbar navbar-expand-lg bg-light">

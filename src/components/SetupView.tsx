@@ -1,12 +1,12 @@
 import { type JSX } from "react";
 import { Container } from "react-bootstrap";
-import MainNavbar from "./MainNavbar";
+import { MainNavbar } from "./MainNavbar";
 import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities";
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";
 
-export default function SetupView(): JSX.Element {
+export function SetupView(): JSX.Element {
 
     const icloudShortcutURL = "https://www.icloud.com/shortcuts/0f7f0a8a0bc3476f807324d922b44fe2";
 

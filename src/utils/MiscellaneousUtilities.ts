@@ -22,6 +22,9 @@ export function setIntervalImmediately(
  * @returns `true` if the platform is Apple, `false` otherwise.
  */
 export function isApplePlatform(): boolean {
+    if (import.meta.env.VITE_DEBUG_NON_APPLE_PLATFORM === "true") {
+        return false;
+    }
     return /Mac|iPod|iPhone|iPad/.test(navigator.platform);
 }
 

@@ -1,6 +1,15 @@
-import { type JSX } from "react";
+import { type ReactNode } from "react";
 
-export function DebugBreakpointView(): JSX.Element {
+/**
+ * Shows the bootstrap breakpoints in the top right corner of the screen. Only
+ * visible when the VITE_SHOW_BREAKPOINT_VIEW environment variable is set to
+ * "true".
+ */
+export function DebugBreakpointView(): ReactNode {
+
+    if (import.meta.env.VITE_SHOW_BREAKPOINT_VIEW !== "true") {
+        return null;
+    }
 
     return (
         <div
