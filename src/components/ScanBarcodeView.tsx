@@ -1,7 +1,10 @@
+import "./ScanBarcodeView.css";
+
 import React, {
     type JSX,
     useContext,
-    useState
+    useState,
+    useRef
 } from "react";
 
 import { AppContext } from "../model/AppContext";
@@ -24,6 +27,8 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
 
     const context = useContext(AppContext);
 
+    const barcodeInput = useRef<HTMLInputElement>(null);
+
     const [barcode, setBarcode] = useState("");
 
     /**
@@ -38,6 +43,11 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
             `"${newBarcode}"`
         );
         setBarcode(newBarcode);
+    }
+
+    function onClickCancelButton(): void {
+        setBarcode("");
+        barcodeInput.current?.focus();
     }
 
     /**
@@ -92,7 +102,7 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
 
     return (
         <Modal
-            className="translate-middle top-50 start-50 position-absolute rounded z-index-1"
+            className="translate-middle top-50 start-50 position-absolute z-index-1"
             isOpen={props.scanBarcodeViewIsOpen}
             onRequestClose={props.onClose}
             style={{
@@ -100,92 +110,56 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
                     backgroundColor: "transparent"
                 },
                 content: {
-                    boxShadow: " 0px 0px 40px 2px rgba(0, 0, 0, 0.4)",
-                    height: "38px",
+                    boxShadow: "0px 0px 40px 2px rgba(0, 0, 0, 0.4)",
                     width: "500px",
                     maxWidth: "90vw",
-                    marginLeft: "auto",
-                    marginRight: "10px",
                     marginTop: "-35vh",
-                    backgroundColor: "lightgray",
-                    border: "0px solid black",
+                    borderRadius: "8px 10px 10px 8px",
+                    border: "2px solid lightgray",
                 }
             }}
         >
             <Form
                 onSubmit={onSubmitForm}
+                className="d-flex"
             >
-                <div
-                    className="d-flex"
+                {/* *** === Cancel Button === *** */}
+                <button
+                    onClick={onClickCancelButton}
+                    className="scan-barcode-close-button"
+                    type="button"
                 >
-                    {/* *** === Close Button === *** */}
-                    <button
-                        onClick={props.onClose}
-                        className="scan-barcode-close-button"
-                        type="button"
-                        style={{
-                            width: "30px",
-                            height: "48px",
-                            position: "absolute",
-                            margin: "0px 44px",
-                            color: "gray",
-                            backgroundColor: "rgba(0, 0, 0, 0)",
-                            border: "none",
-                            zIndex: 6
-                        }}
-                    >
-                        X
-                    </button>
-                    <div
-                        className="flex-fill"
-                    >
-                        <InputGroup>
+                    X
+                </button>
 
-                            <InputGroup.Text
-                                style={{
-                                    border: "2px solid white"
-                                }}
-                            >
-                                <i
-                                    className="fa-solid fa-barcode"
-                                    style={{
-                                        color: "black",
-                                        width: "16px",
-                                        height: "16px"
-                                    }}
-                                >
-                                </i>
-                            </InputGroup.Text>
+                <InputGroup >
 
-                            <Form.Control
-                                autoFocus={true}
-                                type="text"
-                                size="lg"
-                                value={barcode}
-                                onChange={handleInputChange}
-                                placeholder="Enter Barcode"
-                                className="scan-barcode-input"
-                                style={{
-                                    paddingRight: "70px",
-                                    paddingLeft: "25px",
-                                    border: "0px solid black"
-                                }}
-                            />
-                        </InputGroup>
-                    </div>
-                    <div>
-                        {/* ============================== */}
-                        {/* *** ==== SUBMIT BUTTON === *** */}
-                        {/* ============================== */}
-                        <button
-                            disabled={!barcode}
-                            className="scan-barcode-submit-button"
-                            type="submit"
+                    <InputGroup.Text className="scan-barcode-icon">
+                        <i
+                            className="fa-solid fa-barcode"
                         >
-                            Submit
-                        </button>
-                    </div>
-                </div>
+                        </i>
+                    </InputGroup.Text>
+
+                    <Form.Control
+                        ref={barcodeInput}
+                        autoFocus={true}
+                        type="text"
+                        size="lg"
+                        value={barcode}
+                        onChange={handleInputChange}
+                        placeholder="Enter Barcode"
+                        className="scan-barcode-input"
+                    />
+
+                    <button
+                        disabled={!barcode}
+                        className="scan-barcode-submit-button"
+                        type="submit"
+                    >
+                        Submit
+                    </button>
+                </InputGroup>
             </Form>
         </Modal>
     );

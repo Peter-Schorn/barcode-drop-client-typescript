@@ -200,18 +200,3 @@ hr.padded-hr {
 
 }
 
-.scan-barcode-submit-button {
-    max-width: 80px;
-    height: 48px;
-    position: absolute;
-    margin: 0px -63px;
-    color: gray;
-    background-color: #f0eded;
-    border-radius: 0px 8px 8px 0px;
-    border: none;
-    z-index: 5;
-}
-
-.scan-barcode-submit-button:active:not([disabled]) {
-    background-color: rgb(232, 232, 232);
-}

@@ -1,0 +1,37 @@
+.scan-barcode-icon {
+    border: none !important;
+}
+
+.scan-barcode-close-button {
+    width: 30px;
+    height: 48px;
+    position: absolute;
+    margin: 0px 44px;
+    color: gray;
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    z-index: 6;
+}
+
+.scan-barcode-input {
+    border: none !important;
+    box-shadow: none !important;
+    padding-left: 34px !important;
+}
+
+.scan-barcode-input:focus {
+    outline: 2px solid highlight !important;
+}
+
+.scan-barcode-submit-button {
+    /* height: 50px; */
+    color: rgb(88, 92, 95);
+    padding: 0px 10px 0px 10px;
+    background-color: #dddddd;
+    border-radius: 0px 8px 8px 0px;
+    border: none;
+}
+
+.scan-barcode-submit-button:active:not([disabled]) {
+    background-color: #e8e8e8;
+}
