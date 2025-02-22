@@ -212,6 +212,6 @@ hr.padded-hr {
     z-index: 5;
 }
 
-.scan-barcode-submit-button:active {
-    background-color: rgb(234, 232, 232);
+.scan-barcode-submit-button:active:not([disabled]) {
+    background-color: rgb(232, 232, 232);
 }

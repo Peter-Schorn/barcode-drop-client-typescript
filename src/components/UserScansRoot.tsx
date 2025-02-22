@@ -59,6 +59,7 @@ import {
 
 import { type ViewportSize } from "../types/ViewportSize.ts";
 import { type UserScansRootParams } from "../types/UserScansRootParams.ts";
+import { type ToastMessageType } from "../types/ToastMessageType.ts";
 
 import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
@@ -255,14 +256,13 @@ export function UserScansRoot(): JSX.Element {
 
     const showToast = useCallback((
         message: string,
-        type: "success" | "error" = "success"
+        type: ToastMessageType = "success"
     ): void => {
 
         if (currentToastID) {
             toast.dismiss(currentToastID);
         }
 
-        // we will use the toast ID to dismiss the toast later
         const toastID = toast[type](
             message,
             { duration: 5_000 }
@@ -1111,10 +1111,11 @@ export function UserScansRoot(): JSX.Element {
             <DebugBreakpointView />
 
             <ScanBarcodeView
-                showScanBarcodeModal={scanBarcodeViewIsOpen}
+                scanBarcodeViewIsOpen={scanBarcodeViewIsOpen}
                 user={user}
                 onClose={closeScanBarcodeView}
                 insertClientScannedBarcodeID={insertClientScannedBarcodeID}
+                showToast={showToast}
             />
 
             <ConfigureLinkModal
