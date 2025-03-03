@@ -5,7 +5,6 @@ export function MainNavbar(): JSX.Element {
     return (
         <nav className="navbar navbar-expand-lg bg-light">
             <div className="container-md">
-                {/* <div className="container text-center"> */}
                 <a className="navbar-brand" href="/">
                     <strong>
                         Barcode Drop
@@ -16,7 +15,6 @@ export function MainNavbar(): JSX.Element {
                         </i>
                     </strong>
                 </a>
-                {/* --- </div> --- */}
 
                 <button
                     className="navbar-toggler"
@@ -40,7 +38,6 @@ export function MainNavbar(): JSX.Element {
                             <li className="nav-item">
                                 <a
                                     className="nav-link active"
-                                    // aria-current="page"
                                     href="/setup"
                                 >
                                     Setup
