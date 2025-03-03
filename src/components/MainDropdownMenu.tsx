@@ -2,13 +2,12 @@ import {
     type JSX
 } from "react";
 
-import {
-    Dropdown
-} from "react-bootstrap";
+import Dropdown from "react-bootstrap/Dropdown";
+import Stack from "react-bootstrap/Stack";
 
 import { isApplePlatform } from "../utils/MiscellaneousUtilities.ts";
 
-type MainContextMenuProps = {
+type MainDropdownMenuProps = {
     disabledClassIfZeroBarcodes: () => string;
     copyAsCSV: () => void;
     exportAsCSV: () => void;
@@ -17,7 +16,7 @@ type MainContextMenuProps = {
     showConfigureLinkModal: () => void;
 };
 
-export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
+export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
 
     function copyAsCSVKeyboardShortcutString(): string {
         return isApplePlatform() ? "⌘E" : "Ctrl+E";
@@ -50,7 +49,7 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                     className={props.disabledClassIfZeroBarcodes()}
                     onClick={props.copyAsCSV}
                 >
-                    <div className="hstack gap-3">
+                    <Stack direction="horizontal" gap={3}>
                         <i className="fa fa-file-csv"></i>
                         <span>Copy as CSV</span>
                         <span className="ms-auto">
@@ -61,13 +60,13 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                         }}>
                             {copyAsCSVKeyboardShortcutString()}
                         </span>
-                    </div>
+                    </Stack>
                 </Dropdown.Item>
                 <Dropdown.Item
                     className={props.disabledClassIfZeroBarcodes()}
                     onClick={props.exportAsCSV}
                 >
-                    <div className="hstack gap-3">
+                    <Stack direction="horizontal" gap={3}>
                         <i className="fa-solid fa-file-export"></i>
                         <span>Export as CSV</span>
                         <span className="ms-auto">
@@ -78,14 +77,14 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                         }}>
                             {exportAsCSVKeyboardShortcutString()}
                         </span>
-                    </div>
+                    </Stack>
                 </Dropdown.Item>
                 <Dropdown.Divider className="" />
                 <Dropdown.Item
                     className={props.disabledClassIfZeroBarcodes()}
                     onClick={props.copyLastBarcodeToClipboard}
                 >
-                    <div className="hstack gap-3">
+                    <Stack direction="horizontal" gap={3}>
                         <i className="fa-solid fa-copy"></i>
                         <span>Copy Latest Barcode</span>
                         <span className="ms-auto">
@@ -96,14 +95,14 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                         }}>
                             {copyLastBarcodeKeyboardShortcutString()}
                         </span>
-                    </div>
+                    </Stack>
                 </Dropdown.Item>
                 <Dropdown.Divider className="" />
                 {/* *** === Open Scan Barcode View === *** */}
                 <Dropdown.Item
                     onClick={props.openScanBarcodeView}
                 >
-                    <div className="hstack gap-3">
+                    <Stack direction="horizontal" gap={3}>
                         <i className="fa-solid fa-camera"></i>
                         <span>Scan Barcode...</span>
                         <span className="ms-auto">
@@ -115,13 +114,13 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                             {scanBarcodeKeyboardShortcutString()}
                         </span>
 
-                    </div>
+                    </Stack>
                 </Dropdown.Item>
                 {/* *** === Configure Link *** === */}
                 <Dropdown.Item
                     onClick={props.showConfigureLinkModal}
                 >
-                    <div className="hstack gap-3">
+                    <Stack direction="horizontal" gap={3}>
                         <i className="fa fa-link"></i>
                         <span>Configure Link...</span>
                         <span className="ms-auto">
@@ -132,7 +131,7 @@ export function MainDropdownMenu(props: MainContextMenuProps): JSX.Element {
                         }}>
                             {configureLinkKeyboardShortcutString()}
                         </span>
-                    </div>
+                    </Stack>
                 </Dropdown.Item>
             </Dropdown.Menu>
         </Dropdown>

@@ -2,7 +2,7 @@ import React, { type JSX } from "react";
 
 import { Table } from "react-bootstrap";
 
-import { UserScanRow } from "./UserScanRow";
+import { UserScanRow } from "./UserScansRow/UserScanRow";
 
 import {
     type ScannedBarcodeResponse,

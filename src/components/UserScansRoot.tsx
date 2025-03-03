@@ -1132,11 +1132,7 @@ export function UserScansRoot(): JSX.Element {
 
             <Container fluid="md" style={{
                 maxWidth: "1000px"
-                // maxWidth: "300px"
-                // maxWidth: "vw-100"
             }}>
-                {/* <div className="container-md"> */}
-
                 <div className="row">
                     <h2 style={{ margin: "30px 0px 0px 0px" }}>
                         <strong className="scans-for-user-text">

@@ -1,3 +1,5 @@
+import "./UserScanRow.css";
+
 import React, {
     useState,
     useEffect,
@@ -9,21 +11,24 @@ import React, {
 
 import { useSearchParams } from "react-router-dom";
 
-import { AppContext } from "../model/AppContext";
+import { AppContext } from "../../model/AppContext";
 
-import { Button, Dropdown, Stack } from "react-bootstrap";
+import { Button, Stack } from "react-bootstrap";
 
 import {
     dateDifferenceFromNow
-} from "../utils/MiscellaneousUtilities";
+} from "../../utils/MiscellaneousUtilities";
 
-import { BarcodeImageModalView } from "./BarcodeImageModalView";
+import { BarcodeImageModalView } from "../BarcodeImageModalView";
 
 import {
     type ScannedBarcodeResponse
-} from "../types/ScannedBarcodesResponse";
+} from "../../types/ScannedBarcodesResponse";
 
-import { type ViewportSize } from "../types/ViewportSize";
+import { type ViewportSize } from "../../types/ViewportSize";
+
+import { UserScanRowDropdownMenu } from "./UserScanRowDropdownMenu";
+import { UserScanBarcodeCell } from "./UserScanBarcodeCell";
 
 type UserScansRowProps = {
     index: number;
@@ -52,7 +57,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
     ] = useState(false);
 
     const [isCopying, setIsCopying] = useState(false);
-
 
     /**
      * A formatted string representing the date the barcode was scanned.
@@ -142,147 +146,20 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
     function copyButtonStyle(): CSSProperties {
         return {
             backgroundColor: props.isHighlighted ? "#0fd626" : "lightblue",
-            padding: "6px 15px",
-            margin: "0px 0px 0px 0px",
-            borderTop: "1px solid black",
-            borderBottom: "1px solid black",
-            borderLeft: "1px solid black",
-            borderRight: "0.5px solid black",
-            borderRadius: "5px 0px 0px 5px",
-            color: "black",
-
-            // borderLeft: isHighlighted ? "1px solid green" : "1px solid",
-            // borderTop: isHighlighted ? "1px solid green" : "1px solid",
-            // borderBottom: isHighlighted ? "1px solid green" : "1px solid",
             transform: isCopying ? "translateY(3px)" : undefined,
-            transition: "all 0.5s ease-out"
         };
     }
 
     // MARK: - Components -
 
-    function barcodeIDdebugText(smallSize: boolean): ReactNode {
-
-        if (searchParams.get("debug") === "true") {
-            return (
-                <span
-                    className="text-secondary"
-                    style={{ fontSize: "12px" }}
-                >
-                    {smallSize ? "•" : null}
-                    {` (${props.barcode.id})`}
-                </span>
-            );
-        }
-        else {
-            return null;
-        }
-
-    }
-
     function renderDeleteButton(): JSX.Element {
         return (
             <Button
-                style={{
-                    margin: "5px 5px",
-                    backgroundColor: "#e84846"
-                }}
+                className="user-scan-row-delete-button"
                 onClick={onClickDeleteButton}
             >
                 <i className="fa fa-trash"></i>
             </Button>
-        );
-    }
-
-    function renderBarcodeCell(): JSX.Element {
-
-        let smallSize = false;
-        if (props.viewportSize.width <= 600) {
-            smallSize = true;
-        }
-
-        return (
-            <td>
-                <span
-                    className="barcode-text line display-linebreaks text-break"
-                >
-                    {props.barcode.barcode}
-                </span>
-                {smallSize ? (
-                    // <div>
-                    <span
-                        className="text-secondary px-2"
-                        style={{
-                            fontSize: "12px"
-                        }}
-                    >
-                        {"• "}
-                        {dateDifference}
-                    </span>
-                    // </div>
-                ) : null}
-                {/* --- BARCODE ID --- */}
-                {barcodeIDdebugText(smallSize)}
-            </td>
-        );
-    }
-
-    function renderDropdownMenu(): JSX.Element {
-        return (
-            <Dropdown className="ms-1">
-                <Dropdown.Toggle variant="success" className="text-center">
-                    <i className="fa fa-ellipsis-v px-2" />
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu>
-                    <Dropdown.Item
-                        onClick={didClickGenerateBarcode}
-                        style={{
-                            color: "#076b05"
-                        }}
-                    >
-                        <div className="hstack gap-3">
-                            <i className="fa-solid fa-barcode"></i>
-                            <span>Generate Barcode</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {/* {this.copyAsCSVKeyboardShortcutString()} */}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                    <Dropdown.Divider className="" />
-                    <Dropdown.Item
-                        style={{
-                            color: "#ed432d",
-                            // color: "white",
-                            // backgroundColor: "#ed432d"
-                        }}
-                        onClick={onClickDeleteButton}
-                    >
-                        <div
-                            className="hstack gap-3"
-                            style={{
-                                // padding: "5px 10px",
-                            }}
-                        >
-                            <i className="fa fa-trash"></i>
-                            <span>Delete</span>
-                            <span className="ms-auto">
-                                {/* --- Spacer --- */}
-                            </span>
-                            <span style={{
-                                color: "gray",
-                            }}>
-                                {/* {this.copyAsCSVKeyboardShortcutString()} */}
-                            </span>
-                        </div>
-                    </Dropdown.Item>
-                </Dropdown.Menu>
-            </Dropdown>
         );
     }
 
@@ -291,8 +168,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             data-barcode-id={props.barcode.id}
             key={props.barcode.id}
         >
-            {/* {this.renderBarcodeImageModal()} */}
-
             <BarcodeImageModalView
                 barcode={props.barcode}
                 generateBarcodeModalIsOpen={generateBarcodeModalIsOpen}
@@ -301,11 +176,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
             <td style={{
                 textAlign: "center",
-                // minWidth: "120px",
-                // maxHeight: "10px"
-                // height: "20px"
-                // margin: "2px !important",
-                // padding: "2px !important"
             }}>
 
                 <Stack
@@ -315,44 +185,39 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
                 >
                     {/* --- Copy Button --- */}
                     <button
-                        // variant=""
                         className="copy-button"
                         style={copyButtonStyle()}
                         onClick={onClickCopyButton}
                     >
-                        {/* span>Copy</span> */}
                         <i className="fa-solid fa-copy"></i>
                     </button>
                     {/* --- Link Button --- */}
                     <button
-                        className="link-button"
+                        className="open-link-button"
                         onClick={() => {
                             return props.onClickOpenLink(
                                 props.barcode
                             );
                         }}
-                        style={{
-                            padding: "6px 10px",
-                            margin: "0px 0px 0px 0px",
-                            color: "black",
-                            backgroundColor: "grey",
-                            borderTop: "1px solid black",
-                            borderBottom: "1px solid black",
-                            borderLeft: "0.5px solid black",
-                            borderRight: "1px solid black",
-                            borderRadius: "0px 5px 5px 0px"
-                        }}
                     >
                         <i className="fa fa-link"></i>
                     </button>
 
-                    {renderDropdownMenu()}
+                    <UserScanRowDropdownMenu
+                        didClickGenerateBarcode={didClickGenerateBarcode}
+                        onClickDeleteButton={onClickDeleteButton}
+                    />
 
                 </Stack>
                 {/* --- Barcode Image Modal --- */}
             </td>
             {/* --- Barcode Cell --- */}
-            {renderBarcodeCell()}
+            <UserScanBarcodeCell
+                barcode={props.barcode}
+                dateDifference={dateDifference}
+                viewportSize={props.viewportSize}
+                searchParams={searchParams}
+            />
             {/* --- Time Cell (>600px) --- */}
             {
                 props.viewportSize?.width > 600 ? (
