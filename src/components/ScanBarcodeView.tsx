@@ -9,8 +9,6 @@ import React, {
 
 import { AppContext } from "../model/AppContext";
 
-import { Form, InputGroup } from "react-bootstrap";
-
 import Modal from "react-modal";
 
 import { type ToastMessageType } from "../types/ToastMessageType";
@@ -114,53 +112,44 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
                     width: "500px",
                     maxWidth: "90vw",
                     marginTop: "-35vh",
-                    borderRadius: "8px 10px 10px 8px",
+                    borderRadius: "10.5px",
                     border: "2px solid lightgray",
                 }
             }}
         >
-            <Form
+            <form
                 onSubmit={onSubmitForm}
-                className="d-flex"
+                className="scan-barcode-form"
             >
-                {/* *** === Cancel Button === *** */}
+                <div className="scan-barcode-icon-container">
+                    <i
+                        className="fa-solid fa-barcode"
+                    />
+                </div>
                 <button
                     onClick={onClickCancelButton}
-                    className="scan-barcode-close-button"
+                    className="scan-barcode-cancel-button"
                     type="button"
                 >
                     X
                 </button>
-
-                <InputGroup >
-
-                    <InputGroup.Text className="scan-barcode-icon">
-                        <i
-                            className="fa-solid fa-barcode"
-                        >
-                        </i>
-                    </InputGroup.Text>
-
-                    <Form.Control
-                        ref={barcodeInput}
-                        autoFocus={true}
-                        type="text"
-                        size="lg"
-                        value={barcode}
-                        onChange={handleInputChange}
-                        placeholder="Enter Barcode"
-                        className="scan-barcode-input"
-                    />
-
-                    <button
-                        disabled={!barcode}
-                        className="scan-barcode-submit-button"
-                        type="submit"
-                    >
-                        Submit
-                    </button>
-                </InputGroup>
-            </Form>
+                <input
+                    type="text"
+                    ref={barcodeInput}
+                    autoFocus={true}
+                    value={barcode}
+                    onChange={handleInputChange}
+                    placeholder="Enter Barcode"
+                    className="scan-barcode-input"
+                />
+                <button
+                    disabled={!barcode}
+                    className="scan-barcode-submit-button"
+                    type="submit"
+                >
+                    Submit
+                </button>
+            </form>
         </Modal>
     );
 

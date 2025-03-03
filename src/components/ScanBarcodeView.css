@@ -1,37 +1,65 @@
-.scan-barcode-icon {
-    border: none !important;
+.scan-barcode-form {
+    --form-height: 48px;
+    --barcode-icon-container-width: 40px;
+    --cancel-button-width: 30px;
 }
 
-.scan-barcode-close-button {
-    width: 30px;
-    height: 48px;
+.scan-barcode-form {
+    display: flex;
+    height: var(--form-height);
+}
+
+.scan-barcode-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    width: var(--barcode-icon-container-width);
+    padding: .375rem .75rem;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.scan-barcode-cancel-button {
+    width: var(--cancel-button-width);
+    height: var(--form-height);
     position: absolute;
-    margin: 0px 44px;
+    margin-left: var(--barcode-icon-container-width);
+    padding-left: 10px;
+    padding-right: 10px;
     color: gray;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: transparent;
     border: none;
-    z-index: 6;
+    z-index: 2;
 }
 
 .scan-barcode-input {
-    border: none !important;
-    box-shadow: none !important;
-    padding-left: 34px !important;
+    flex-grow: 1;
+    font-size: 1.25rem;
+    border: none;
+    padding-right: 5px;
+    padding-left: var(--cancel-button-width);
 }
 
 .scan-barcode-input:focus {
-    outline: 2px solid highlight !important;
+    /*
+    necessary so that the focus indicator outline is not clipped by the submit
+    button
+    */
+    z-index: 1;
 }
 
 .scan-barcode-submit-button {
-    /* height: 50px; */
     color: rgb(88, 92, 95);
-    padding: 0px 10px 0px 10px;
-    background-color: #dddddd;
-    border-radius: 0px 8px 8px 0px;
+    padding-left: 10px;
+    padding-right: 10px;
+    background-color: #f8f9fa;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
     border: none;
 }
 
+/* style the button when the user clicks on it */
 .scan-barcode-submit-button:active:not([disabled]) {
     background-color: #e8e8e8;
 }
