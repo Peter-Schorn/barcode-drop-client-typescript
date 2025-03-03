@@ -21,22 +21,22 @@ export function UserScanBarcodeCell(
 
     function barcodeIDdebugText(smallSize: boolean): ReactNode {
 
-            if (props.searchParams.get("debug") === "true") {
-                return (
-                    <span
-                        className="text-secondary"
-                        style={{ fontSize: "12px" }}
-                    >
-                        {smallSize ? "•" : null}
-                        {` (${props.barcode.id})`}
-                    </span>
-                );
-            }
-            else {
-                return null;
-            }
-
+        if (props.searchParams.get("debug") === "true") {
+            return (
+                <span
+                    className="text-secondary"
+                    style={{ fontSize: "12px" }}
+                >
+                    {smallSize ? "•" : null}
+                    {` (${props.barcode.id})`}
+                </span>
+            );
         }
+        else {
+            return null;
+        }
+
+    }
 
     return (
         <td>
