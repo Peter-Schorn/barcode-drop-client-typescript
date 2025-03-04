@@ -152,14 +152,24 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     // MARK: - Components -
 
-    function renderDeleteButton(): JSX.Element {
+    function renderDeleteButton(): ReactNode {
         return (
-            <Button
-                className="user-scan-row-delete-button"
-                onClick={onClickDeleteButton}
-            >
-                <i className="fa fa-trash"></i>
-            </Button>
+            props.viewportSize?.width > 800 ? (
+                <td
+                    className="user-scan-row-delete-button-cell"
+                    data-toggle="tooltip"
+                    data-placement="top"
+                    title="Delete this barcode"
+                >
+                    <Button
+                        variant="danger"
+                        className="user-scan-row-delete-button"
+                        onClick={onClickDeleteButton}
+                    >
+                        <i className="fa fa-trash"></i>
+                    </Button>
+                </td>
+            ) : null
         );
     }
 
@@ -209,7 +219,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
                     />
 
                 </Stack>
-                {/* --- Barcode Image Modal --- */}
             </td>
             {/* --- Barcode Cell --- */}
             <UserScanBarcodeCell
@@ -232,22 +241,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             }
 
             {/* --- Delete Button (>800px) --- */}
-            {
-                props.viewportSize?.width > 800 ? (
-                    <td
-                        style={{
-                            textAlign: "center",
-                        }}
-                        data-toggle="tooltip"
-                        data-placement="top"
-                        title="Delete this barcode"
-                    >
-                        {/* TODO: ternary for viewport size should be within
-                        renderDeleteButton */}
-                        {renderDeleteButton()}
-                    </td>
-                ) : null
-            }
+            {renderDeleteButton()}
         </tr>
     );
 

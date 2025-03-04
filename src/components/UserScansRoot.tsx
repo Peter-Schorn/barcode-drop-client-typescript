@@ -1130,7 +1130,7 @@ export function UserScansRoot(): JSX.Element {
 
             <MainNavbar />
 
-            <Container fluid="md" style={{
+            <Container fluid="md" className="pb-5" style={{
                 maxWidth: "1000px"
             }}>
                 <div className="row">
@@ -1159,9 +1159,7 @@ export function UserScansRoot(): JSX.Element {
                         </Button>
                     </div>
                     <div className="p-1">
-                        {/* *** ==================================== *** */}
-                        {/* *** === Dropdown - Main Context Menu === *** */}
-                        {/* *** ==================================== *** */}
+                        {/* MARK: Main Dropdown Menu */}
                         <MainDropdownMenu
                             disabledClassIfZeroBarcodes={disabledClassIfZeroBarcodes}
                             copyAsCSV={copyAsCSV}
@@ -1216,7 +1214,6 @@ export function UserScansRoot(): JSX.Element {
                 />
 
             </Container>
-            {/* /div> */}
         </div>
     );
 

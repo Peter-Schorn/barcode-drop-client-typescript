@@ -1,6 +1,6 @@
-import React, { type JSX } from "react";
+import "./UserScansTable.css";
 
-import { Table } from "react-bootstrap";
+import React, { type JSX } from "react";
 
 import { UserScanRow } from "./UserScanRow/UserScanRow";
 
@@ -31,16 +31,15 @@ export function UserScansTable(props: UserScansTableProps): JSX.Element {
     }
 
     return (
-        <Table
-            className="barcode-table border-dark"
-            striped bordered hover
-            style={{ maxWidth: "100%" }}
+        <table
+            className="user-scans-table"
         >
             <thead>
                 <tr>
                     <th
                         style={{ width: "100px" }}
                     >
+                        {/* buttons and context menu */}
                     </th>
                     <th>Barcode</th>
                     { props.viewportSize.width > 600 ? (
@@ -72,7 +71,7 @@ export function UserScansTable(props: UserScansTableProps): JSX.Element {
                     />
                 )}
             </tbody>
-        </Table>
+        </table>
     );
 
 }

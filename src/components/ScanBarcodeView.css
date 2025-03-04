@@ -2,9 +2,7 @@
     --form-height: 48px;
     --barcode-icon-container-width: 40px;
     --cancel-button-width: 30px;
-}
 
-.scan-barcode-form {
     display: flex;
     height: var(--form-height);
 }

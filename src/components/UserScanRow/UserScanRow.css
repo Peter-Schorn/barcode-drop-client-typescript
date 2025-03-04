@@ -23,7 +23,7 @@
     transition: all 0.5s ease-out
 }
 
-.user-scan-row-delete-button {
-    margin: 5px 5px;
-    background-color: #e84846;
+.user-scan-row-delete-button-cell {
+    text-align: center;
+    vertical-align: middle;
 }
