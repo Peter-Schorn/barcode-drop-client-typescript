@@ -54,11 +54,13 @@
 }
 
 /* bottom-left border-radius */
-.user-scans-table tr:last-child td:first-child {
+.user-scans-table tr:last-child td:first-child,
+.user-scans-table:not(:has(td)) th:first-child {
     border-bottom-left-radius: var(--border-radius);
 }
 
 /* bottom-right border-radius */
-.user-scans-table tr:last-child td:last-child {
+.user-scans-table tr:last-child td:last-child,
+.user-scans-table:not(:has(td)) th:last-child {
     border-bottom-right-radius: var(--border-radius);
 }
