@@ -32,7 +32,6 @@ export function UserScanRowDropdownMenu(
                         <span style={{
                             color: "gray",
                         }}>
-                            {/* {this.copyAsCSVKeyboardShortcutString()} */}
                         </span>
                     </Stack>
                 </Dropdown.Item>
@@ -40,8 +39,6 @@ export function UserScanRowDropdownMenu(
                 <Dropdown.Item
                     style={{
                         color: "#ed432d",
-                        // color: "white",
-                        // backgroundColor: "#ed432d"
                     }}
                     onClick={props.onClickDeleteButton}
                 >
@@ -50,11 +47,6 @@ export function UserScanRowDropdownMenu(
                         <span>Delete</span>
                         <span className="ms-auto">
                             {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {/* {this.copyAsCSVKeyboardShortcutString()} */}
                         </span>
                     </Stack>
                 </Dropdown.Item>
