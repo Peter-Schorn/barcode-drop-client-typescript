@@ -21,7 +21,7 @@
 }
 
 .user-scans-table tr:hover {
-    background: rgb(224, 228, 231);
+    background: rgb(214, 224, 231);
 }
 
 /* applies to every cell: header and data */
@@ -29,7 +29,6 @@
     border-bottom: var(--border);
     border-right: var(--border);
     padding: 0.5rem;
-    /* overflow: hidden; */
 }
 
 /* applies to the first cell in each row */

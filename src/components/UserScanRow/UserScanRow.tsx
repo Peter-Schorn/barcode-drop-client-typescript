@@ -13,11 +13,17 @@ import { useSearchParams } from "react-router-dom";
 
 import { AppContext } from "../../model/AppContext";
 
-import { Button, Stack } from "react-bootstrap";
+import {
+    Button,
+    Stack,
+    OverlayTrigger,
+    Tooltip
+} from "react-bootstrap";
 
 import {
-    dateDifferenceFromNow
-} from "../../utils/MiscellaneousUtilities";
+    dateDifferenceFromNow,
+    formatScannedAtDate
+} from "../../utils/dateFormatting";
 
 import { BarcodeImageModalView } from "../BarcodeImageModalView";
 
@@ -61,7 +67,9 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
     /**
      * A formatted string representing the date the barcode was scanned.
      */
-    const formattedDateString = props.barcode.scanned_at.toLocaleString();
+    const formattedDateString = formatScannedAtDate(
+        props.barcode.scanned_at
+    );
 
     useEffect(() => {
 
@@ -157,9 +165,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             props.viewportSize?.width > 800 ? (
                 <td
                     className="user-scan-row-delete-button-cell"
-                    data-toggle="tooltip"
-                    data-placement="top"
-                    title="Delete this barcode"
                 >
                     <Button
                         variant="danger"
@@ -176,7 +181,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
     return (
         <tr
             data-barcode-id={props.barcode.id}
-            key={props.barcode.id}
         >
             <BarcodeImageModalView
                 barcode={props.barcode}
@@ -190,7 +194,6 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
                 <Stack
                     direction="horizontal"
-                    className=""
                     gap={0}
                 >
                     {/* --- Copy Button --- */}
@@ -226,16 +229,25 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
                 dateDifference={dateDifference}
                 viewportSize={props.viewportSize}
                 searchParams={searchParams}
+                formattedDateString={formattedDateString}
             />
             {/* --- Time Cell (>600px) --- */}
             {
                 props.viewportSize?.width > 600 ? (
-                    <td
-                        data-toggle="tooltip"
-                        data-placement="top"
-                        title={formattedDateString}
-                    >
-                        {dateDifference}
+                    <td>
+                        <OverlayTrigger
+                            placement="bottom"
+                            delay={{ show: 500, hide: 250 }}
+                            overlay={
+                                <Tooltip>
+                                    {formattedDateString}
+                                </Tooltip>
+                            }
+                        >
+                            <span>
+                                {dateDifference}
+                            </span>
+                        </OverlayTrigger>
                     </td>
                 ) : null
             }

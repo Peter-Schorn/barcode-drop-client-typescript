@@ -1,5 +1,10 @@
 import { type JSX, type ReactNode } from "react";
 
+import {
+    OverlayTrigger,
+    Tooltip
+} from "react-bootstrap";
+
 import { type ViewportSize } from "../../types/ViewportSize";
 import { type ScannedBarcodeResponse } from "../../types/ScannedBarcodesResponse";
 
@@ -8,6 +13,7 @@ type UserScanBarcodeCellProps = {
     dateDifference: string;
     viewportSize: ViewportSize;
     searchParams: URLSearchParams;
+    formattedDateString: string;
 };
 
 export function UserScanBarcodeCell(
@@ -19,7 +25,7 @@ export function UserScanBarcodeCell(
         smallSize = true;
     }
 
-    function barcodeIDdebugText(smallSize: boolean): ReactNode {
+    function barcodeIDdebugText(): ReactNode {
 
         if (props.searchParams.get("debug") === "true") {
             return (
@@ -27,7 +33,6 @@ export function UserScanBarcodeCell(
                     className="text-secondary"
                     style={{ fontSize: "12px" }}
                 >
-                    {smallSize ? "•" : null}
                     {` (${props.barcode.id})`}
                 </span>
             );
@@ -46,18 +51,28 @@ export function UserScanBarcodeCell(
                 {props.barcode.barcode}
             </span>
             {smallSize ? (
-                <span
-                    className="text-secondary px-2"
-                    style={{
-                        fontSize: "12px"
-                    }}
+                <OverlayTrigger
+                    placement="bottom"
+                    delay={{ show: 500, hide: 250 }}
+                    overlay={
+                        <Tooltip>
+                            {props.formattedDateString}
+                        </Tooltip>
+                    }
                 >
-                    {"• "}
-                    {props.dateDifference}
-                </span>
+                    <span
+                        className="text-secondary"
+                        style={{
+                            fontSize: "12px"
+                        }}
+                    >
+                        {" • "}
+                        {props.dateDifference}
+                    </span>
+                </OverlayTrigger>
             ) : null}
             {/* --- BARCODE ID --- */}
-            {barcodeIDdebugText(smallSize)}
+            {barcodeIDdebugText()}
         </td>
     );
 

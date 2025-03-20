@@ -13,7 +13,14 @@ import { useParams } from "react-router-dom";
 
 import { AppContext } from "../model/AppContext.ts";
 
-import { Container, Button, Stack } from "react-bootstrap";
+import {
+    Container,
+    Button,
+    Stack,
+    OverlayTrigger,
+    Tooltip
+} from "react-bootstrap";
+
 // import Toast from 'react-bootstrap/Toast';
 import { toast } from "react-hot-toast";
 
@@ -1146,17 +1153,23 @@ export function UserScansRoot(): JSX.Element {
                 <Stack direction="horizontal" className="pt-4 pb-3" gap={2}>
                     <div className="pe-1">
                         {/* --- Delete All --- */}
-
-                        <Button
-                            variant="danger"
-                            style={{ margin: "0px 0px" }}
-                            onClick={deleteAllUserBarcodes}
-                            data-toggle="tooltip"
-                            data-placement="top"
-                            title={deleteAllUserBarcodesKeyboardShortcutString()}
+                        <OverlayTrigger
+                            placement="top"
+                            delay={{ show: 500, hide: 250 }}
+                            overlay={
+                                <Tooltip>
+                                    {deleteAllUserBarcodesKeyboardShortcutString()}
+                                </Tooltip>
+                            }
                         >
-                            Delete All Barcodes
-                        </Button>
+                            <Button
+                                variant="danger"
+                                onClick={deleteAllUserBarcodes}
+                            >
+                                Delete All Barcodes
+                            </Button>
+                        </OverlayTrigger>
+
                     </div>
                     <div className="p-1">
                         {/* MARK: Main Dropdown Menu */}
@@ -1170,13 +1183,10 @@ export function UserScansRoot(): JSX.Element {
                         />
                     </div>
                     <div className="p-1">
-                        {/* Auto-Copy */}
-
+                        {/* MARK: Auto-Copy */}
                         <label
                             style={{ padding: "5px 10px" }}
                             className=""
-                            data-toggle="tooltip"
-                            data-placement="top"
                             title={`(${toggleAutoCopyKeyboardShortcutString()}) Automatically copy the most recent barcode to the clipboard`}
                         >
                             <input
