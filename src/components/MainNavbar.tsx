@@ -45,7 +45,6 @@ export function MainNavbar(): JSX.Element {
                             </li>
                         </ul>
                     </div>
-
                 </div>
             </div>
         </nav>

@@ -1203,12 +1203,7 @@ export function UserScansRoot(): JSX.Element {
                     </div>
                 </Stack>
 
-                {/* --- spacer --- */}
-
-                {/* *** ===================================== *** */}
-                {/* *** ========= Table of Barcodes ========= *** */}
-                {/* *** ===================================== *** */}
-
+                {/* MARK: User Scans Table */}
                 <UserScansTable
                     barcodes={barcodes}
                     user={user}

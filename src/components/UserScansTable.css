@@ -1,5 +1,6 @@
 .user-scans-table {
-    --border: 1px solid black;
+    --border: 1px solid gray;
+    /* --border: 1px solid red; */
     --border-radius: 6px;
 
     border-collapse: separate;
@@ -12,35 +13,43 @@
 
 }
 
+/* applies to every odd row */
 .user-scans-table tr:nth-child(odd) {
     background: #f3f3f3;
 }
 
+/* applies to every even row */
 .user-scans-table tr:nth-child(even) {
-    background: #dddddd;
+    background: #dadada;
 }
 
+/* applies to the hovered row */
 .user-scans-table tr:hover {
-    background: rgb(214, 224, 231);
+    background: rgb(218, 226, 232);
 }
 
 /* applies to every cell: header and data */
 .user-scans-table :is(th, td) {
-    border-bottom: var(--border);
-    border-right: var(--border);
     padding: 0.5rem;
 }
 
-/* applies to the first cell in each row */
-.user-scans-table :is(th:first-child, td:first-child) {
-    border-left: var(--border);
+/* applies to every cell except those in the last row */
+.user-scans-table :is(th, tr:not(:last-child) td) {
+    border-bottom: var(--border);
 }
+
+
+/* applies to the first cell in each row */
+/* .user-scans-table :is(th:first-child, td:first-child) { */
+    /* border-left: var(--border); */
+/* } */
 
 /* applies to all header cells, which should only be in the first row*/
 .user-scans-table th {
     background: rgb(221, 239, 216);
-    border-top: var(--border);
 }
+
+/* MARK: begin corner radius */
 
 /* top-left border-radius */
 .user-scans-table tr:first-child th:first-child {
@@ -63,3 +72,5 @@
 .user-scans-table:not(:has(td)) th:last-child {
     border-bottom-right-radius: var(--border-radius);
 }
+
+/* MARK: end corner radius */
