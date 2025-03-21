@@ -100,22 +100,10 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
 
     return (
         <Modal
-            className="translate-middle top-50 start-50 position-absolute z-index-1"
+            className="scan-barcode-modal"
+            overlayClassName="scan-barcode-modal-overlay"
             isOpen={props.scanBarcodeViewIsOpen}
             onRequestClose={props.onClose}
-            style={{
-                overlay: {
-                    backgroundColor: "transparent"
-                },
-                content: {
-                    boxShadow: "0px 0px 40px 2px rgba(0, 0, 0, 0.4)",
-                    width: "500px",
-                    maxWidth: "90vw",
-                    marginTop: "-35vh",
-                    borderRadius: "10.5px",
-                    border: "2px solid lightgray",
-                }
-            }}
         >
             <form
                 onSubmit={onSubmitForm}
