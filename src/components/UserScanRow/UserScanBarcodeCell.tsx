@@ -43,13 +43,33 @@ export function UserScanBarcodeCell(
 
     }
 
+    function barcodeText(): ReactNode {
+        try {
+            const url = new URL(props.barcode.barcode);
+            return (
+                <a
+                    href={url.toString()}
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    {props.barcode.barcode}
+                </a>
+            );
+
+        } catch {
+            return props.barcode.barcode;
+        }
+    }
+
     return (
         <td>
             <span
-                className="barcode-text line display-linebreaks text-break"
+                className="display-linebreaks text-break"
             >
-                {props.barcode.barcode}
+                {barcodeText()}
             </span>
+
+            {/* MARK: Date Difference*/}
             {smallSize ? (
                 <OverlayTrigger
                     placement="bottom"
