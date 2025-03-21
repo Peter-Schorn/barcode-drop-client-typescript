@@ -199,6 +199,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
                     {/* --- Copy Button --- */}
                     <button
                         className="copy-button"
+                        title="Copy Barcode to the Clipboard"
                         style={copyButtonStyle()}
                         onClick={onClickCopyButton}
                     >
@@ -207,6 +208,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
                     {/* --- Link Button --- */}
                     <button
                         className="open-link-button"
+                        title="Open Link with Barcode"
                         onClick={() => {
                             return props.onClickOpenLink(
                                 props.barcode

@@ -895,7 +895,6 @@ export function UserScansRoot(): JSX.Element {
             return;
         }
 
-        // const previousBarcode = lastAutoCopiedBarcode;
         const currentBarcode = barcodes[0];
 
         if (latestBarcodeChanged(lastAutoCopiedBarcode, currentBarcode)) {

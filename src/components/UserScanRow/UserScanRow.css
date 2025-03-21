@@ -20,7 +20,7 @@
     border-right: 0.5px solid black;
     border-radius: 5px 0px 0px 5px;
     color: black;
-    transition: all 0.5s ease-out
+    transition: background-color, transform 0.5s ease-out
 }
 
 .user-scan-row-delete-button-cell {
