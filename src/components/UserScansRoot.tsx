@@ -124,7 +124,7 @@ export function UserScansRoot(): JSX.Element {
         height: window.innerHeight
     });
 
-    /** The ID of the current toast show on the screen */
+    /** The ID of the current toast shown on the screen */
     const [currentToastID, setCurrentToastID] = useState<string | null>(null);
 
     // MARK: End State

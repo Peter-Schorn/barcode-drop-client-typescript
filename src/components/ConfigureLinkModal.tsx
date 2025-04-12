@@ -109,8 +109,7 @@ export function ConfigureLinkModal(
                     className="configure-link-form form-floating text-center"
                     onSubmit={e => {
                         props.onSubmitConfigureLinkForm(e, formattedLink);
-                    }
-                    }
+                    }}
                 >
 
                     <div
