@@ -1,7 +1,6 @@
 import {
     type JSX,
     type ChangeEvent,
-    type FormEvent,
     useContext,
     useState,
     useRef,
@@ -78,6 +77,10 @@ export function UserScansRoot(): JSX.Element {
     const params = useParams<UserScansRootParams>();
 
     const context = useContext(AppContext);
+
+    // MARK: - Refs -
+
+    const configureLinkInputRef = useRef<HTMLInputElement>(null);
 
     // MARK: - URL Fragment Parameters -
 
@@ -555,6 +558,7 @@ export function UserScansRoot(): JSX.Element {
                         "SHOWING configure link"
                     );
                     showConfigureLinkModal();
+                    configureLinkInputRef.current?.focus();
                     e.preventDefault();
                 }
                 else if (e.key === "z" && !e.shiftKey && !e.altKey) {
@@ -948,22 +952,6 @@ export function UserScansRoot(): JSX.Element {
     }
 
     /**
-     * Called every time the input field for the formatted link in
-     * `ConfigureLinkModal` changes.
-     *
-     * @param e the event
-     */
-    // function onChangeConfigureLinkInput(e: ChangeEvent<HTMLInputElement>): void {
-
-    //     const formattedLink = e.target.value;
-    //     console.log(
-    //         `onChangeConfigureLinkInput(): formattedLink: ${formattedLink}`
-    //     );
-
-    //     setFormattedLink(formattedLink);
-    // }
-
-    /**
      * Called when the user submits the `ConfigureLinkModal` form.
      *
      * @param e the event
@@ -1036,10 +1024,10 @@ export function UserScansRoot(): JSX.Element {
             />
 
             <ConfigureLinkModal
+                configureLinkInputRef={configureLinkInputRef}
                 formattedLink={formattedLink}
                 showFormattedLinkModal={configureLinkModalIsOpen}
                 viewportSize={viewportSize}
-                // onChangeConfigureLinkInput={onChangeConfigureLinkInput}
                 closeConfigureLinkModal={closeConfigureLinkModal}
                 onSubmitConfigureLinkForm={onSubmitConfigureLinkForm}
             />

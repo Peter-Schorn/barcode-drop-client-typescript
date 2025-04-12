@@ -1,13 +1,17 @@
 import React, {
     type JSX,
     useCallback,
-    useState
+    useState,
+    useEffect
 } from "react";
 import Modal from "react-modal";
 import { type ViewportSize } from "../types/ViewportSize";
 
+import { getURLFragmentParam } from "../hooks/useURLFragment";
+
 type ConfigureLinkModalProps = {
     formattedLink: string | null;
+    configureLinkInputRef: React.RefObject<HTMLInputElement | null>;
     showFormattedLinkModal: boolean;
     viewportSize: ViewportSize;
     // onChangeConfigureLinkInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -42,6 +46,23 @@ export function ConfigureLinkModal(
     else {
         offset = "100px";
     }
+
+    // MARK: On Hash Change
+    useEffect(() => {
+        // This effect is only needed when the modal is open
+        if (!props.showFormattedLinkModal) {
+            return;
+        }
+        function handleHashChange(): void {
+            const formattedLinkParam = getURLFragmentParam("formatted-link");
+            setFormattedLink(formattedLinkParam);
+        }
+        window.addEventListener("hashchange", handleHashChange);
+        return (): void => {
+            window.removeEventListener("hashchange", handleHashChange);
+        };
+    }, [props.showFormattedLinkModal]);
+
 
     const onChangeConfigureLinkInput = useCallback((
         e: React.ChangeEvent<HTMLInputElement>
@@ -99,7 +120,7 @@ export function ConfigureLinkModal(
                             Enter a link to open. Replace the barcode with %s.
                         </p>
                         <p className="">
-                            For example: <br />
+                            For example:
                         </p>
                         <code className="">
                             {exampleFormattedURL}
@@ -108,6 +129,7 @@ export function ConfigureLinkModal(
 
                     <div className="form-floating mb-3 mx-5 mx-auto">
                         <input
+                            ref={props.configureLinkInputRef}
                             type="text"
                             autoFocus={true}
                             id="configure-link-input"
