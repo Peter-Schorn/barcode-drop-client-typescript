@@ -1,5 +1,7 @@
 import React, {
     type JSX,
+    useCallback,
+    useState
 } from "react";
 import Modal from "react-modal";
 import { type ViewportSize } from "../types/ViewportSize";
@@ -8,14 +10,24 @@ type ConfigureLinkModalProps = {
     formattedLink: string | null;
     showFormattedLinkModal: boolean;
     viewportSize: ViewportSize;
-    onChangeConfigureLinkInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    closeConfigureLinkModal: (e: React.MouseEvent | React.KeyboardEvent) => void;
-    onSubmitConfigureLinkForm: (e: React.FormEvent<HTMLFormElement>) => void;
+    // onChangeConfigureLinkInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    closeConfigureLinkModal: (
+        e: React.MouseEvent | React.KeyboardEvent,
+        formattedLink: string | null
+    ) => void;
+    onSubmitConfigureLinkForm: (
+        e: React.FormEvent<HTMLFormElement>,
+        formattedLink: string | null
+    ) => void;
 };
 
 export function ConfigureLinkModal(
     props: ConfigureLinkModalProps
 ): JSX.Element {
+
+    const [formattedLink, setFormattedLink] = useState<string | null>(
+        props.formattedLink
+    );
 
     const exampleFormattedURL = "https://www.google.com/search?q=%s";
 
@@ -31,11 +43,27 @@ export function ConfigureLinkModal(
         offset = "100px";
     }
 
+    const onChangeConfigureLinkInput = useCallback((
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        setFormattedLink(e.target.value);
+    }, []);
+
+    const onOpenConfigureLinkModal = useCallback((
+        // e: Modal.OnAfterOpenCallbackOptions | undefined
+    ) => {
+        setFormattedLink(props.formattedLink);
+    }, [props.formattedLink]);
+
+
     return (
         <Modal
             className="configure-link-modal rounded-3 m-5 mx-auto p-5 shadow-lg text-black border border-primary"
             isOpen={props.showFormattedLinkModal}
-            onRequestClose={props.closeConfigureLinkModal}
+            onRequestClose={(e) => {
+                props.closeConfigureLinkModal(e, formattedLink);
+            }}
+            onAfterOpen={onOpenConfigureLinkModal}
             style={{
                 content: {
                     position: "fixed",
@@ -58,7 +86,10 @@ export function ConfigureLinkModal(
 
                 <form
                     className="configure-link-form form-floating text-center"
-                    onSubmit={props.onSubmitConfigureLinkForm}
+                    onSubmit={e => {
+                        props.onSubmitConfigureLinkForm(e, formattedLink);
+                    }
+                    }
                 >
 
                     <div
@@ -77,15 +108,15 @@ export function ConfigureLinkModal(
 
                     <div className="form-floating mb-3 mx-5 mx-auto">
                         <input
+                            type="text"
                             autoFocus={true}
                             id="configure-link-input"
                             className="form-control"
-                            type="text"
                             // placeholder is required for floating label to
                             // work
                             placeholder={exampleFormattedURL}
-                            value={props.formattedLink ?? ""}
-                            onChange={props.onChangeConfigureLinkInput}
+                            value={formattedLink ?? ""}
+                            onChange={onChangeConfigureLinkInput}
                         />
                         <label htmlFor="configure-link-input">
                             Link

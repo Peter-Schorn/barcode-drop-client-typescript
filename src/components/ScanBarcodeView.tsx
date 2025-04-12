@@ -21,7 +21,9 @@ type ScanBarcodeViewProps = {
     showToast: (message: string, type?: ToastMessageType) => void;
 };
 
+
 export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
+    console.log("ScanBarcodeView: render");
 
     const context = useContext(AppContext);
 

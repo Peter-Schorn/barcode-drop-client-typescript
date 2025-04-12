@@ -21,14 +21,12 @@ import {
     Tooltip
 } from "react-bootstrap";
 
-// import Toast from 'react-bootstrap/Toast';
 import { toast } from "react-hot-toast";
 
 // import csv from 'csv'
 import { stringify as csvStringify } from "csv-stringify/browser/esm/sync";
 
 import { MainNavbar } from "./MainNavbar.tsx";
-// import UserScansTable from "./UserScansTable";
 
 import { WebSocket } from "partysocket";
 import {
@@ -70,27 +68,33 @@ import { type ToastMessageType } from "../types/ToastMessageType.ts";
 
 import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
+import { useURLFragmentParam } from "../hooks/useURLFragment.ts";
 
 // MARK: path="/scans/:user"
 export function UserScansRoot(): JSX.Element {
+
+    console.log("UserScansRoot: Rendering");
 
     const params = useParams<UserScansRootParams>();
 
     const context = useContext(AppContext);
 
     // MARK: - URL Fragment Parameters -
-    // the parameters in the URL fragment; e.g.: `auto-copy=true` in
-    // https://www.barcodedrop.com/scans/schornpe#auto-copy=true
-    const urlFragmentParams = new URLSearchParams(
-        window.location.hash.slice(1)
-    );
 
-    const enableAutoCopyValue = urlFragmentParams.get("auto-copy") === "true";
-    const formattedLinkValue = urlFragmentParams.get("formatted-link");
+    const [autoCopyIsEnabled, setAutoCopyIsEnabled] = useURLFragmentParam(
+        "auto-copy", {
+        parseValue: (value) => value === "true",
+        encodeValue: (value) => value.toString()
+    });
+
+    const [formattedLink, setFormattedLink] = useURLFragmentParam(
+        "formatted-link"
+    );
 
     // MARK: State
 
     const [barcodes, setBarcodes] = useState<ScannedBarcodesResponse>([]);
+
     // the ids of barcodes scanned directly in the client that we don't want to
     // auto-copy even if auto-copy is enabled
     const [
@@ -103,18 +107,10 @@ export function UserScansRoot(): JSX.Element {
         setLastAutoCopiedBarcode
     ] = useState<ScannedBarcodeResponse | null>(null);
 
-    const [autoCopyIsEnabled, setAutoCopyIsEnabled] = useState<boolean>(
-        enableAutoCopyValue
-    );
-
     const [
         highlightedBarcode,
         _setHighlightedBarcode
     ] = useState<ScannedBarcodeResponse | null>(null);
-
-    const [formattedLink, setFormattedLink] = useState<string | null>(
-        formattedLinkValue
-    );
 
     const [configureLinkModalIsOpen, setConfigureLinkModalIsOpen] = useState(false);
 
@@ -141,13 +137,8 @@ export function UserScansRoot(): JSX.Element {
 
     // MARK: - WebSockets -
 
-    const socketURL = new URL(import.meta.env.VITE_BACKEND_URL);
-    if (import.meta.env.DEV) {
-        socketURL.protocol = "ws";
-    }
-    else {
-        socketURL.protocol = "wss";
-    }
+    const socketURL = new URL(import.meta.env.VITE_BACKEND_WEBSOCKET_URL);
+
     socketURL.pathname = `/watch/${user}`;
 
     console.log(
@@ -496,42 +487,13 @@ export function UserScansRoot(): JSX.Element {
         autoCopyIsEnabled,
     ]);
 
+    const toggleAutoCopy = useCallback((): void => {
+
+        setAutoCopyIsEnabled(isEnabled => !isEnabled);
+
+    }, [setAutoCopyIsEnabled]);
+
     // MARK: - Effects -
-
-    // MARK: handleHashChange effect
-    useEffect(() => {
-
-        console.log("UserScansRoot: useEffect: handleHashChange: begin");
-
-        function handleHashChange(): void {
-            console.log(
-                "UserScansRoot.handleHashChange(): " +
-                `hash: ${window.location.hash}`
-            );
-            const urlFragmentParams = new URLSearchParams(
-                window.location.hash.slice(1)
-            );
-            const enableAutoCopy = urlFragmentParams.get("auto-copy") === "true";
-            const formattedLink = urlFragmentParams.get("formatted-link");
-
-            console.log(
-                "UserScansRoot.handleHashChange(): " +
-                `enableAutoCopy: ${enableAutoCopy}`
-            );
-
-            setAutoCopyIsEnabled(enableAutoCopy);
-            setFormattedLink(formattedLink);
-
-        }
-
-        window.addEventListener("hashchange", handleHashChange);
-
-        return (): void => {
-            console.log("UserScansRoot: useEffect: handleHashChange: cleanup");
-            window.removeEventListener("hashchange", handleHashChange);
-        };
-
-    }, []);
 
     // MARK: handleKeyDown effect
     useEffect(() => {
@@ -636,7 +598,8 @@ export function UserScansRoot(): JSX.Element {
         barcodes,
         copyAsCSV,
         deleteAllUserBarcodes,
-        exportAsCSV
+        exportAsCSV,
+        toggleAutoCopy
     ]);
 
     // MARK: windowDidResize effect
@@ -677,24 +640,25 @@ export function UserScansRoot(): JSX.Element {
         );
 
         // clipboard-write is supported by some browsers, but not all
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        navigator.permissions.query({ name: "clipboard-write" as any })
-            .then(result => {
-                if (result.state === "granted" || result.state === "prompt") {
-                    console.log(
-                        `Clipboard permissions granted: ${result.state}`
-                    );
-                }
-                else {
-                    console.error(
-                        `Clipboard permissions denied: ${result.state}`
-                    );
-                }
-            }).catch(error => {
-                console.error(
-                    "Error querying clipboard permissions:", error
+        navigator.permissions.query({
+            name: "clipboard-write" as unknown as PermissionName
+        })
+        .then(result => {
+            if (result.state === "granted" || result.state === "prompt") {
+                console.log(
+                    `Clipboard permissions granted: ${result.state}`
                 );
-            });
+            }
+            else {
+                console.error(
+                    `Clipboard permissions denied: ${result.state}`
+                );
+            }
+        }).catch(error => {
+            console.error(
+                "Error querying clipboard permissions:", error
+            );
+        });
 
     }, []);
 
@@ -916,18 +880,6 @@ export function UserScansRoot(): JSX.Element {
             `e.target.checked (enable auto-copy): ${enableAutoCopy}`
         );
 
-        const urlFragmentParams = new URLSearchParams(
-            // the first character is the # character
-            window.location.hash.slice(1)
-        );
-        urlFragmentParams.set("auto-copy", enableAutoCopy.toString());
-        window.location.hash = urlFragmentParams.toString();
-
-        console.log(
-            "UserScansRoot.handleAutoCopyChange(): " +
-            `set URL fragment to: ${window.location.hash}`
-        );
-
         setAutoCopyIsEnabled(enableAutoCopy);
 
     }
@@ -938,30 +890,6 @@ export function UserScansRoot(): JSX.Element {
 
     function toggleAutoCopyKeyboardShortcutString(): string {
         return isApplePlatform() ? "⌘Z" : "Ctrl+Z";
-    }
-
-    function toggleAutoCopy(): void {
-
-        setAutoCopyIsEnabled((enableAutoCopy) => {
-            const newValue = !enableAutoCopy;
-            console.log(
-                `UserScansRoot.toggleAutoCopy(): set to ${newValue}`
-            );
-
-            const urlFragmentParams = new URLSearchParams(
-                // the first character is the # character
-                window.location.hash.slice(1)
-            );
-
-            urlFragmentParams.set(
-                "auto-copy",
-                newValue.toString()
-            );
-            window.location.hash = urlFragmentParams.toString();
-
-            return newValue;
-        });
-
     }
 
     function disabledClassIfZeroBarcodes(): string {
@@ -1012,6 +940,8 @@ export function UserScansRoot(): JSX.Element {
 
     }
 
+    // MARK: --- Configure Link Modal ---
+
     function showConfigureLinkModal(): void {
         console.log("showConfigureLinkModal():");
         setConfigureLinkModalIsOpen(true);
@@ -1023,16 +953,15 @@ export function UserScansRoot(): JSX.Element {
      *
      * @param e the event
      */
-    function onChangeConfigureLinkInput(e: ChangeEvent<HTMLInputElement>): void {
+    // function onChangeConfigureLinkInput(e: ChangeEvent<HTMLInputElement>): void {
 
-        const formattedLink = e.target.value;
-        console.log(
-            `onChangeConfigureLinkInput(): formattedLink: ${formattedLink}`
-        );
+    //     const formattedLink = e.target.value;
+    //     console.log(
+    //         `onChangeConfigureLinkInput(): formattedLink: ${formattedLink}`
+    //     );
 
-        setFormattedLink(formattedLink);
-
-    }
+    //     setFormattedLink(formattedLink);
+    // }
 
     /**
      * Called when the user submits the `ConfigureLinkModal` form.
@@ -1040,7 +969,8 @@ export function UserScansRoot(): JSX.Element {
      * @param e the event
      */
     function onSubmitConfigureLinkForm(
-        e: FormEvent<HTMLFormElement>
+        e: React.FormEvent<HTMLFormElement>,
+        formattedLink: string | null
     ): void {
 
         console.log("onSubmitConfigureLinkForm()");
@@ -1049,39 +979,20 @@ export function UserScansRoot(): JSX.Element {
         e.preventDefault();
 
         setConfigureLinkModalIsOpen(false);
-
-        updateFormattedLinkInURLFragment();
+        setFormattedLink(formattedLink);
 
     }
 
     /**
      * Called when the user closes the `ConfigureLinkModal`.
      */
-    function closeConfigureLinkModal(): void {
+    function closeConfigureLinkModal(
+        e: React.MouseEvent | React.KeyboardEvent,
+        formattedLink: string | null
+    ): void {
         console.log("closeConfigureLinkModal()");
         setConfigureLinkModalIsOpen(false);
-        updateFormattedLinkInURLFragment();
-    }
-
-    /**
-     * Updates the formatted link in the URL fragment based on the value of the
-     * `formattedLink` state variable.
-     */
-    function updateFormattedLinkInURLFragment(): void {
-
-        const urlFragmentParams = new URLSearchParams(
-            window.location.hash.slice(1)
-        );
-
-        // check if `formattedLink` is null or an empty string.
-        if (!formattedLink) {
-            urlFragmentParams.delete("formatted-link");
-        }
-        else {
-            urlFragmentParams.set("formatted-link", formattedLink);
-        }
-        window.location.hash = urlFragmentParams.toString();
-
+        setFormattedLink(formattedLink);
     }
 
     // MARK: - Scan Barcode View -
@@ -1128,7 +1039,7 @@ export function UserScansRoot(): JSX.Element {
                 formattedLink={formattedLink}
                 showFormattedLinkModal={configureLinkModalIsOpen}
                 viewportSize={viewportSize}
-                onChangeConfigureLinkInput={onChangeConfigureLinkInput}
+                // onChangeConfigureLinkInput={onChangeConfigureLinkInput}
                 closeConfigureLinkModal={closeConfigureLinkModal}
                 onSubmitConfigureLinkForm={onSubmitConfigureLinkForm}
             />

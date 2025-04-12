@@ -138,3 +138,46 @@ export function latestBarcodeChanged(
         return false;
     }
 }
+
+
+/**
+ * Creates a debounced version of the provided function. The debounced function
+ * delays the execution of the original function until after the specified delay
+ * has elapsed since the last time the debounced function was invoked.
+ *
+ * The first time the debounced function is called, the wrapped function will be
+ * called immediately.
+ *
+ * @param func The function to debounce. It will be called with the provided
+ * arguments after the delay period.
+ * @param delay The time in milliseconds that must elapse after the last time
+ * the debounced function was invoked before the original function is called.
+ * @returns A debounced version of the provided function. When invoked, it
+ * resets the delay timer and schedules the function to be called after the
+ * delay period.
+ */
+export function debounce<This, Args extends unknown[]>(
+    func: (this: This, ...args: Args) => void,
+    delay: number
+): (this: This, ...args: Args) => void {
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let isFirstCall = true;
+
+    console.log("making debounced function");
+
+    return function (this: This, ...args: Args): void {
+
+        if (isFirstCall) {
+            isFirstCall = false;
+            func.apply(this, args);
+            return;
+        }
+
+        clearTimeout(timeoutId);
+
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
