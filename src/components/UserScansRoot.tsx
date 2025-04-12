@@ -159,7 +159,9 @@ export function UserScansRoot(): JSX.Element {
      * @param options.user the user
      *
      */
-    const getUserScans = useCallback(({ user }: { user: string }): void => {
+    const getUserScans = useCallback(async (
+        { user }: { user: string }
+    ): Promise<void> => {
 
         const dateString = new Date().toISOString();
 
@@ -168,23 +170,22 @@ export function UserScansRoot(): JSX.Element {
             `user "${user}" at date ${dateString}`
         );
 
-        context.api!.getUserScans(user)
-            .then((result) => {
+        try {
+            const barcodes = await context.api!.getUserScans(user);
+            console.log(
+                "UserScansRoot.getUserScans(): result:", barcodes
+            );
+            setBarcodes(barcodes);
 
-                console.log(
-                    "UserScansRoot.getUserScans(): result:", result
-                );
-                setBarcodes(result);
-
-            }).catch((error) => {
-                console.error(
-                    `UserScansRoot.getUserScans(): error: ${error}`
-                );
-            });
+        } catch (error) {
+            console.error(
+                `UserScansRoot.getUserScans(): error: ${error}`
+            );
+        }
 
     }, [context.api]);
 
-    const deleteAllUserBarcodes = useCallback((): void => {
+    const deleteAllUserBarcodes = useCallback(async (): Promise<void> => {
 
         console.log(
             "UserScansRoot.deleteAllUserBarcodes(): " +
@@ -194,19 +195,18 @@ export function UserScansRoot(): JSX.Element {
         // delete the barcodes
         setBarcodes([]);
 
-        context.api!.deleteUserScans({ user: user })
-            .then((result) => {
-                console.log(
-                    "UserScansRoot.deleteAllUserBarcodes(): " +
-                    `result: ${result}`
-                );
-            })
-            .catch((error) => {
-                console.error(
-                    "UserScansRoot.deleteAllUserBarcodes(): " +
-                    `could not delete all user barcodes: ${error}`
-                );
-            });
+        try {
+            const result = await context.api!.deleteUserScans({ user: user });
+            console.log(
+                "UserScansRoot.deleteAllUserBarcodes(): " +
+                `result: ${result}`
+            );
+        } catch (error) {
+            console.error(
+                "UserScansRoot.deleteAllUserBarcodes(): " +
+                `could not delete all user barcodes: ${error}`
+            );
+        }
 
     }, [context.api, user]);
 
@@ -291,13 +291,13 @@ export function UserScansRoot(): JSX.Element {
      * the user
      * @param options.highlight whether or not to highlight the barcode
      */
-    const writeBarcodeToClipboard = useCallback((
+    const writeBarcodeToClipboard = useCallback(async (
         {
             barcode,
             showNotification,
             highlight
         }: WriteBarcodeToClipboardOptions
-    ): void => {
+    ): Promise<void> => {
 
         const barcodeText = barcode.barcode;
         if (barcodeText === null || barcodeText === undefined) {
@@ -307,38 +307,38 @@ export function UserScansRoot(): JSX.Element {
             return;
         }
 
-        navigator.clipboard.writeText(barcodeText)
-            .then(() => {
+        try {
+            await navigator.clipboard.writeText(barcodeText);
 
+            console.log(
+                "_writeTextToClipboard: Copied text to clipboard: " +
+                `"${barcodeText}"`
+            );
+
+            if (showNotification) {
                 console.log(
-                    "_writeTextToClipboard: Copied text to clipboard: " +
-                    `"${barcodeText}"`
+                    "_writeTextToClipboard: " +
+                    "--- SHOWING BARCODE COPIED TOAST ---" +
+                    `(id: ${barcode?.id})`
                 );
+                showBarcodeCopiedToast(barcodeText);
+            }
 
-                if (showNotification) {
-                    console.log(
-                        "_writeTextToClipboard: " +
-                        "--- SHOWING BARCODE COPIED TOAST ---" +
-                        `(id: ${barcode?.id})`
-                    );
-                    showBarcodeCopiedToast(barcodeText);
-                }
-
-                if (highlight) {
-                    console.log(
-                        "_writeTextToClipboard: --- HIGHLIGHT --- " +
-                        `(id: ${barcode?.id})`
-                    );
-                    setHighlightedBarcode(barcode);
-                }
-
-            })
-            .catch((error) => {
-                console.error(
-                    "_writeTextToClipboard: Could not copy text to clipboard: " +
-                    `"${barcodeText}": ${error}`
+            if (highlight) {
+                console.log(
+                    "_writeTextToClipboard: --- HIGHLIGHT --- " +
+                    `(id: ${barcode?.id})`
                 );
-            });
+                setHighlightedBarcode(barcode);
+            }
+
+        } catch (error) {
+            console.error(
+                "_writeTextToClipboard: could not copy text to clipboard: " +
+                `"${barcodeText}": ${error}`
+            );
+
+        }
 
     }, [setHighlightedBarcode, showBarcodeCopiedToast]);
 
@@ -354,7 +354,7 @@ export function UserScansRoot(): JSX.Element {
                 `"${JSON.stringify(latestBarcode)}"`
             );
 
-            writeBarcodeToClipboard({
+            void writeBarcodeToClipboard({
                 barcode: latestBarcode,
                 showNotification: true,
                 highlight: true
@@ -390,7 +390,7 @@ export function UserScansRoot(): JSX.Element {
         return csvString;
     }, [barcodes]);
 
-    const copyAsCSV = useCallback((): void => {
+    const copyAsCSV = useCallback(async (): Promise<void> => {
 
         console.log("copyAsCSV()");
 
@@ -405,17 +405,17 @@ export function UserScansRoot(): JSX.Element {
 
         console.log("copyAsCSV(): csvString:", csvString);
 
-        navigator.clipboard.writeText(csvString)
-            .then(() => {
-                console.log("copyAsCSV(): copied CSV to clipboard");
-                showToast("Copied CSV to clipboard");
-            })
-            .catch((error) => {
-                console.error(
-                    `copyAsCSV(): could not copy CSV to clipboard: ${error}`
-                );
-                showToast("Could not copy CSV to clipboard", "error");
-            });
+        try {
+            await navigator.clipboard.writeText(csvString);
+            console.log("copyAsCSV(): copied CSV to clipboard");
+            showToast("Copied CSV to clipboard");
+
+        } catch (error) {
+            console.error(
+                `copyAsCSV(): could not copy CSV to clipboard: ${error}`
+            );
+            showToast("Could not copy CSV to clipboard", "error");
+        }
 
     }, [copyLastBarcodeIsDisabled, makeCSVString, showToast]);
 
@@ -478,7 +478,7 @@ export function UserScansRoot(): JSX.Element {
             `Auto-copying most recent barcode: "${JSON.stringify(barcode)}"`
         );
 
-        writeBarcodeToClipboard({
+        void writeBarcodeToClipboard({
             barcode: barcode,
             showNotification: true,
             highlight: true
@@ -532,7 +532,7 @@ export function UserScansRoot(): JSX.Element {
                         "UserScansRoot.handleKeyDown(): " +
                         "Platform modifier key + \"d\" pressed: DELETING all barcodes"
                     );
-                    deleteAllUserBarcodes();
+                    void deleteAllUserBarcodes();
                     e.preventDefault();
                 }
                 else if (e.key === "e" && e.shiftKey && !e.altKey) {
@@ -548,7 +548,7 @@ export function UserScansRoot(): JSX.Element {
                         "UserScansRoot.handleKeyDown(): " +
                         "Platform modifier key + \"e\" pressed: COPYING all barcodes as CSV"
                     );
-                    copyAsCSV();
+                    void copyAsCSV();
                     e.preventDefault();
                 }
                 else if (e.key === "l" && !e.shiftKey && !e.altKey) {
@@ -643,33 +643,41 @@ export function UserScansRoot(): JSX.Element {
             "UserScansRoot: useEffect: promptForClipboardPermission: begin"
         );
 
-        // clipboard-write is supported by some browsers, but not all
-        navigator.permissions.query({
-            name: "clipboard-write" as unknown as PermissionName
-        })
-        .then(result => {
-            if (result.state === "granted" || result.state === "prompt") {
-                console.log(
-                    `Clipboard permissions granted: ${result.state}`
-                );
-            }
-            else {
+        async function checkClipboardPermissions(): Promise<void> {
+            try {
+                // the clipboard-write permission is supported by some browsers,
+                // but not all
+                const result = await navigator.permissions.query({
+                    name: "clipboard-write" as unknown as PermissionName
+                });
+
+                if (["granted", "prompt"].includes(result.state)) {
+                    console.log(
+                        `Clipboard permissions granted: ${result.state}`
+                    );
+                } else {
+                    console.error(
+                        `Clipboard permissions denied: ${result.state}`
+                    );
+                }
+            } catch (error) {
                 console.error(
-                    `Clipboard permissions denied: ${result.state}`
+                    "Error querying clipboard permissions:", error
                 );
             }
-        }).catch(error => {
-            console.error(
-                "Error querying clipboard permissions:", error
-            );
-        });
+        }
+
+        void checkClipboardPermissions();
 
     }, []);
 
     // MARK: getUserScans effect
     useEffect(() => {
         console.log("UserScansRoot: useEffect: getUserScans: begin");
-        getUserScans({ user: user });
+        async function getUserScansEffect(): Promise<void> {
+            await getUserScans({ user: user });
+        }
+        void getUserScansEffect();
     }, [getUserScans, user]);
 
     // MARK: configureSocket effect
@@ -691,8 +699,8 @@ export function UserScansRoot(): JSX.Element {
                     event.data as string,
                     scannedBarcodesReviver
                 ) as SocketMessage;
-            }
-            catch (error) {
+
+            } catch (error) {
                 console.error(
                     "UserScansRoot.receiveSocketMessage(): " +
                     "could not parse JSON message:", error
@@ -816,7 +824,7 @@ export function UserScansRoot(): JSX.Element {
                 `[${new Date().toISOString()}] socket.onopen(): event:`, event
             );
 
-            getUserScans({ user: user });
+            void getUserScans({ user: user });
 
         };
 
