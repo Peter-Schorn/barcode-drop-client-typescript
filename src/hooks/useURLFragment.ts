@@ -17,7 +17,7 @@ type URLFragmentParamSetter<T> = (
 type URLFragmentParamParser<T> = (value: string | null) => T;
 
 /**
- * A function that encodes the fragment parameter to a string.
+ * A function that encodes the fragment parameter to `string | null`.
  *
  * @param value The value to encode.
  * @returns The encoded value. If the value is null, then the parameter will be
