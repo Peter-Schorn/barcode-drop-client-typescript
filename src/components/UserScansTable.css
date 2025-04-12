@@ -53,7 +53,10 @@
 }
 
 /* applies to every cell except those in the last row */
-.user-scans-table :is(th, tr:not(:last-child) td) {
+/* only apply to headers if the table has data */
+.user-scans-table:has(td) th,
+/* exclude the last row */
+.user-scans-table tr:not(:last-child) td {
     border-bottom: var(--border);
 }
 

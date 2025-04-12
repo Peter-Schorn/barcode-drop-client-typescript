@@ -118,7 +118,7 @@ export class Backend {
      *
      * @returns an array of splash text objects in JSON format
      */
-    async getSplashTexts(): Promise<any> {
+    async getSplashTexts(): Promise<unknown> {
         return await this.get(
             "/splash-text",
         );
@@ -130,7 +130,7 @@ export class Backend {
      *
      * @returns a splash text object in JSON format
      */
-    async getRandomSplashText(): Promise<any> {
+    async getRandomSplashText(): Promise<unknown> {
         const splashText = "This is a random splash text.";
         return Promise.resolve(splashText);
         // return await this._get(

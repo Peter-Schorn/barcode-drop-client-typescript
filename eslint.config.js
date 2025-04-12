@@ -159,7 +159,6 @@ export default tseslint.config(
             // "@typescript-eslint/no-unsafe-argument": "off",
 
             // probably should stay off
-            "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/restrict-template-expressions": "off"
 
         },
