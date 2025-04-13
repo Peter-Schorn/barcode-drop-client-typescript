@@ -740,7 +740,7 @@ export function UserScansRoot(): JSX.Element {
 
                         console.log(
                             "UserScansRoot.receiveSocketMessage(): " +
-                            "Returning new barcodes:", newBarcodes
+                            "returning new barcodes:", newBarcodes
                         );
                         return newBarcodes;
 
