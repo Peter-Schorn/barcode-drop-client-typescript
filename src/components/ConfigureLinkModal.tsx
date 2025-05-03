@@ -14,7 +14,6 @@ type ConfigureLinkModalProps = {
     configureLinkInputRef: React.RefObject<HTMLInputElement | null>;
     showFormattedLinkModal: boolean;
     viewportSize: ViewportSize;
-    // onChangeConfigureLinkInput: (e: React.ChangeEvent<HTMLInputElement>) => void;
     closeConfigureLinkModal: (
         e: React.MouseEvent | React.KeyboardEvent,
         formattedLink: string | null

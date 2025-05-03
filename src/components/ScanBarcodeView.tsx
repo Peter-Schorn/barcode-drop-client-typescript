@@ -51,6 +51,14 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
     }
 
     /**
+     * Called when the modal is opened.
+     */
+    function onAfterOpen(): void {
+        console.log("ScanBarcodeView.onAfterOpen():");
+        barcodeInput.current?.select();
+    }
+
+    /**
      * Called when the user submits the barcode form.
      */
     async function onSubmitForm(
@@ -62,6 +70,8 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
             `ScanBarcodeView.onSubmitForm(): user: "${props.user}"; ` +
             `barcode: "${barcode}"`
         );
+
+        barcodeInput.current?.focus();
 
         if (!barcode) {
             return;
@@ -105,6 +115,7 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
             className="scan-barcode-modal"
             overlayClassName="scan-barcode-modal-overlay"
             isOpen={props.scanBarcodeViewIsOpen}
+            onAfterOpen={onAfterOpen}
             onRequestClose={props.onClose}
         >
             <form

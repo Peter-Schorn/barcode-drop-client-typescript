@@ -1,0 +1,22 @@
+.post-barcode-icloud-shortcut-img {
+    max-width: 175px;
+    max-height: 175px;
+    padding: 10px;
+    margin-bottom: 3rem;
+}
+
+.qr-code-img {
+    max-width: 175px;
+    max-height: 175px;
+    padding: 10px;
+}
+
+.post-barcode-curl-code-block {
+    /* horizontally center */
+    margin: auto;
+    max-width: 600px;
+}
+
+.qr-bot-app-screenshot {
+    max-width: 400px;
+}

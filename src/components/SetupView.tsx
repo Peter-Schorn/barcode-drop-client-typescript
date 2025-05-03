@@ -1,3 +1,4 @@
+import "./SetupView.css";
 import { type JSX } from "react";
 import { Container } from "react-bootstrap";
 import { MainNavbar } from "./MainNavbar";
@@ -5,6 +6,7 @@ import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtiliti
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";
+import QRBotScreenshot from "../assets/images/qrBotScreenshot.jpeg";
 
 export function SetupView(): JSX.Element {
 
@@ -22,129 +24,188 @@ export function SetupView(): JSX.Element {
         );
     }
 
+    function apiRequestURLCodeSnippet(): JSX.Element {
+        return (
+            <code>
+                {"https://barcodedrop.com/scans/<user>"}
+            </code>
+        );
+    }
+
     return (
         <div className="vw-100 vh-100">
             <title>
                 {prefixTitleWithDocumentHostIfPort("Setup | BarcodeDrop")}
             </title>
             <MainNavbar />
-            <Container className="text-center px-3 pb-5" fluid="md">
+            <Container className="px-3 pb-5" fluid="md">
+                <div className="text-center">
+                    <h1 className="p-5">Setup</h1>
 
-                <h1 className="p-5">Setup</h1>
+                    <p>
+                        To scan barcodes with your mobile device, you can use
+                        the following methods.
+                    </p>
 
-                <p>
-                    To scan barcodes with your <strong>iOS device</strong>,
-                    you can use the following  {newTabLink(icloudShortcutURL,
-                        <strong>Apple Shortcut</strong>
-                    )}:
-                </p>
-                <img
-                    src={postBarcodeIcloudShortcut}
-                    alt="Post Barcode iCloud Shortcut"
-                    className="mb-5"
-                    style={{ maxWidth: "175px", maxHeight: "175px", padding: "10px" }}
-                />
+                    {/* MARK: iCloud Shortcut */}
 
-                <h3>Mobile Apps</h3>
+                    <h3 className="pt-2">iCloud Shortcut</h3>
 
-                <p>
-                    You can use the following apps to scan barcodes:
-                </p>
+                    <p className="pt-2">
+                        To scan barcodes with your <strong>iOS device</strong>,
+                        you can use the following  {newTabLink(icloudShortcutURL,
+                            <strong>Apple Shortcut</strong>
+                        )}:
+                    </p>
+                    <img
+                        src={postBarcodeIcloudShortcut}
+                        alt="Post Barcode iCloud Shortcut"
+                        className="qr-code-img"
+                    />
+                    <h3 className="pt-5">Mobile Apps</h3>
+                    <p className="pt-2">
+                        You can use the following apps to scan barcodes:
+                    </p>
+                    {/* MARK: QR Bot */}
+                    <p>
+                        {newTabLink("https://qrbot.net",
+                            <strong>QR Bot</strong>
+                        )}{" "}
+                        (iOS and Android)
+                    </p>
+                    <img
+                        src={QRBot}
+                        alt="QR Bot App QR Code"
+                        className="mb-3 qr-code-img"
+                    />
+                    <p className="pb-1">
+                        In the settings, enable the business scanner mode and
+                        configure the following URL
+                        (replace &lt;user&gt; with your username):
+                    </p>
+                    {apiRequestURLCodeSnippet()}
 
-                {/* --- QR Bot --- */}
-                <p>
-                    {newTabLink("https://qrbot.net",
-                        <strong>QR Bot</strong>
-                    )}{" "}
-                    <span className="text-secondary">(iOS and Android)</span>
-                </p>
-                <img
-                    src={QRBot}
-                    alt="QR Bot App QR Code"
-                    className="mb-3"
-                    style={{ maxWidth: "175px", maxHeight: "175px", padding: "10px" }}
-                />
-                <p className="text-secondary">
-                    In the settings, enable the business scanner mode and
-                    configure the URL as specified in the API Request
-                    section below. Enter the following for the body:
-                </p>
-                <span style={{ padding: "0px 0px", fontFamily: "'Courier New', monospace" }}>
-                    {"barcode={code}"}
-                </span>
+                    <p className="pt-3">
+                        Enter the following for the body:
+                    </p>
 
-                {/* <hr className="padded-hr" /> */}
+                    <div className="pt-1 pb-3">
+                        <code>
+                            {"barcode={code}"}
+                        </code>
+                    </div>
 
-                {/* --- QR & Barcode Scanner --- */}
-                <p className="pt-4">
-                    {newTabLink(
-                        "https://play.google.com/store/apps/details?id=com.scanner.kataykin.icamesscaner.free",
-                        <strong>QR & Barcode Scanner</strong>
-                    )}{" "}
-                    <span className="text-secondary">(Android)</span>
-                </p>
-                <img
-                    src={QRBarcodeScanner}
-                    alt="QR & Barcode Scanner App QR Code"
-                    className="mb-3"
-                    style={{ maxWidth: "175px", maxHeight: "175px", padding: "10px" }}
-                />
-                <p className="text-secondary">
-                    In the settings, select the "POST" option, select "HTTPS", and enter the
-                    URL as specified in the API Request section below. No
-                    additional parameters need to be supplied.
-                </p>
+                    <p>
+                        For example:
+                    </p>
 
-                <h3 className="pt-3">API Request</h3>
+                    <img
+                        src={QRBotScreenshot}
+                        alt="QR Bot App Screenshot"
+                        className="qr-bot-app-screenshot"
+                    />
 
-                <p>
-                    Make a POST request to the following endpoint
-                    in your barcode scanner app
-                    (replace {"<user>"} with your username):
-                </p>
+                    <hr className="padded-hr" />
 
-                <code>
-                    {"https://api.barcodedrop.com/scan/<user>"}
-                </code>
+                    {/* MARK: QR & Barcode Scanner */}
+                    <p className="pt-4">
+                        {newTabLink(
+                            "https://play.google.com/store/apps/details?id=com.scanner.kataykin.icamesscaner.free",
+                            <strong>QR & Barcode Scanner</strong>
+                        )}{" "}
+                        (Android)
+                    </p>
+                    <img
+                        src={QRBarcodeScanner}
+                        alt="QR & Barcode Scanner App QR Code"
+                        className="mb-3 qr-code-img"
+                    />
+                    <p>
+                        In the settings, select the "POST" option, select
+                        "HTTPS", and enter the following URL (replace
+                        &lt;user&gt; with your username). No additional
+                        parameters need to be supplied.
+                    </p>
 
-                <p className="pt-3">
-                    <strong>Request Body:</strong>
-                </p>
+                    {apiRequestURLCodeSnippet()}
 
-                <p className="">
-                    URL Query string/form-url-encoded in the body:
-                    <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
-                        {"barcode=<barcode>"}
-                    </span>
-                    or
-                    <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
-                        {"text=<barcode>"}
-                    </span>
-                </p>
-
-                <p className="pb-2">
-                    In the body as JSON:
-                    <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
-                        {'{ "barcode": "<barcode>" }'}
-                    </span>
-                    or
-                    <span style={{ padding: "0px 10px", fontFamily: "'Courier New', monospace" }}>
-                        {'{ "text": "<barcode>" }'}
-                    </span>
-                </p>
-
-                <hr className="padded-hr" />
-
-                <p className="pt-1">
-                    <strong>
-                        Access your scanned barcodes at the following URL
+                    {/* MARK: API Request */}
+                    <h3 id="api-request" className="pt-5">API Request</h3>
+                    <p>
+                        Make a POST request to the following endpoint
                         (replace {"<user>"} with your username):
-                    </strong>
+                    </p>
+                    {apiRequestURLCodeSnippet()}
+                    <p className="pt-3">
+                        <strong>Request Parameters:</strong>
+                    </p>
+                    <p>
+                        <span className="px-1">
+                            The barcode can be sent in the body of the request
+                            or in the URL query string as follows:
+                        </span>
+                    </p>
+                    <p className="">
+                        <span className="px-1">
+                            URL query string/form-url-encoded in the body:
+                        </span>
+                        <code>
+                            {"barcode=<barcode>"}
+                        </code>
+                        <span className="px-1">
+                            or
+                        </span>
+                        <code>
+                            {"text=<barcode>"}
+                        </code>
+                    </p>
+                    <p className="pb-2">
+                        <span className="px-1">
+                            In the body as JSON:
+                        </span>
+                        <code>
+                            {'{ "barcode": "<barcode>" }'}
+                        </code>
+                        <span className="px-1">
+                            or
+                        </span>
+                        <code>
+                            {'{ "text": "<barcode>" }'}
+                        </code>
+                    </p>
+                    <p>
+                        For example:
+                    </p>
+                </div>
+
+                <pre className="code-block post-barcode-curl-code-block">
+                    {`curl --request POST \\
+    'https://api.barcodedrop.com/scan/peter?barcode=hello+world'`}
+                </pre>
+
+                <p className="pt-1 text-center">
+                    Or:
                 </p>
 
-                <code className="">
-                    {"https://barcodedrop.com/scans/<user>"}
-                </code>
+                <pre className="code-block post-barcode-curl-code-block">
+                    {`curl --request POST \\
+    --header "Content-Type: application/json" \\
+    --data '{"barcode": "hello world"}' \\
+    'https://api.barcodedrop.com/scan/peter'`}
+                </pre>
+
+                <div className="text-center">
+                    <hr className="padded-hr" />
+                    <p className="pt-1">
+                        <strong>
+                            Access your scanned barcodes at the following URL
+                            (replace &lt;user&gt; with your username):
+                        </strong>
+                    </p>
+                    <code>
+                        {"https://barcodedrop.com/scans/<user>"}
+                    </code>
+                </div>
 
             </Container>
         </div>
