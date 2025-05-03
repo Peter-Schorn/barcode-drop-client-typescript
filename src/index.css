@@ -15,14 +15,6 @@ code {
     color: var(--code-fg-color) !important;
 }
 
-.code-block {
-    font-family: var(--code-font-family);
-    padding: var(--code-padding);
-    border-radius: var(--code-border-radius);
-    background-color: var(--code-bg-color);
-    color: var(--code-fg-color) !important;
-}
-
 .navbar-brand {
     font-size: 1.5rem !important;
 }

@@ -1,0 +1,41 @@
+.code-block {
+    font-family: var(--code-font-family);
+    padding: var(--code-padding);
+    border-radius: var(--code-border-radius);
+    background-color: var(--code-bg-color);
+    color: var(--code-fg-color) !important;
+    position: relative;
+}
+
+.code-block-copy-button-container {
+    position: absolute;
+    display: flex;
+    right: 5px;
+    top: 5px;
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+    visibility: hidden;
+}
+
+.code-block-copy-button {
+    width: 32px;
+    height: 32px;
+    background-color: darkgray;
+    color: lightgrey;
+    border: none;
+    border-radius: 5px;
+}
+
+.code-block-copy-button:active {
+    background-color: rgb(139, 139, 139);
+}
+
+.code-block-copy-check-mark {
+    color: #6DA4F8;
+    font-size: 18px;
+}
+
+.code-block:hover .code-block-copy-button-container {
+    visibility: visible;
+}

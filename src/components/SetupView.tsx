@@ -2,6 +2,7 @@ import "./SetupView.css";
 import { type JSX } from "react";
 import { Container } from "react-bootstrap";
 import { MainNavbar } from "./MainNavbar";
+import { CodeBlock } from "./CodeBlock";
 import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities";
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
@@ -178,21 +179,23 @@ export function SetupView(): JSX.Element {
                     </p>
                 </div>
 
-                <pre className="code-block post-barcode-curl-code-block">
-                    {`curl --request POST \\
+                <CodeBlock
+                    className="post-barcode-curl-code-block"
+                    code={`curl --request POST \\
     'https://api.barcodedrop.com/scan/peter?barcode=hello+world'`}
-                </pre>
+                />
 
                 <p className="pt-1 text-center">
                     Or:
                 </p>
 
-                <pre className="code-block post-barcode-curl-code-block">
-                    {`curl --request POST \\
+                <CodeBlock
+                    className="post-barcode-curl-code-block"
+                    code={`curl --request POST \\
     --header "Content-Type: application/json" \\
     --data '{"barcode": "hello world"}' \\
     'https://api.barcodedrop.com/scan/peter'`}
-                </pre>
+                />
 
                 <div className="text-center">
                     <hr className="padded-hr" />
