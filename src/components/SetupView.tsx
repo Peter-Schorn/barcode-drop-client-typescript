@@ -6,7 +6,7 @@ import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtiliti
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";
-import QRBotScreenshot from "../assets/images/qrBotScreenshot.jpeg";
+import QRBotScreenshot from "../assets/images/QRBotScreenshot.jpeg";
 
 export function SetupView(): JSX.Element {
 
