@@ -28,7 +28,7 @@ export function SetupView(): JSX.Element {
     function apiRequestURLCodeSnippet(): JSX.Element {
         return (
             <code>
-                {"https://barcodedrop.com/scans/<user>"}
+                {"https://api.barcodedrop.com/scan/<user>"}
             </code>
         );
     }
