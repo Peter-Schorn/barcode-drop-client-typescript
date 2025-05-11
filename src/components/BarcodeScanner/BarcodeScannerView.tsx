@@ -306,12 +306,13 @@ export function BarcodeScannerView(): JSX.Element {
         const video = videoRef.current;
         const controls = controlsRef.current;
 
-        function updateControlsPosition(): void {
+        function updateControlsPosition(event?: Event): void {
+
+            console.log("updateControlsPosition event:", event?.type);
+
             if (!video || !controls) {
                 return;
             }
-
-            console.log("updateControlsPosition");
 
             const videoRect = video.getBoundingClientRect();
             const actualWidth = video.videoWidth;
@@ -340,12 +341,18 @@ export function BarcodeScannerView(): JSX.Element {
 
         // Update position when video metadata is loaded
         video?.addEventListener("loadedmetadata", updateControlsPosition);
-        // Update on resize
-        window.addEventListener("resize", updateControlsPosition);
+
+        const resizeObserver = new ResizeObserver(() => {
+            console.log("resizeObserver: resize event");
+            updateControlsPosition();
+        });
+        if (video) {
+            resizeObserver.observe(video);
+        }
 
         return (): void => {
             video?.removeEventListener("loadedmetadata", updateControlsPosition);
-            window.removeEventListener("resize", updateControlsPosition);
+            resizeObserver.disconnect();
         };
     }, []);
 
