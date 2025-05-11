@@ -39,7 +39,7 @@ import {
 
 import {
     isApplePlatform,
-    prefixTitleWithDocumentHostIfPort,
+    prefixWithHostIfPort,
     setToString,
     latestBarcodeChanged
 } from "../utils/MiscellaneousUtilities.ts";
@@ -1015,7 +1015,7 @@ export function UserScansRoot(): JSX.Element {
         <div className="vw-100 vh-100">
 
             <title>
-                {prefixTitleWithDocumentHostIfPort(
+                {prefixWithHostIfPort(
                     `Scans for ${user} | BarcodeDrop`
                 )}
             </title>
@@ -1041,7 +1041,7 @@ export function UserScansRoot(): JSX.Element {
             />
             <UserScansToast currentToastID={currentToastID} />
 
-            <MainNavbar />
+            <MainNavbar user={user}/>
 
             <Container fluid="md" className="pb-5" style={{
                 maxWidth: "1000px"

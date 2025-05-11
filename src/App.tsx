@@ -4,6 +4,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HomeView } from "./components/HomeView.tsx";
 import { UserScansRoot } from "./components/UserScansRoot.tsx";
 import { SetupView } from "./components/SetupView.tsx";
+import { BarcodeScannerView } from "./components/BarcodeScanner/BarcodeScannerView.tsx";
+import {
+    BarcodeScannerLoginView
+} from "./components/BarcodeScanner/BarcodeScannerLoginView.tsx";
 
 import { AppContext } from "./model/AppContext.ts";
 
@@ -40,6 +44,17 @@ export function App(): JSX.Element {
                     <Route
                         path="/scans/:user"
                         element={<UserScansRoot />}
+                    />
+
+                    {/* --- Barcode Scanner --- */}
+                    <Route
+                        path="/scanner"
+                        element={<BarcodeScannerLoginView />}
+                    />
+
+                    <Route
+                        path="/scanner/:user"
+                        element={<BarcodeScannerView />}
                     />
 
                 </Routes>

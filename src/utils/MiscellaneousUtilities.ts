@@ -43,7 +43,7 @@ String.prototype.truncated = function (this: string, maxLength: number): string 
     return this.slice(0, length) + "...";
 };
 
-export function prefixTitleWithDocumentHostIfPort(title: string): string {
+export function prefixWithHostIfPort(title: string): string {
     if (document.location.port) {
         const host = document.location.host;
         return `[${host}] ${title}`;

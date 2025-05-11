@@ -3,7 +3,7 @@ import { type JSX } from "react";
 import { Container } from "react-bootstrap";
 import { MainNavbar } from "./MainNavbar";
 import { CodeBlock } from "./CodeBlock";
-import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities";
+import { prefixWithHostIfPort } from "../utils/MiscellaneousUtilities";
 import postBarcodeIcloudShortcut from "../assets/images/postBarcodeIcloudShortcut.svg";
 import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";
@@ -36,7 +36,7 @@ export function SetupView(): JSX.Element {
     return (
         <div className="vw-100 vh-100">
             <title>
-                {prefixTitleWithDocumentHostIfPort("Setup | BarcodeDrop")}
+                {prefixWithHostIfPort("Setup | BarcodeDrop")}
             </title>
             <MainNavbar />
             <Container className="px-3 pb-5" fluid="md">

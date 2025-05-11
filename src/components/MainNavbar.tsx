@@ -1,6 +1,18 @@
 import { type JSX } from "react";
 
-export function MainNavbar(): JSX.Element {
+type MainNavbarProps = {
+    user?: string;
+};
+
+export function MainNavbar(props: MainNavbarProps): JSX.Element {
+
+    function scannerLink(): string {
+        if (props.user) {
+            return `/scanner/${props.user}`;
+        } else {
+            return "/scanner";
+        }
+    }
 
     return (
         <nav className="navbar navbar-expand-lg bg-light">
@@ -35,6 +47,14 @@ export function MainNavbar(): JSX.Element {
                         <ul
                             className="navbar-nav me-auto mb-2 mb-lg-0"
                         >
+                            <li className="nav-item">
+                                <a
+                                    className="nav-link active"
+                                    href={scannerLink()}
+                                >
+                                    Scanner
+                                </a>
+                            </li>
                             <li className="nav-item">
                                 <a
                                     className="nav-link active"

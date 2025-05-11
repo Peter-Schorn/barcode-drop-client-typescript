@@ -1,9 +1,10 @@
+import "./HomeView.css";
+
 import React from "react";
 import {
     useRef,
     useState,
-    type JSX,
-    type CSSProperties,
+    type JSX
 } from "react";
 
 import { Form, Button } from "react-bootstrap";
@@ -12,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 
 import { MainNavbar } from "./MainNavbar";
 
-import { prefixTitleWithDocumentHostIfPort } from "../utils/MiscellaneousUtilities.ts";
+import { prefixWithHostIfPort } from "../utils/MiscellaneousUtilities.ts";
 
 import barcodeDropBackground from "../assets/images/barcode_drop_background.svg";
 
@@ -28,15 +29,6 @@ export function HomeView(): JSX.Element {
 
     // Whether or not the form has been validated
     const [validated, setValidated] = useState(false);
-
-    const usernameFormBackground: CSSProperties = {
-        background: "linear-gradient(to right, rgba(0, 210, 255, 0.9), rgba(58, 123, 213, 0.9))",
-        // background: "rgb(0, 0, 0)"
-        // backgroundColor: "#071f5c"
-        // backgroundColor: "white"
-        // backgroundColor: "rgba(255, 240, 200, 1)"
-        // opacity: "0.9"
-    };
 
     function onSubmitForm(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
@@ -69,14 +61,10 @@ export function HomeView(): JSX.Element {
     function renderForm(): JSX.Element {
         return (
             <div
-                className="username-form-container rounded"
-                style={{
-                    backgroundColor: "white"
-                }}
+                className="home-view-username-form-container"
             >
                 <Form
-                    className="username-form p-5 rounded text-center shine"
-                    style={usernameFormBackground}
+                    className="home-view-username-form shine"
                     onSubmit={onSubmitForm}
                     noValidate
                     validated={validated}
@@ -121,16 +109,15 @@ export function HomeView(): JSX.Element {
 
 
     return (
-        <div className="vw-100 vh-100">
+        <div className="home-view-root">
             <title>
-                {prefixTitleWithDocumentHostIfPort("BarcodeDrop")}
+                {prefixWithHostIfPort("BarcodeDrop")}
             </title>
             <MainNavbar />
             <div
                 className={
                     "d-flex justify-content-center align-items-center " +
-                    "w-100 h-75 "
-                    // "bg-secondary"
+                    "flex-grow-1"
                 }
                 style={{
                     backgroundImage: `url(${barcodeDropBackground})`,
