@@ -44,7 +44,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     const isProcessingBarcode = useRef(false);
 
-    const scanInterval = 200; // milliseconds
+    const scanInterval = 50; // milliseconds
 
     const barcodeDetector = useMemo(() => new BarcodeDetector(), []);
 
@@ -170,11 +170,6 @@ export function BarcodeScannerView(): JSX.Element {
         void startScanning().catch(error => {
             console.error("error starting barcode scanner:", error);
         });
-
-        // return (): void => {
-        //     console.log("BarcodeScanner useEffect cleanup");
-
-        // };
 
     }, [scanLoop]);
 
