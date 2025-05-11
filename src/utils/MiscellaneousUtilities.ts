@@ -181,3 +181,40 @@ export function debounce<This, Args extends unknown[]>(
         }, delay);
     };
 }
+
+/**
+ * Checks if the given value is a finite number and not zero.
+ *
+ * @param value The value to check.
+ * @returns `true` if the value is a finite number and not zero; otherwise,
+ * `false`.
+ */
+export function isFiniteNonZero(value: number): boolean {
+    return Number.isFinite(value) && value !== 0;
+}
+
+/**
+ * Sleeps for the given duration in milliseconds.
+ *
+ * @param ms The number of milliseconds to sleep for.
+ */
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+CanvasRenderingContext2D.prototype.drawPathWithCorners = function (
+    corners: {
+        x: number;
+        y: number;
+    }[]
+): void {
+
+    this.beginPath();
+    this.moveTo(corners[0]!.x, corners[0]!.y);
+
+    for (let i = 1; i < corners.length; i++) {
+        this.lineTo(corners[i]!.x, corners[i]!.y);
+    }
+
+    this.closePath();
+};

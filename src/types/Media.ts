@@ -9,16 +9,25 @@ declare global {
         "single-shot" |
         "manual";
 
+    type MediaTrackCoordinate = {
+        x: number;
+        y: number;
+    };
+
     interface MediaTrackSettings {
         torch: boolean;
     }
 
     interface MediaTrackCapabilities {
         torch?: boolean;
+        focusMode?: MediaTrackConstraintMode;
     }
 
     interface MediaTrackConstraintSet {
         torch?: boolean;
+        focusMode?: MediaTrackConstraintMode;
+        focusDistance?: number;
+        pointOfInterest?: MediaTrackCoordinate | MediaTrackCoordinate[];
     }
 
     interface MediaTrackConstraints {

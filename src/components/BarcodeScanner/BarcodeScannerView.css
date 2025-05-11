@@ -27,6 +27,16 @@
     /* border: 2px solid green; */
 }
 
+.barcode-scanner-video-canvas-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    /* outline: solid 2px green; */
+}
+
 
 #barcode-scanner-video {
     width: 100%;
@@ -44,6 +54,7 @@
     /* outline: none; */
     padding: 10px;
     border: 1px solid white;
-    border-radius: 9999px; /* capsule shape */
+    border-radius: 9999px;
+    /* capsule shape */
     background-color: lightgray;
 }
