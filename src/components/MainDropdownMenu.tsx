@@ -104,7 +104,7 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
                 >
                     <Stack direction="horizontal" gap={3}>
                         <i className="fa-solid fa-barcode"></i>
-                        <span>Scan Barcode...</span>
+                        <span>Enter Barcode...</span>
                         <span className="ms-auto">
                             {/* --- Spacer --- */}
                         </span>
