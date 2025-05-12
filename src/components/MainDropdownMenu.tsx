@@ -103,7 +103,7 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
                     onClick={props.openScanBarcodeView}
                 >
                     <Stack direction="horizontal" gap={3}>
-                        <i className="fa-solid fa-camera"></i>
+                        <i className="fa-solid fa-barcode"></i>
                         <span>Scan Barcode...</span>
                         <span className="ms-auto">
                             {/* --- Spacer --- */}
