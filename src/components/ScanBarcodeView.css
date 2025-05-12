@@ -60,6 +60,9 @@
     padding-right: 5px;
     padding-left: var(--cancel-button-width);
     min-width: 20px;
+    margin-left: -1px;
+    margin-right: -1px;
+    border-radius: 0px;
 }
 
 .scan-barcode-input:focus {
@@ -78,6 +81,7 @@
     background-color: #f8f9fa;
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
+    appearance: none;
     border: none;
 }
 
