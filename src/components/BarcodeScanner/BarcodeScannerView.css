@@ -1,4 +1,4 @@
-.barcode-scanner-view {
+.barcode-scanner-view-root {
     position: fixed;
     top: 0;
     left: 0;
@@ -11,20 +11,70 @@
 .barcode-scanner-view-content-container {
     flex: 1;
     display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0; /* Enable container shrinking */
     justify-content: center;
     align-items: center;
-    width: 100%;
-    min-height: 0;
+}
+
+.barcode-scanner-view-scanned-barcodes-container {
+    padding: 10px;
+    margin-bottom: auto;
+}
+
+.barcode-scanner-view-scanned-barcodes-link {
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+}
+
+.barcode-scanner-view-scanned-barcodes-back-icon {
+    padding: 5px;
+    color: rgb(52, 52, 213);
+    /* border: 2px solid green; */
 }
 
 .barcode-scanner-video-container {
     position: relative;
+    flex: 1; /* Take remaining space */
     width: 100%;
-    height: 100%;
+    min-height: 0; /* Enable container shrinking */
     display: flex;
     justify-content: center;
     align-items: center;
     /* border: 2px solid green; */
+}
+
+.barcode-scanner-video-container-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 0;
+    /* border: 2px solid green; */
+}
+
+.barcode-scanner-video-loading-text {
+    margin: 20px;
+    font-size: 1.5rem;
+}
+
+.barcode-scanner-video-error-text {
+    margin: 20px;
+    font-size: 1rem;
+    color: red;
+}
+
+
+#barcode-scanner-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
 }
 
 .barcode-scanner-video-canvas-overlay {
@@ -34,14 +84,8 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 2;
     /* outline: solid 2px green; */
-}
-
-
-#barcode-scanner-video {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
 .barcode-scanner-view-camera-controls {
@@ -54,7 +98,8 @@
     /* outline: none; */
     padding: 10px;
     border: 1px solid white;
-    border-radius: 9999px;
     /* capsule shape */
+    border-radius: 9999px;
+    color: var(--barcode-drop-apple-system-blue);
     background-color: lightgray;
 }

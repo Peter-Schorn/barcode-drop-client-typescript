@@ -13,6 +13,8 @@ import {
 } from "react";
 import { useParams } from "react-router-dom";
 
+import Spinner from "react-bootstrap/Spinner";
+
 import { BarcodeDetector, type DetectedBarcode } from "barcode-detector/pure";
 
 import { BarcodeScannerDialog } from "./BarcodeScannerDialog";
@@ -53,6 +55,9 @@ export function BarcodeScannerView(): JSX.Element {
     const [flashIsOn, setFlashIsOn] = useState(false);
     const [flashIsSupported, setFlashIsSupported] = useState(false);
 
+    const [cameraIsLoading, setCameraIsLoading] = useState(false);
+    const [cameraLoadErrorMessage, setCameraLoadErrorMessage] = useState("");
+
     const didRequestVideo = useRef(false);
 
     const isProcessingBarcode = useRef(false);
@@ -74,6 +79,24 @@ export function BarcodeScannerView(): JSX.Element {
         offsetX: number;
         offsetY: number;
     };
+
+    const getVideoSrcObject = useCallback((): MediaStream | null => {
+        const video = videoRef.current;
+        if (!video) {
+            console.error("video element not found");
+            return null;
+        }
+        let videoSrcObject: MediaStream | null;
+        if ("srcObject" in video) {
+            videoSrcObject = video.srcObject as MediaStream | null;
+        }
+        else {
+            // @ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            videoSrcObject = video.src;
+        }
+        return videoSrcObject;
+    }, []);
 
     const calculateVideoDimensions = useCallback((): VideoDimensions | null => {
         const video = videoRef.current;
@@ -117,75 +140,68 @@ export function BarcodeScannerView(): JSX.Element {
         };
     }, []);
 
-    function updateFlashSupport(): void {
-        if (videoRef.current) {
-            const track = (videoRef.current.srcObject as MediaStream | null)
-                ?.getVideoTracks()[0];
-            if (track) {
-                const capabilities = track.getCapabilities();
-                if (capabilities.torch) {
-                    console.log("flash is supported");
-                    setFlashIsSupported(true);
-                }
-                else {
-                    console.error("flash is not supported");
-                    setFlashIsSupported(false);
-                }
+    const updateFlashSupport = useCallback((): void => {
+
+        const videoSrcObject = getVideoSrcObject();
+
+        const track = videoSrcObject?.getVideoTracks()[0];
+        if (track) {
+            const capabilities = track.getCapabilities();
+            if (capabilities.torch) {
+                console.log("camera flash is supported");
+                setFlashIsSupported(true);
             }
             else {
-                console.error("video track not found");
+                console.warn("camera flash is not supported");
                 setFlashIsSupported(false);
             }
         }
         else {
-            console.error("video element not found");
+            console.error("video track not found");
             setFlashIsSupported(false);
         }
-    }
+
+    }, [getVideoSrcObject]);
 
     function toggleFlash(): void {
         console.log("toggleFlash");
 
-        if (videoRef.current) {
-            const track = (videoRef.current.srcObject as MediaStream | null)
-                ?.getVideoTracks()[0];
-            if (track) {
-                const capabilities = track.getCapabilities();
-                if (capabilities.torch) {
-                    const settings = track.getSettings();
-                    if (settings.torch) {
-                        console.log("turning off flash");
-                        track.applyConstraints({
-                            advanced: [{ torch: false }]
-                        }).then(() => {
-                            console.log("flash turned off");
-                            setFlashIsOn(false);
-                        }).catch(error => {
-                            console.error("error turning off flash:", error);
-                        });
-                    }
-                    else {
-                        console.log("turning on flash");
-                        track.applyConstraints({
-                            advanced: [{ torch: true }]
-                        }).then(() => {
-                            console.log("flash turned on");
-                            setFlashIsOn(true);
-                        }).catch(error => {
-                            console.error("error turning on flash:", error);
-                        });
-                    }
+        const videoSrcObject = getVideoSrcObject();
+
+        const track = videoSrcObject?.getVideoTracks()[0];
+        if (track) {
+            const capabilities = track.getCapabilities();
+            if (capabilities.torch) {
+                const settings = track.getSettings();
+                if (settings.torch) {
+                    console.log("turning off camera flash");
+                    track.applyConstraints({
+                        advanced: [{ torch: false }]
+                    }).then(() => {
+                        console.log("camera flash turned off");
+                        setFlashIsOn(false);
+                    }).catch(error => {
+                        console.error("error turning off camera flash:", error);
+                    });
                 }
                 else {
-                    console.error("flash not supported");
+                    console.log("turning on camera flash");
+                    track.applyConstraints({
+                        advanced: [{ torch: true }]
+                    }).then(() => {
+                        console.log("camera flash turned on");
+                        setFlashIsOn(true);
+                    }).catch(error => {
+                        console.error("error turning on camera flash:", error);
+                    });
                 }
             }
             else {
-                console.error("video track not found");
+                console.warn("camera flash not supported");
             }
         }
         else {
-            console.error("video element not found");
+            console.error("video track not found");
         }
     }
 
@@ -394,10 +410,12 @@ export function BarcodeScannerView(): JSX.Element {
         );
         updateFlashSupport();
         restartScanLoop();
-    }, [restartScanLoop]);
+    }, [restartScanLoop, updateFlashSupport]);
 
     const shutdownCameraStream = useCallback((): void => {
         console.log("shutdownCameraStream");
+
+        didRequestVideo.current = false;
 
         const video = videoRef.current;
         if (!video) {
@@ -407,18 +425,31 @@ export function BarcodeScannerView(): JSX.Element {
 
         stopScanLoop();
 
-        const mediaStream = video.srcObject as MediaStream | null;
-        if (mediaStream) {
-            const tracks = mediaStream.getTracks();
+        const videoSrcObject = getVideoSrcObject();
+
+        if (videoSrcObject) {
+            const tracks = videoSrcObject.getTracks();
             for (const track of tracks) {
                 console.log("stopping track:", track);
                 track.stop();
             }
-            video.srcObject = null;
+            if ("srcObject" in video) {
+                video.srcObject = null;
+            }
+            else {
+                // @ts-expect-error
+                video.src = null;
+            }
+
+            video.load();
         }
+
         video.removeEventListener("loadeddata", loadeddataHandler);
 
-    }, [loadeddataHandler]);
+        setFlashIsOn(false);
+        setFlashIsSupported(false);
+
+    }, [getVideoSrcObject, loadeddataHandler]);
 
     const configureScanLoop = useCallback((): void => {
         console.log("configureScanLoop");
@@ -444,32 +475,59 @@ export function BarcodeScannerView(): JSX.Element {
             console.log("BarcodeScanner: setting up camera stream");
             didRequestVideo.current = true;
 
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
-                // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
-                video: {
-                    facingMode: "environment",
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 },
-                    frameRate: { ideal: 30 },
-                    // improve focus for close-up scanning
-                    focusMode: "continuous",
-                    // improve exposure for various lighting conditions
-                    exposureMode: "continuous",
-                    whiteBalanceMode: "continuous",
+            try {
+                setCameraIsLoading(true);
 
+                if ("srcObject" in video) {
+                    video.srcObject = null;
                 }
-            });
+                else {
+                    // @ts-expect-error
+                    video.src = null;
+                }
+                video.load();
 
-            if ("srcObject" in video) {
-                video.srcObject = mediaStream;
-            }
-            else {
-                // @ts-expect-error
-                video.src = window.URL.createObjectURL(mediaStream);
-            }
+                const mediaStream = await navigator.mediaDevices.getUserMedia({
+                    // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        frameRate: { ideal: 30 },
+                        // improve focus for close-up scanning
+                        focusMode: "continuous",
+                        // improve exposure for various lighting conditions
+                        exposureMode: "continuous",
+                        whiteBalanceMode: "continuous",
 
-            video.removeEventListener("loadeddata", loadeddataHandler);
-            video.addEventListener("loadeddata", loadeddataHandler);
+                    },
+                    audio: false
+                });
+
+                if ("srcObject" in video) {
+                    video.srcObject = mediaStream;
+                }
+                else {
+                    // @ts-expect-error
+                    video.src = window.URL.createObjectURL(mediaStream);
+                }
+
+                video.removeEventListener("loadeddata", loadeddataHandler);
+                video.addEventListener("loadeddata", loadeddataHandler);
+
+            } catch (error) {
+                console.error("error starting camera stream:", error);
+                didRequestVideo.current = false;
+                shutdownCameraStream();
+                const errorMessage = error instanceof Error
+                    ? error.message
+                    : String(error);
+                setCameraLoadErrorMessage(
+                    `Error loading camera: ${errorMessage}`
+                );
+            } finally {
+                setCameraIsLoading(false);
+            }
 
         }
 
@@ -477,7 +535,19 @@ export function BarcodeScannerView(): JSX.Element {
             console.error("error starting barcode scanner:", error);
         });
 
-    }, [loadeddataHandler]);
+    }, [loadeddataHandler, shutdownCameraStream]);
+
+    function handleBarcodeDialogClose(): void {
+        console.log("handleBarcodeDialogClose");
+        setDialogIsOpen(false);
+        isProcessingBarcode.current = false;
+
+        // add a delay before resuming the scan loop
+        setTimeout(() => {
+            console.log("resuming scan loop after closing dialog");
+            restartScanLoop();
+        }, resumeScanDelay);
+    }
 
     useEffect(() => {
 
@@ -490,7 +560,7 @@ export function BarcodeScannerView(): JSX.Element {
             return;
         }
 
-        if (!video.srcObject && !didRequestVideo.current) {
+        if (!(video.srcObject || video.src) && !didRequestVideo.current) {
             configureScanLoop();
         }
         else {
@@ -526,17 +596,6 @@ export function BarcodeScannerView(): JSX.Element {
 
     }, [configureScanLoop, shutdownCameraStream]);
 
-    function handleBarcodeDialogClose(): void {
-        console.log("handleBarcodeDialogClose");
-        setDialogIsOpen(false);
-        isProcessingBarcode.current = false;
-
-        // add a delay before resuming the scan loop
-        setTimeout(() => {
-            console.log("resuming scan loop after closing dialog");
-            restartScanLoop();
-        }, resumeScanDelay);
-    }
 
     useEffect(() => {
 
@@ -613,7 +672,7 @@ export function BarcodeScannerView(): JSX.Element {
     }, [calculateVideoDimensions]);
 
     return (
-        <div className="barcode-scanner-view">
+        <div className="barcode-scanner-view-root">
             <BarcodeScannerDialog
                 isOpen={dialogIsOpen}
                 title={barcodeDialogTitle}
@@ -626,7 +685,36 @@ export function BarcodeScannerView(): JSX.Element {
             </title>
             <MainNavbar />
             <div className="barcode-scanner-view-content-container">
+                <div className="barcode-scanner-view-scanned-barcodes-container">
+                    {/* <i className="fa-solid fa-left-long barcode-scanner-view-scanned-barcodes-back-icon" /> */}
+                    <a
+                        href={`/scans/${user}`}
+                        className="barcode-scanner-view-scanned-barcodes-link btn btn-primary"
+                    >
+                        View Scanned Barcodes
+                    </a>
+                </div>
                 <div className="barcode-scanner-video-container">
+                    <div className="barcode-scanner-video-container-background">
+                        {cameraIsLoading ? (
+                            <>
+                                <Spinner
+                                    animation="border"
+                                    role="status"
+                                    className="m-4"
+                                />
+                                <p className="barcode-scanner-video-loading-text">
+                                    <strong>Loading Camera...</strong>
+                                </p>
+                            </>
+                        ) : (
+                            cameraLoadErrorMessage && (
+                                <p className="barcode-scanner-video-error-text">
+                                    <strong>{cameraLoadErrorMessage}</strong>
+                                </p>
+                            )
+                        )}
+                    </div>
                     <video
                         id="barcode-scanner-video"
                         ref={videoRef}

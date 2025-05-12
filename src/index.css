@@ -5,6 +5,7 @@
     --code-fg-color: black;
     --code-padding: 7px;
     --code-border-radius: 5px;
+    --barcode-drop-apple-system-blue: rgb(0, 122, 255);
 }
 
 code {
