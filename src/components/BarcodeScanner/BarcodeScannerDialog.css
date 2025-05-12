@@ -1,3 +1,7 @@
+:root {
+    --barcode-scanner-transition-duration: 200ms;
+}
+
 .barcode-scanner-dialog-overlay {
     background-color: rgba(0, 0, 0, 0.6);
     position: fixed;
@@ -5,13 +9,25 @@
     left: 0;
     right: 0;
     bottom: 0;
+    /* transition */
+    opacity: 0;
+    transition: opacity var(--barcode-scanner-transition-duration) ease-out;
+}
+
+.barcode-scanner-dialog-overlay-after-open {
+    opacity: 1;
+}
+
+.barcode-scanner-dialog-overlay-before-close {
+    opacity: 0;
 }
 
 .barcode-scanner-dialog {
+
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1.4);
     width: 300px;
     height: 175px;
     background-color: lightgray;
@@ -23,6 +39,19 @@
     overflow: hidden;
     outline: none;
     box-shadow: 0px 0px 40px 2px rgba(0, 0, 0, 0.6);
+    /* transition */
+    opacity: 0;
+    transition: transform var(--barcode-scanner-transition-duration) ease-out,
+        opacity var(--barcode-scanner-transition-duration) ease-out;
+}
+
+.barcode-scanner-dialog-after-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.barcode-scanner-dialog-before-close {
+    opacity: 0;
 }
 
 .barcode-scanner-dialog-title-container {
@@ -49,7 +78,7 @@
     justify-content: center;
     width: 100%;
     height: 50px;
-    border-top: 2px solid gray;
+    border-top: 1px solid gray;
     /* border: 2px solid green; */
 }
 

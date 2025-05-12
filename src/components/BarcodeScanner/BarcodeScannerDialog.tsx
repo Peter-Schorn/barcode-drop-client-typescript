@@ -1,5 +1,6 @@
 import "./BarcodeScannerDialog.css";
 import {
+    useMemo,
     type JSX
 } from "react";
 
@@ -19,13 +20,30 @@ export function BarcodeScannerDialog(
     props: BarcodeScannerDialogProps
 ): JSX.Element {
 
+    const transitionDuration = useMemo(() => {
+        const rootStyle = getComputedStyle(document.documentElement);
+        const duration = rootStyle.getPropertyValue(
+            "--barcode-scanner-transition-duration"
+        );
+        return parseInt(duration, 10);
+    }, []);
+
     return (
         <Modal
+            closeTimeoutMS={transitionDuration}
             isOpen={props.isOpen}
             onRequestClose={props.onClose}
             contentLabel="Barcode Scanner Dialog"
-            className="barcode-scanner-dialog"
-            overlayClassName="barcode-scanner-dialog-overlay"
+            className={{
+                base: "barcode-scanner-dialog",
+                afterOpen: "barcode-scanner-dialog-after-open",
+                beforeClose: "barcode-scanner-dialog-before-close"
+            }}
+            overlayClassName={{
+                base: "barcode-scanner-dialog-overlay",
+                afterOpen: "barcode-scanner-dialog-overlay-after-open",
+                beforeClose: "barcode-scanner-dialog-overlay-before-close"
+            }}
         >
             <div className="barcode-scanner-dialog-title-container">
                 {props.isScanning ? (

@@ -65,7 +65,7 @@ export function BarcodeScannerView(): JSX.Element {
     const barcodeDetector = useMemo(() => new BarcodeDetector(), []);
 
     /** delay before resuming the scan loop after closing the dialog */
-    const resumeScanDelay = 600;  // milliseconds
+    const resumeScanDelay = 500;  // milliseconds
 
     /** how long the barcode box remains displayed on the screen */
     const barcodeBoxDisplayDuration = 150; // milliseconds
