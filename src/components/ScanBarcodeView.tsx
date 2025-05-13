@@ -46,8 +46,13 @@ export function ScanBarcodeView(props: ScanBarcodeViewProps): JSX.Element {
     }
 
     function onClickCancelButton(): void {
-        setBarcode("");
-        barcodeInput.current?.focus();
+        if (barcode) {
+            setBarcode("");
+            barcodeInput.current?.focus();
+        }
+        else {
+            props.onClose();
+        }
     }
 
     /**
