@@ -15,13 +15,15 @@ import { useParams } from "react-router-dom";
 
 import Spinner from "react-bootstrap/Spinner";
 
-import { BarcodeDetector, type DetectedBarcode } from "barcode-detector/pure";
+// import { BarcodeDetector, type DetectedBarcode } from "barcode-detector/pure";
+import "barcode-detector/polyfill";
 
 import { BarcodeScannerDialog } from "./BarcodeScannerDialog";
 import {
     prefixWithHostIfPort,
     isFiniteNonZero,
-    sleep
+    sleep,
+    degreesToRadians
 } from "../../utils/MiscellaneousUtilities";
 import { MainNavbar } from "../MainNavbar";
 import { AxiosError } from "axios";
@@ -33,6 +35,16 @@ type BarcodeScannerViewParams = {
 
 export function BarcodeScannerView(): JSX.Element {
 
+    type VideoDimensions = {
+        displayWidth: number;
+        displayHeight: number;
+        containerWidth: number;
+        containerHeight: number;
+        scale: number;
+        offsetX: number;
+        offsetY: number;
+    };
+
     const context = useContext(AppContext);
 
     const params = useParams<BarcodeScannerViewParams>();
@@ -41,19 +53,30 @@ export function BarcodeScannerView(): JSX.Element {
     const user = params.user!;
 
     const videoRef = useRef<HTMLVideoElement>(null);
+
+    /**
+     * The canvas used for applying transformations to the video frame before
+     * trying to detect a barcode.
+     */
+    const videoCanvasRef = useRef<HTMLCanvasElement>(
+        document.createElement("canvas")
+    );
+
+    /** The canvas used to draw the barcode box. */
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const controlsRef = useRef<HTMLDivElement>(null);
+    const cameraControlsRef = useRef<HTMLDivElement>(null);
 
     const animationFrameId = useRef<number | null>(null);
-
     const scanLoopIsRunning = useRef(false);
 
     const [isScanning, setIsScanning] = useState(false);
+
     const [barcodeDialogTitle, setBarcodeDialogTitle] = useState("");
     const [dialogIsOpen, setDialogIsOpen] = useState(false);
 
-    const [flashIsOn, setFlashIsOn] = useState(false);
     const [flashIsSupported, setFlashIsSupported] = useState(false);
+    const [flashIsOn, setFlashIsOn] = useState(false);
+    const [isTogglingFlash, setIsTogglingFlash] = useState(false);
 
     const [cameraIsLoading, setCameraIsLoading] = useState(false);
     const [cameraLoadErrorMessage, setCameraLoadErrorMessage] = useState("");
@@ -69,16 +92,6 @@ export function BarcodeScannerView(): JSX.Element {
 
     /** how long the barcode box remains displayed on the screen */
     const barcodeBoxDisplayDuration = 150; // milliseconds
-
-    type VideoDimensions = {
-        displayWidth: number;
-        displayHeight: number;
-        containerWidth: number;
-        containerHeight: number;
-        scale: number;
-        offsetX: number;
-        offsetY: number;
-    };
 
     const getVideoSrcObject = useCallback((): MediaStream | null => {
         const video = videoRef.current;
@@ -100,12 +113,14 @@ export function BarcodeScannerView(): JSX.Element {
 
     const calculateVideoDimensions = useCallback((): VideoDimensions | null => {
         const video = videoRef.current;
+
         if (!video) {
             console.error("video element not found");
             return null;
         }
 
         const videoRect = video.getBoundingClientRect();
+
         const intrinsicVideoWidth = video.videoWidth;
         const intrinsicVideoHeight = video.videoHeight;
 
@@ -129,7 +144,7 @@ export function BarcodeScannerView(): JSX.Element {
         const offsetX = (videoRect.width - displayWidth) / 2;
         const offsetY = (videoRect.height - displayHeight) / 2;
 
-        return {
+        const videoDimensions: VideoDimensions = {
             displayWidth,
             displayHeight,
             containerWidth: videoRect.width,
@@ -138,6 +153,8 @@ export function BarcodeScannerView(): JSX.Element {
             offsetX,
             offsetY
         };
+
+        return videoDimensions;
     }, []);
 
     const updateFlashSupport = useCallback((): void => {
@@ -163,7 +180,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     }, [getVideoSrcObject]);
 
-    function toggleFlash(): void {
+    async function toggleFlash(): Promise<void> {
         console.log("toggleFlash");
 
         const videoSrcObject = getVideoSrcObject();
@@ -175,25 +192,35 @@ export function BarcodeScannerView(): JSX.Element {
                 const settings = track.getSettings();
                 if (settings.torch) {
                     console.log("turning off camera flash");
-                    track.applyConstraints({
-                        advanced: [{ torch: false }]
-                    }).then(() => {
+                    setIsTogglingFlash(true);
+                    try {
+                        await track.applyConstraints({
+                            advanced: [{ torch: false }]
+                        });
                         console.log("camera flash turned off");
                         setFlashIsOn(false);
-                    }).catch(error => {
+
+                    } catch (error) {
                         console.error("error turning off camera flash:", error);
-                    });
+                    } finally {
+                        setIsTogglingFlash(false);
+                    }
                 }
                 else {
                     console.log("turning on camera flash");
-                    track.applyConstraints({
-                        advanced: [{ torch: true }]
-                    }).then(() => {
+                    setIsTogglingFlash(true);
+                    try {
+                        await track.applyConstraints({
+                            advanced: [{ torch: true }]
+                        });
                         console.log("camera flash turned on");
                         setFlashIsOn(true);
-                    }).catch(error => {
+
+                    } catch (error) {
                         console.error("error turning on camera flash:", error);
-                    });
+                    } finally {
+                        setIsTogglingFlash(false);
+                    }
                 }
             }
             else {
@@ -205,7 +232,10 @@ export function BarcodeScannerView(): JSX.Element {
         }
     }
 
-    const drawBarcodeBox = useCallback((barcode: DetectedBarcode): void => {
+    const drawBarcodeBox = useCallback((
+        barcode: DetectedBarcode,
+        rotation: number = 0
+    ): void => {
 
         const canvas = canvasRef.current;
         const video = videoRef.current;
@@ -213,15 +243,16 @@ export function BarcodeScannerView(): JSX.Element {
             return;
         }
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
+        const canvasContext = canvas.getContext("2d");
+        if (!canvasContext) {
             return;
         }
 
         console.log("drawBarcodeBox: will draw box for barcode:", barcode);
 
         // clear previous drawings
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+        canvasContext.resetTransform();
 
         const videoDimensions = calculateVideoDimensions();
         if (!videoDimensions) {
@@ -233,23 +264,28 @@ export function BarcodeScannerView(): JSX.Element {
         canvas.height = videoDimensions.containerHeight;
 
         // draw the box
-        ctx.strokeStyle = "#00FF00";
-        ctx.fillStyle = "rgba(0, 255, 0, 0.3)";
-        ctx.lineWidth = 2;
+        canvasContext.strokeStyle = "#00FF00";
+        canvasContext.fillStyle = "rgba(0, 255, 0, 0.3)";
+        canvasContext.lineWidth = 2;
 
         const corners = barcode.cornerPoints.map(corner => ({
             x: (corner.x * videoDimensions.scale) + videoDimensions.offsetX,
             y: (corner.y * videoDimensions.scale) + videoDimensions.offsetY
         }));
 
-        ctx.drawPathWithCorners(corners);
+        if (rotation) {
+            canvasContext.rotateAboutCenter(-degreesToRadians(rotation));
+        }
 
-        ctx.fill();
-        ctx.stroke();
+        canvasContext.drawPathWithCorners(corners);
+
+        canvasContext.fill();
+        canvasContext.stroke();
 
         setTimeout(() => {
             console.log("drawBarcodeBox: clearing canvas");
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+            canvasContext.resetTransform();
         }, barcodeBoxDisplayDuration);
 
     }, [calculateVideoDimensions]);
@@ -303,10 +339,13 @@ export function BarcodeScannerView(): JSX.Element {
     }, [context.api, user]);
 
     const handleDetectedBarcode = useCallback(async (
-        barcode: DetectedBarcode
+        barcode: DetectedBarcode,
+        rotation: number = 0
     ): Promise<void> => {
 
         console.log("handleDetectedBarcode:", barcode);
+
+        stopScanLoop();
 
         if (isProcessingBarcode.current) {
             console.log(
@@ -315,7 +354,6 @@ export function BarcodeScannerView(): JSX.Element {
             return;
         }
         isProcessingBarcode.current = true;
-        stopScanLoop();
 
         void postBarcode(barcode);
 
@@ -334,7 +372,7 @@ export function BarcodeScannerView(): JSX.Element {
             );
         });
 
-        drawBarcodeBox(barcode);
+        drawBarcodeBox(barcode, rotation);
         await sleep(barcodeBoxDisplayDuration);
 
         setDialogIsOpen(isOpen => {
@@ -357,31 +395,84 @@ export function BarcodeScannerView(): JSX.Element {
 
     const scanLoop = useCallback(async (): Promise<void> => {
 
-        if (scanLoopIsRunning.current) {
-            animationFrameId.current = requestAnimationFrame(scanLoop);
+        const dateString = new Date().toISOString();
+        console.log(`[${dateString}] begin scanLoop`);
+
+        if (isProcessingBarcode.current) {
+            console.log(
+                "scanLoop: already processing a barcode; ignoring scan loop"
+            );
+            return;
         }
 
-        const dateString = new Date().toISOString();
-        // console.log(`[${dateString}] begin scanLoop`);
+        const video = videoRef.current;
+        if (!video) {
+            console.error("video element not found");
+            return;
+        }
+
+        const videoCanvas = videoCanvasRef.current;
+        if (!videoCanvas) {
+            console.error("video canvas element not found");
+            return;
+        }
+
+        const videoCanvasCtx = videoCanvas.getContext("2d");
+        if (!videoCanvasCtx) {
+            console.error("video canvas context not found");
+            return;
+        }
 
         try {
-            const video = videoRef.current;
-            if (!video) {
-                console.error("video element not found");
-                return;
-            }
-            const barcodes = await barcodeDetector.detect(video);
 
+            // detect barcodes on frame
+            const barcodes = await barcodeDetector.detect(video);
             if (barcodes.length) {
                 console.log(
-                    `[${dateString}] scanLoop detected barcodes:`, barcodes
+                    `[${dateString}] scanLoop detected barcodes:`,
+                    barcodes
                 );
-                const barcode = barcodes[0]!;
-                await handleDetectedBarcode(barcode);
+                await handleDetectedBarcode(barcodes[0]!, 0);
+                return;
             }
+
+            // set to video frame size
+            videoCanvas.width = video.videoWidth;
+            videoCanvas.height = video.videoHeight;
+
+            for (const rotation of [-45, -22.5, 22.5, 45]) {
+                if (isProcessingBarcode.current) {
+                    console.log(
+                        "scanLoop: already processing a barcode; ignoring"
+                    );
+                }
+                videoCanvasCtx.clearRect(0, 0, videoCanvas.width, videoCanvas.height);
+                videoCanvasCtx.save();
+                videoCanvasCtx.rotateAboutCenter(degreesToRadians(rotation));
+                videoCanvasCtx.drawImage(video, 0, 0);
+                barcodeDetector.detect(videoCanvas)
+                    .then(async barcodes => {
+                        if (barcodes.length) {
+                            console.log(
+                                `[${dateString}] scanLoop detected barcodes ${rotation}:`,
+                                barcodes
+                            );
+                            await handleDetectedBarcode(barcodes[0]!, rotation);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("scanLoop barcodeDetector.detect error:", error);
+                    });
+                videoCanvasCtx.restore();
+            }
+
 
         } catch (error) {
             console.error("scanLoop error:", error);
+        }
+
+        if (scanLoopIsRunning.current) {
+            animationFrameId.current = requestAnimationFrame(scanLoop);
         }
 
     }, [barcodeDetector, handleDetectedBarcode]);
@@ -408,9 +499,19 @@ export function BarcodeScannerView(): JSX.Element {
         console.log(
             "loadeddataHandler: video loaded; starting scan loop"
         );
+        const videoTrack = getVideoSrcObject()
+            ?.getVideoTracks()[0];
+
+        const videoSettings = videoTrack?.getSettings();
+        const videoCapabilities = videoTrack?.getCapabilities();
+
+        console.log("video track:", videoTrack);
+        console.log("video settings:", videoSettings);
+        console.log("video capabilities:", videoCapabilities);
+
         updateFlashSupport();
         restartScanLoop();
-    }, [restartScanLoop, updateFlashSupport]);
+    }, [getVideoSrcObject, restartScanLoop, updateFlashSupport]);
 
     const shutdownCameraStream = useCallback((): void => {
         console.log("shutdownCameraStream");
@@ -455,7 +556,6 @@ export function BarcodeScannerView(): JSX.Element {
         console.log("configureScanLoop");
         const video = videoRef.current;
 
-
         async function startScanning(): Promise<void> {
 
             console.log("startScanning begin");
@@ -493,13 +593,13 @@ export function BarcodeScannerView(): JSX.Element {
                         facingMode: "environment",
                         width: { ideal: 1920 },
                         height: { ideal: 1080 },
+                        zoom: { ideal: 1.5 },
                         frameRate: { ideal: 30 },
                         // improve focus for close-up scanning
                         focusMode: "continuous",
                         // improve exposure for various lighting conditions
                         exposureMode: "continuous",
-                        whiteBalanceMode: "continuous",
-
+                        whiteBalanceMode: "continuous"
                     },
                     audio: false
                 });
@@ -602,13 +702,13 @@ export function BarcodeScannerView(): JSX.Element {
         console.log("BarcodeScanner useEffect: updateControlsPosition");
 
         const video = videoRef.current;
-        const controls = controlsRef.current;
+        const cameraControls = cameraControlsRef.current;
 
         function updateControlsPosition(event?: Event): void {
 
             console.log("updateControlsPosition event:", event?.type);
 
-            if (!video || !controls) {
+            if (!video || !cameraControls) {
                 return;
             }
 
@@ -624,11 +724,11 @@ export function BarcodeScannerView(): JSX.Element {
             const offsetX = videoDimensions.offsetX + padding;
             const offsetY = videoDimensions.offsetY + padding;
 
-            controls.style.top = `${offsetY}px`;
-            controls.style.right = `${offsetX}px`;
+            cameraControls.style.top = `${offsetY}px`;
+            cameraControls.style.right = `${offsetX}px`;
 
             // the controls are hidden by default
-            controls.style.display = "flex";
+            cameraControls.style.display = "flex";
         }
 
         function screenOrientationChangeHandler(event: Event): void {
@@ -640,14 +740,8 @@ export function BarcodeScannerView(): JSX.Element {
             );
         }
 
-        function videoResizeHandler(event: Event): void {
-            console.log(`[${new Date().toISOString()}] videoResizeHandler: resize event`);
-            updateControlsPosition(event);
-        }
-
         // update position when video data is loaded
         video?.addEventListener("loadeddata", updateControlsPosition);
-        video?.addEventListener("resize", videoResizeHandler);
 
         const resizeObserver = new ResizeObserver(() => {
             console.log(`[${new Date().toISOString()}] resizeObserver: resize event`);
@@ -663,7 +757,6 @@ export function BarcodeScannerView(): JSX.Element {
 
         return (): void => {
             video?.removeEventListener("loadeddata", updateControlsPosition);
-            video?.removeEventListener("resize", videoResizeHandler);
             resizeObserver.disconnect();
             screen.orientation.removeEventListener(
                 "change", screenOrientationChangeHandler
@@ -728,16 +821,24 @@ export function BarcodeScannerView(): JSX.Element {
                     />
                     <div
                         className="barcode-scanner-view-camera-controls"
-                        ref={controlsRef}
+                        ref={cameraControlsRef}
                     >
                         {flashIsSupported && (
                             <button
                                 onClick={toggleFlash}
                                 className="barcode-scanner-view-toggle-flash-button"
                             >
-                                <span className="material-symbols-outlined flex-center">
-                                    {flashIsOn ? "flashlight_on" : "flashlight_off"}
-                                </span>
+                                {isTogglingFlash ? (
+                                    <Spinner
+                                        animation="border"
+                                        role="status"
+                                        size="sm"
+                                    />
+                                ) : (
+                                    <span className="material-symbols-outlined flex-center">
+                                        {flashIsOn ? "flashlight_on" : "flashlight_off"}
+                                    </span>
+                                )}
                             </button>
                         )}
                     </div>

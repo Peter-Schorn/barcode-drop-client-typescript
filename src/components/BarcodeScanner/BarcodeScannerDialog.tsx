@@ -28,10 +28,18 @@ export function BarcodeScannerDialog(
         return parseInt(duration, 10);
     }, []);
 
+    // MARK: DEBUG close dialog 500ms after opening
+    // function onAfterOpen(): void {
+    //     setTimeout(() => {
+    //         props.onClose();
+    //     }, 500);
+    // }
+
     return (
         <Modal
             closeTimeoutMS={transitionDuration}
             isOpen={props.isOpen}
+            // onAfterOpen={onAfterOpen}
             onRequestClose={props.onClose}
             contentLabel="Barcode Scanner Dialog"
             className={{

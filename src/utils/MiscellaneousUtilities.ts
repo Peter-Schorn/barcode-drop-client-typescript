@@ -209,6 +209,9 @@ CanvasRenderingContext2D.prototype.drawPathWithCorners = function (
     }[]
 ): void {
 
+    if (corners.length === 0) {
+        return;
+    }
     this.beginPath();
     this.moveTo(corners[0]!.x, corners[0]!.y);
 
@@ -218,3 +221,36 @@ CanvasRenderingContext2D.prototype.drawPathWithCorners = function (
 
     this.closePath();
 };
+
+CanvasRenderingContext2D.prototype.rotateAboutPoint = function (
+    angle: number,
+    x: number,
+    y: number
+): void {
+
+    this.translate(x, y);
+    this.rotate(angle);
+    this.translate(-x, -y);
+};
+
+CanvasRenderingContext2D.prototype.rotateAboutCenter = function (
+    angle: number
+): void {
+
+    const centerX = this.canvas.width / 2;
+    const centerY = this.canvas.height / 2;
+
+    this.translate(centerX, centerY);
+    this.rotate(angle);
+    this.translate(-centerX, -centerY);
+};
+
+/**
+ * Converts degrees to radians.
+ *
+ * @param degrees The angle in degrees.
+ * @returns The angle in radians.
+ */
+export function degreesToRadians(degrees: number): number {
+    return degrees * (Math.PI / 180);
+}

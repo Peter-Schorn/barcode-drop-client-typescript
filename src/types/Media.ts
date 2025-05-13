@@ -26,8 +26,9 @@ declare global {
     interface MediaTrackConstraintSet {
         torch?: boolean;
         focusMode?: MediaTrackConstraintMode;
-        focusDistance?: number;
+        focusDistance?: ConstrainDouble;
         pointOfInterest?: MediaTrackCoordinate | MediaTrackCoordinate[];
+        zoom?: ConstrainDouble;
     }
 
     interface MediaTrackConstraints {

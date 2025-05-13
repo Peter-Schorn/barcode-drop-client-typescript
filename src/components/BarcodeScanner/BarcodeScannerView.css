@@ -95,11 +95,16 @@
 }
 
 .barcode-scanner-view-toggle-flash-button {
-    /* outline: none; */
+    width: 50px;
+    height: 50px;
     padding: 10px;
     border: 1px solid white;
     /* capsule shape */
     border-radius: 9999px;
     color: var(--barcode-drop-apple-system-blue);
     background-color: lightgray;
+}
+
+.barcode-scanner-view-toggle-flash-button:active {
+    background-color: rgb(165, 165, 165);
 }
