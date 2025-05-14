@@ -12,7 +12,7 @@ type MainDropdownMenuProps = {
     copyAsCSV: () => void;
     exportAsCSV: () => void;
     copyLastBarcodeToClipboard: () => void;
-    openScanBarcodeView: () => void;
+    openEnterBarcodeView: () => void;
     showConfigureLinkModal: () => void;
 };
 
@@ -34,7 +34,7 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
         return isApplePlatform() ? "⌘L" : "Ctrl+L";
     }
 
-    function scanBarcodeKeyboardShortcutString(): string {
+    function enterBarcodeKeyboardShortcutString(): string {
         return isApplePlatform() ? "⌘S" : "Ctrl+S";
     }
 
@@ -98,9 +98,9 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
                     </Stack>
                 </Dropdown.Item>
                 <Dropdown.Divider className="" />
-                {/* *** === Open Scan Barcode View === *** */}
+                {/* *** === Open Enter Barcode View === *** */}
                 <Dropdown.Item
-                    onClick={props.openScanBarcodeView}
+                    onClick={props.openEnterBarcodeView}
                 >
                     <Stack direction="horizontal" gap={3}>
                         <i className="fa-solid fa-barcode"></i>
@@ -111,7 +111,7 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
                         <span style={{
                             color: "gray",
                         }}>
-                            {scanBarcodeKeyboardShortcutString()}
+                            {enterBarcodeKeyboardShortcutString()}
                         </span>
 
                     </Stack>

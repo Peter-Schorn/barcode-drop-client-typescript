@@ -48,7 +48,7 @@ import { SocketMessageTypes } from "../model/SocketMessageTypes.ts";
 import { UserScansTable } from "./UserScansTable.tsx";
 import { ConfigureLinkModal } from "./ConfigureLinkModal.tsx";
 import { UserScansToast } from "./UserScansToast.tsx";
-import { ScanBarcodeView } from "./ScanBarcodeView.tsx";
+import { EnterBarcodeView } from "./EnterBarcodeView.tsx";
 import { MainDropdownMenu } from "./MainDropdownMenu.tsx";
 import { DebugBreakpointView } from "./DebugBreakpointView.tsx";
 
@@ -117,7 +117,7 @@ export function UserScansRoot(): JSX.Element {
 
     const [configureLinkModalIsOpen, setConfigureLinkModalIsOpen] = useState(false);
 
-    const [scanBarcodeViewIsOpen, setScanBarcodeViewIsOpen] = useState(false);
+    const [enterBarcodeViewIsOpen, setEnterBarcodeViewIsOpen] = useState(false);
 
     const [viewportSize, setViewportSize] = useState<ViewportSize>({
         width: window.innerWidth,
@@ -574,9 +574,9 @@ export function UserScansRoot(): JSX.Element {
                     console.log(
                         "UserScansRoot.handleKeyDown(): " +
                         "Platform modifier key + \"s\" pressed: " +
-                        "SHOWING scan barcode view"
+                        "SHOWING enter barcode view"
                     );
-                    openScanBarcodeView();
+                    openEnterBarcodeView();
                     e.preventDefault();
                 }
                 else {
@@ -991,15 +991,15 @@ export function UserScansRoot(): JSX.Element {
         setFormattedLink(formattedLink);
     }
 
-    // MARK: - Scan Barcode View -
+    // MARK: - Enter Barcode View -
 
-    function openScanBarcodeView(): void {
-        setScanBarcodeViewIsOpen(true);
+    function openEnterBarcodeView(): void {
+        setEnterBarcodeViewIsOpen(true);
     }
 
-    function closeScanBarcodeView(): void {
-        console.log("closeScanBarcodeView()");
-        setScanBarcodeViewIsOpen(false);
+    function closeEnterBarcodeView(): void {
+        console.log("closeEnterBarcodeView()");
+        setEnterBarcodeViewIsOpen(false);
     }
 
     function insertClientScannedBarcodeID(barcodeID: string): void {
@@ -1023,10 +1023,10 @@ export function UserScansRoot(): JSX.Element {
             {/* only shows when VITE_SHOW_BREAKPOINT_VIEW = true */}
             <DebugBreakpointView />
 
-            <ScanBarcodeView
-                scanBarcodeViewIsOpen={scanBarcodeViewIsOpen}
+            <EnterBarcodeView
+                isOpen={enterBarcodeViewIsOpen}
                 user={user}
-                onClose={closeScanBarcodeView}
+                onClose={closeEnterBarcodeView}
                 insertClientScannedBarcodeID={insertClientScannedBarcodeID}
                 showToast={showToast}
             />
@@ -1084,7 +1084,7 @@ export function UserScansRoot(): JSX.Element {
                             copyAsCSV={copyAsCSV}
                             exportAsCSV={exportAsCSV}
                             copyLastBarcodeToClipboard={copyLastBarcodeToClipboard}
-                            openScanBarcodeView={openScanBarcodeView}
+                            openEnterBarcodeView={openEnterBarcodeView}
                             showConfigureLinkModal={showConfigureLinkModal}
                         />
                     </div>
