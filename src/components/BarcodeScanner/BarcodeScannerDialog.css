@@ -58,8 +58,10 @@
     margin: 0px;
     font-size: large;
     height: 100%;
+    max-width: 100%;
     text-align: center;
-    overflow: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -71,6 +73,8 @@
     padding: 10px;
     /* outline: 2px solid red; */
     margin: 0px;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
 }
 
 .barcode-scanner-dialog-button-container {

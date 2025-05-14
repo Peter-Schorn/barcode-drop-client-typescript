@@ -182,6 +182,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     async function toggleFlash(): Promise<void> {
         console.log("toggleFlash");
+        setIsTogglingFlash(true);
 
         const videoSrcObject = getVideoSrcObject();
 
@@ -192,7 +193,6 @@ export function BarcodeScannerView(): JSX.Element {
                 const settings = track.getSettings();
                 if (settings.torch) {
                     console.log("turning off camera flash");
-                    setIsTogglingFlash(true);
                     try {
                         await track.applyConstraints({
                             advanced: [{ torch: false }]
@@ -202,13 +202,10 @@ export function BarcodeScannerView(): JSX.Element {
 
                     } catch (error) {
                         console.error("error turning off camera flash:", error);
-                    } finally {
-                        setIsTogglingFlash(false);
                     }
                 }
                 else {
                     console.log("turning on camera flash");
-                    setIsTogglingFlash(true);
                     try {
                         await track.applyConstraints({
                             advanced: [{ torch: true }]
@@ -218,8 +215,6 @@ export function BarcodeScannerView(): JSX.Element {
 
                     } catch (error) {
                         console.error("error turning on camera flash:", error);
-                    } finally {
-                        setIsTogglingFlash(false);
                     }
                 }
             }
@@ -230,6 +225,9 @@ export function BarcodeScannerView(): JSX.Element {
         else {
             console.error("video track not found");
         }
+
+        setIsTogglingFlash(false);
+
     }
 
     const drawBarcodeBox = useCallback((
@@ -396,7 +394,7 @@ export function BarcodeScannerView(): JSX.Element {
     const scanLoop = useCallback(async (): Promise<void> => {
 
         const dateString = new Date().toISOString();
-        console.log(`[${dateString}] begin scanLoop`);
+        // console.log(`[${dateString}] begin scanLoop`);
 
         if (isProcessingBarcode.current) {
             console.log(

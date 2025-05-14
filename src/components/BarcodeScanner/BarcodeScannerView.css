@@ -99,10 +99,22 @@
     height: 50px;
     padding: 10px;
     border: 1px solid white;
+    user-select: none;
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+/Edge */
     /* capsule shape */
     border-radius: 9999px;
     color: var(--barcode-drop-apple-system-blue);
     background-color: lightgray;
+}
+
+.barcode-scanner-view-toggle-flash-button * {
+    user-select: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .barcode-scanner-view-toggle-flash-button:active {
