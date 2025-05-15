@@ -373,21 +373,7 @@ export function BarcodeScannerView(): JSX.Element {
         drawBarcodeBox(barcode, rotation);
         await sleep(barcodeBoxDisplayDuration);
 
-        setDialogIsOpen(isOpen => {
-            if (isOpen) {
-                console.log(
-                    "handleDetectedBarcode: dialog is open; ignoring detected barcode"
-                );
-                return true;
-            }
-            else {
-                console.log(
-                    "handleDetectedBarcode: dialog is closed; handling detected barcode"
-                );
-                // open the dialog
-                return true;
-            }
-        });
+        setDialogIsOpen(true);
 
     }, [drawBarcodeBox, postBarcode]);
 
@@ -824,6 +810,7 @@ export function BarcodeScannerView(): JSX.Element {
                         {flashIsSupported && (
                             <button
                                 onClick={toggleFlash}
+                                disabled={isTogglingFlash}
                                 className="barcode-scanner-view-toggle-flash-button"
                             >
                                 {isTogglingFlash ? (

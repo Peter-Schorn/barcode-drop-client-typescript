@@ -17,6 +17,9 @@ export default defineConfig((config) => {
             open: "/scans/schornpe",
             host: true,
             https: config.mode === "https"
+        },
+        optimizeDeps: {
+            exclude: ["fsevents"]
         }
     };
 });

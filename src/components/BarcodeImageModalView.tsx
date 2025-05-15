@@ -1,6 +1,11 @@
+import "./BarcodeImageModalView.css";
+
 import React, {
     type JSX,
-    useRef
+    useCallback,
+    useEffect,
+    useRef,
+    useState
 } from "react";
 
 import Modal from "react-modal";
@@ -8,6 +13,11 @@ import Modal from "react-modal";
 import bwipjs, {
     type RenderOptions
 } from "bwip-js/browser";
+
+import { type BarcodeSymbology } from "../model/BarcodeSymbology";
+import {
+    BarcodeImageModalSymbologyMenu
+} from "./BarcodeImageModalSymbologyMenu";
 
 import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
@@ -20,79 +30,20 @@ type BarcodeImageModalViewProps = {
 export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.Element {
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+    const [
+        barcodeSymbology,
+        setBarcodeSymbology
+    ] = useState<BarcodeSymbology | null>(null);
 
     const barcodeText = props.barcode.barcode;
 
-    let is2DSymbology = false;
-
-
-    let symbology: string;
-
-    // Cannot differentiate between UPC-E and EAN-8, so don't automatically use
-    // either
-    if (/^[0-9]{12}$/.test(barcodeText)) {
-        symbology = "upca";
-    }
-    else if (/^[0-9]{13}$/.test(barcodeText)) {
-        symbology = "ean13";
-    }
-    else if (barcodeText.length <= 20) {
-        symbology = "code128";
-    }
-    else {
-        symbology = "datamatrix";
-        is2DSymbology = true;
-    }
-
-    const canvasRenderOptions: RenderOptions = {
-        bcid: symbology,
-        text: barcodeText,
-        includetext: true,
-        textxalign: "center",
-        textsize: 13,
-        textyoffset: 10,
-        paddingwidth: 5,
-        paddingheight: 5
-    };
-
-    if (is2DSymbology) {
-        if (window.innerWidth <= 600) {
-            canvasRenderOptions.scale = 2;
-        }
-        else {
-            canvasRenderOptions.scale = 3;
-        }
-    }
-    else {
-
-        if (window.innerWidth <= 600) {
-            canvasRenderOptions.scale = 1;
-        }
-        else if (window.innerWidth <= 1024) {
-            canvasRenderOptions.scale = 2;
-        }
-        else {
-            canvasRenderOptions.scale = 3;
-        }
-    }
-
-    if (is2DSymbology) {
-        const size = 30;
-        canvasRenderOptions.width = size;
-        canvasRenderOptions.height = size;
-    }
-    else {
-        canvasRenderOptions.width = 60;
-        canvasRenderOptions.height = 20;
-    }
-
-    function drawBarcodeToCanvas(): void {
+    const drawBarcodeToCanvas = useCallback((
+        barcodeSymbology: BarcodeSymbology
+    ): void => {
 
         const canvas = canvasRef.current;
-
-        console.log(
-            `drawBarcodeToCanvas: symbology: ${symbology}`
-        );
 
         if (!canvas) {
             console.error(
@@ -100,6 +51,52 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             );
             return;
         }
+
+        const canvasContainer = canvasContainerRef.current;
+        if (!canvasContainer) {
+            console.error(
+                "Canvas container element not found"
+            );
+            return;
+        }
+
+        console.log("drawBarcodeToCanvas: symbology:", barcodeSymbology);
+
+        const canvasHeight = canvasContainer.offsetHeight;
+        const canvasWidth = canvasContainer.offsetWidth;
+
+        console.log(
+            `drawBarcodeToCanvas: canvasContainer height: ${canvasHeight}; ` +
+            `width: ${canvasWidth}`
+        );
+
+        const canvasWidthMM = canvasWidth / 2.835;
+        const canvasHeightMM = canvasHeight / 2.835;
+
+        const minLengthMM = Math.min(canvasHeightMM, canvasWidthMM);
+
+        const canvasRenderOptions: RenderOptions = {
+            bcid: barcodeSymbology.id,
+            text: barcodeText,
+            includetext: false,
+            scale: 1
+        };
+
+        if (barcodeSymbology.is2DSymbology) {
+            // canvasContainer.style.height = "100%";
+            canvasRenderOptions.width = minLengthMM;
+            canvasRenderOptions.height = minLengthMM;
+        }
+        else {
+            // canvasContainer.style.height = "auto";
+            canvasRenderOptions.width = canvasWidthMM;
+            canvasRenderOptions.height = Math.min(50, canvasHeightMM);
+        }
+
+        console.log(
+            "drawBarcodeToCanvas: canvasRenderOptions:",
+            canvasRenderOptions
+        );
 
         try {
             bwipjs.toCanvas(
@@ -114,7 +111,29 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
         }
 
-    }
+    }, [barcodeText]);
+
+    useEffect(() => {
+
+        function hotUpdateHandler(): void {
+            // Only redraw if the modal is currently open
+            if (props.generateBarcodeModalIsOpen) {
+                console.log(
+                    "Vite HMR: Hot update detected; redrawing barcode"
+                );
+                if (barcodeSymbology) {
+                    drawBarcodeToCanvas(barcodeSymbology);
+
+                }
+            }
+        }
+
+        window.addEventListener("vite:after-update", hotUpdateHandler);
+
+        return (): void => {
+            window.removeEventListener("vite:after-update", hotUpdateHandler);
+        };
+    }, [barcodeSymbology, drawBarcodeToCanvas, props.generateBarcodeModalIsOpen]);
 
     /**
      * Called after the Modal view for this component is opened.
@@ -123,7 +142,9 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         console.log(
             "Generate Barcode Modal is now open"
         );
-        drawBarcodeToCanvas();
+        if (barcodeSymbology) {
+            drawBarcodeToCanvas(barcodeSymbology);
+        }
     }
 
     function closeGenerateBarcodeModal(): void {
@@ -132,20 +153,30 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
     function formattedBarcodeText(): string {
 
-        let barcodeText = props.barcode.barcode;
+        let formattedBarcodeText = barcodeText;
 
-        if (barcodeText.split("\n").length > 3) {
-            barcodeText = barcodeText
+        if (formattedBarcodeText.split("\n").length > 3) {
+            formattedBarcodeText = formattedBarcodeText
                 .split("\n")
                 .slice(0, 3)
                 .join("\n");
         }
-        if (barcodeText.length > 40) {
-            barcodeText = barcodeText.substring(0, 40) + "...";
+        if (formattedBarcodeText.length > 40) {
+            formattedBarcodeText = formattedBarcodeText.substring(0, 40) + "...";
         }
 
-        return barcodeText;
+        return formattedBarcodeText;
 
+    }
+
+    function handleSymbologyChange(
+        symbology: BarcodeSymbology | null
+    ): void {
+        console.log("handleSymbologyChange: symbology:", symbology);
+        setBarcodeSymbology(symbology);
+        if (props.generateBarcodeModalIsOpen && symbology) {
+            drawBarcodeToCanvas(symbology);
+        }
     }
 
     return (
@@ -153,34 +184,28 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             isOpen={props.generateBarcodeModalIsOpen}
             onAfterOpen={afterOpenGenerateBarcodeModal}
             onRequestClose={closeGenerateBarcodeModal}
-            style={{
-                content: {
-                    top: "50%",
-                    left: "50%",
-                    right: "auto",
-                    bottom: "auto",
-                    transform: "translate(-50%, -50%)",
-                    maxWidth: "90vw",
-                    maxHeight: "80vh",
-                }
-            }}
+            className="barcode-image-modal"
             contentLabel="Barcode"
         >
             <div
-                className="barcode-image-modal text-center m-5"
+                className="barcode-image-modal-content"
             >
-                {is2DSymbology ? (
-                    <h3
-                    className="text-break"
-                    style={{
-                        textAlign: "center",
-                        margin: "10px auto 20px auto",
-                    }}
-                    >
-                        {formattedBarcodeText()}
-                    </h3>
-                ) : null}
-                <canvas ref={canvasRef} />
+                <div
+                    ref={canvasContainerRef}
+                    className="barcode-image-canvas-container"
+                >
+                    <canvas ref={canvasRef} />
+                </div>
+                <p
+                    className="barcode-image-modal-text"
+                >
+                    {formattedBarcodeText()}
+                </p>
+                <BarcodeImageModalSymbologyMenu
+                    barcode={barcodeText}
+                    setSymbology={handleSymbologyChange}
+                    symbology={barcodeSymbology}
+                />
             </div>
         </Modal>
     );
