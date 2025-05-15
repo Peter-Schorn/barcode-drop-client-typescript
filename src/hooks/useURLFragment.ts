@@ -90,22 +90,22 @@ export function useURLFragmentParam<T>(
 
     useEffect(() => {
 
-        console.log(
-            `useURLFragmentParam: setup: key=${key}`
-        );
+        // console.log(
+        //     `useURLFragmentParam: setup: key=${key}`
+        // );
 
         function onHashChange(): void {
-            console.log(
-                `useURLFragmentParam: onHashChange: key=${key}`
-            );
+            // console.log(
+            //     `useURLFragmentParam: onHashChange: key=${key}`
+            // );
             setParamState(parseValue(getURLFragmentParam(key)));
         }
 
         window.addEventListener("hashchange", onHashChange);
         return (): void => {
-            console.log(
-                `useURLFragmentParam: cleanup: key=${key}`
-            );
+            // console.log(
+            //     `useURLFragmentParam: cleanup: key=${key}`
+            // );
             window.removeEventListener("hashchange", onHashChange);
         };
     }, [key, parseValue]);

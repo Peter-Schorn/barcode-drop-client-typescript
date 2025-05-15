@@ -29,6 +29,12 @@ type BarcodeImageModalViewProps = {
 
 export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.Element {
 
+    type CanvasDimensions = {
+        widthMM: number;
+        heightMM: number;
+        minLengthMM: number;
+    };
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasContainerRef = useRef<HTMLDivElement>(null);
 
@@ -38,6 +44,30 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     ] = useState<BarcodeSymbology | null>(null);
 
     const barcodeText = props.barcode.barcode;
+
+    const calculateCanvasDimensions = useCallback((
+        canvasContainer: HTMLDivElement
+    ): CanvasDimensions => {
+        const canvasHeight = canvasContainer.offsetHeight;
+        const canvasWidth = canvasContainer.offsetWidth;
+
+        console.log(
+            `drawBarcodeToCanvas: canvasContainer height: ${canvasHeight}; ` +
+            `width: ${canvasWidth}`
+        );
+
+        const canvasWidthMM = canvasWidth / 2.835;
+        const canvasHeightMM = canvasHeight / 2.835;
+
+        const minLengthMM = Math.min(canvasHeightMM, canvasWidthMM);
+
+        return {
+            widthMM: canvasWidthMM,
+            heightMM: canvasHeightMM,
+            minLengthMM: minLengthMM
+        };
+
+    }, []);
 
     const drawBarcodeToCanvas = useCallback((
         barcodeSymbology: BarcodeSymbology
@@ -62,19 +92,6 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
         console.log("drawBarcodeToCanvas: symbology:", barcodeSymbology);
 
-        const canvasHeight = canvasContainer.offsetHeight;
-        const canvasWidth = canvasContainer.offsetWidth;
-
-        console.log(
-            `drawBarcodeToCanvas: canvasContainer height: ${canvasHeight}; ` +
-            `width: ${canvasWidth}`
-        );
-
-        const canvasWidthMM = canvasWidth / 2.835;
-        const canvasHeightMM = canvasHeight / 2.835;
-
-        const minLengthMM = Math.min(canvasHeightMM, canvasWidthMM);
-
         const canvasRenderOptions: RenderOptions = {
             bcid: barcodeSymbology.id,
             text: barcodeText,
@@ -82,15 +99,19 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             scale: 1
         };
 
-        if (barcodeSymbology.is2DSymbology) {
-            // canvasContainer.style.height = "100%";
-            canvasRenderOptions.width = minLengthMM;
-            canvasRenderOptions.height = minLengthMM;
+        if (barcodeSymbology.isSquareSymbology) {
+            canvasContainer.style.height = "100%";
+            // we must calculate the canvas dimensions after the height is set
+            const dimensions = calculateCanvasDimensions(canvasContainer);
+            canvasRenderOptions.width = dimensions.minLengthMM;
+            canvasRenderOptions.height = dimensions.minLengthMM;
         }
         else {
-            // canvasContainer.style.height = "auto";
-            canvasRenderOptions.width = canvasWidthMM;
-            canvasRenderOptions.height = Math.min(50, canvasHeightMM);
+            canvasContainer.style.height = "auto";
+            // we must calculate the canvas dimensions after the height is set
+            const dimensions = calculateCanvasDimensions(canvasContainer);
+            canvasRenderOptions.width = dimensions.widthMM;
+            canvasRenderOptions.height = Math.min(50, dimensions.heightMM);
         }
 
         console.log(
@@ -111,7 +132,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
         }
 
-    }, [barcodeText]);
+    }, [barcodeText, calculateCanvasDimensions]);
 
     useEffect(() => {
 

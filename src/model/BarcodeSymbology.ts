@@ -1,6 +1,7 @@
 type BarcodeSymbologyConstructor = {
     name: string;
     id: string;
+    isSquareSymbology: boolean;
     is2DSymbology: boolean;
 };
 
@@ -10,59 +11,92 @@ export class BarcodeSymbology {
         new BarcodeSymbology({
             name: "Code 128",
             id: "code128",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "Code 39",
             id: "code39",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "EAN-13",
             id: "ean13",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "EAN-8",
             id: "ean8",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "UPC-A",
             id: "upca",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "UPC-E",
             id: "upce",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "QR Code",
             id: "qrcode",
-            is2DSymbology: true
+            is2DSymbology: true,
+            isSquareSymbology: true
         }),
         new BarcodeSymbology({
             name: "Data Matrix",
             id: "datamatrix",
-            is2DSymbology: true
+            is2DSymbology: true,
+            isSquareSymbology: true
         }),
         new BarcodeSymbology({
             name: "ITF-14",
             id: "itf14",
-            is2DSymbology: false
+            is2DSymbology: false,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "PDF417",
             id: "pdf417",
-            is2DSymbology: true
+            is2DSymbology: true,
+            isSquareSymbology: false
         }),
         new BarcodeSymbology({
             name: "Codabar",
             id: "rationalizedCodabar",
-            is2DSymbology: false
-        })
+            is2DSymbology: false,
+            isSquareSymbology: false
+        }),
+        new BarcodeSymbology({
+            name: "Aztec",
+            id: "azteccode",
+            is2DSymbology: true,
+            isSquareSymbology: true
+        }),
     ];
+
+    /**
+     * Get the symbology with the given ID, or undefined if it doesn't exist.
+     *
+     * @param symbologyId The ID of the symbology to get.
+     *
+     * @returns The symbology with the given ID, or undefined if it doesn't
+     * exist.
+     */
+    static symbology(
+        symbologyId: string
+    ): BarcodeSymbology | undefined {
+        return BarcodeSymbology.allSymbologies.find(
+            (symbology) => symbology.id === symbologyId
+        );
+    }
 
     /**
      * Get a list of all symbologies that can encode the given text.
@@ -92,41 +126,36 @@ export class BarcodeSymbology {
         // cannot differentiate between UPC-E and EAN-8, so don't automatically
         // use either
         if (/^[0-9]{12}$/.test(barcodeText)) {
-            return BarcodeSymbology.allSymbologies.find(
-                symbology => symbology.id === "upca"
-            )!;
+            return BarcodeSymbology.symbology("upca")!;
         }
         else if (/^[0-9]{13}$/.test(barcodeText)) {
-            return BarcodeSymbology.allSymbologies.find(
-                symbology => symbology.id === "ean13"
-            )!;
+            return BarcodeSymbology.symbology("ean13")!;
         }
         else if (barcodeText.length <= 20) {
-            return BarcodeSymbology.allSymbologies.find(
-                symbology => symbology.id === "code128"
-            )!;
+            return BarcodeSymbology.symbology("code128")!;
         }
         else {
-            return BarcodeSymbology.allSymbologies.find(
-                symbology => symbology.id === "datamatrix"
-            )!;
+            return BarcodeSymbology.symbology("datamatrix")!;
         }
 
     }
 
     name: string;
     id: string;
+    isSquareSymbology: boolean;
     is2DSymbology: boolean;
 
     constructor(
         {
             name,
             id,
+            isSquareSymbology,
             is2DSymbology
         }: BarcodeSymbologyConstructor
     ) {
         this.name = name;
         this.id = id;
+        this.isSquareSymbology = isSquareSymbology;
         this.is2DSymbology = is2DSymbology;
     }
 
