@@ -34,16 +34,24 @@ export function ConfigureLinkModal(
 
     const exampleFormattedURL = "https://www.google.com/search?q=%s";
 
-    let offset: string;
+    let offsetX: string;
+    let offsetTop: string;
 
     if (props.viewportSize.width <= 600) {
-        offset = "10px";
+        offsetX = "10px";
     }
     else if (props.viewportSize.width <= 1000) {
-        offset = "50px";
+        offsetX = "50px";
     }
     else {
-        offset = "100px";
+        offsetX = "100px";
+    }
+
+    if (props.viewportSize.height <= 600) {
+        offsetTop = "10px";
+    }
+    else {
+        offsetTop = "50px";
     }
 
     // MARK: On Hash Change
@@ -78,7 +86,7 @@ export function ConfigureLinkModal(
 
     return (
         <Modal
-            className="configure-link-modal rounded-3 m-5 mx-auto p-5 shadow-lg text-black border border-primary"
+            className="configure-link-modal rounded-3 mx-auto shadow-lg text-black border"
             isOpen={props.showFormattedLinkModal}
             onRequestClose={(e) => {
                 props.closeConfigureLinkModal(e, formattedLink);
@@ -87,13 +95,14 @@ export function ConfigureLinkModal(
             style={{
                 content: {
                     position: "fixed",
-                    top: "20px",
-                    left: offset,
-                    right: offset,
-                    background: "#cdcfd1",
+                    top: offsetTop,
+                    left: offsetX,
+                    right: offsetX,
+                    background: "#EDEEF0",
                     borderRadius: "4px",
                     outline: "none",
                     maxWidth: "1000px",
+                    padding: "30px"
                 }
             }}
         >
@@ -142,7 +151,7 @@ export function ConfigureLinkModal(
                             Link
                         </label>
                     </div>
-                    <div className="form-group pt-3">
+                    <div className="form-group">
                         <button
                             type="submit"
                             className="btn btn-primary shadow-lg"

@@ -8,7 +8,9 @@
 }
 
 .enter-barcode-modal {
-    box-shadow: 0px 0px 40px 2px rgba(0, 0, 0, 0.4);
+    --secondary-background-color: #f8f9fa;
+
+    box-shadow: 0px 20px 40px 2px rgba(0, 0, 0, 0.4);
     width: 500px;
     max-width: 90vw;
     margin-top: -35vh;
@@ -33,7 +35,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f8f9fa;
+    background-color: var(--secondary-background-color);
     width: var(--barcode-icon-container-width);
     padding: .375rem .75rem;
     border-top-left-radius: 8px;
@@ -78,7 +80,7 @@
     color: rgb(88, 92, 95);
     padding-left: 10px;
     padding-right: 10px;
-    background-color: #f8f9fa;
+    background-color: var(--secondary-background-color);
     border-top-right-radius: 8px;
     border-bottom-right-radius: 8px;
     appearance: none;
