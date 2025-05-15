@@ -159,7 +159,7 @@ export class BarcodeSymbology {
                 // technically, many 1D symbologies can encode text of any
                 // length, but we want to limit the length of the text to avoid
                 // long barcodes that are hard to scan
-                if (!this.is2DSymbology && barcodeText.length >= 30) {
+                if (!this.is2DSymbology && barcodeText.length > 40) {
                     return false;
                 }
                 return true;
