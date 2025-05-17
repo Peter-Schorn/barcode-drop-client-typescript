@@ -1,4 +1,7 @@
-import log, { type MethodFactory } from "loglevel";
+import log, {
+    type LoggingMethod,
+    type LogLevelDesc
+} from "loglevel";
 
 // MARK: Log Levels:
 // 0: trace
@@ -11,7 +14,7 @@ import log, { type MethodFactory } from "loglevel";
 declare global {
     interface Window {
         log: typeof log;
-        setLogLevelAllLoggers: (level: log.LogLevelDesc) => void;
+        setLogLevelAllLoggers: (level: LogLevelDesc) => void;
     }
 }
 
@@ -19,7 +22,7 @@ declare global {
 window.log = log;
 
 // expose a function to set the log level for all loggers
-window.setLogLevelAllLoggers = (level: log.LogLevelDesc): void => {
+window.setLogLevelAllLoggers = (level: LogLevelDesc): void => {
     for (const logger of Object.values(log.getLoggers())) {
         logger.setLevel(level);
     }
@@ -28,7 +31,7 @@ window.setLogLevelAllLoggers = (level: log.LogLevelDesc): void => {
 const originalFactory = log.methodFactory;
 
 // prefixes the log message with the logger name
-log.methodFactory = (methodName, logLevel, loggerName): MethodFactory => {
+log.methodFactory = (methodName, logLevel, loggerName): LoggingMethod => {
 
     const rawMethod = originalFactory(methodName, logLevel, loggerName);
 
@@ -37,7 +40,7 @@ log.methodFactory = (methodName, logLevel, loggerName): MethodFactory => {
         rawMethod,  // the function to bind
         console,  // the `this` context
         `[${String(loggerName)}]` // permanent first argument
-    ) as MethodFactory;
+    ) as LoggingMethod;
 
     // preserve the name of the method
     Object.defineProperty(method, "name", {
