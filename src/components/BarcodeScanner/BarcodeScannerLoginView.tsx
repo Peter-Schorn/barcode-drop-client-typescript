@@ -51,9 +51,6 @@ export function BarcodeScannerLoginView(): JSX.Element {
                 {prefixWithHostIfPort("Scanner Login | BarcodeDrop")}
             </title>
             <MainNavbar />
-            {/* <div className="barcode-scanner-login-view-title-container">
-                <h1>Barcode Scanner</h1>
-            </div> */}
             <div className="barcode-scanner-login-view-form-container">
                 <Form
                     className="barcode-scanner-login-view-form"
