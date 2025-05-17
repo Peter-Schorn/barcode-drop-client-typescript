@@ -99,7 +99,6 @@ export default tseslint.config(
             "@stylistic/no-trailing-spaces": "warn",
 
             quotes: ["error", "double", { avoidEscape: true }],
-            "no-console": "off",
             "prefer-const": "error",
             "@typescript-eslint/no-unused-vars": ["warn", {
                 varsIgnorePattern: "^_+$",
