@@ -10,7 +10,7 @@ type UserScansToastProps = {
 export function UserScansToast(props: UserScansToastProps): JSX.Element {
 
     function onClick(): void {
-        logger.debug("UserScansToast.onClick() called");
+        logger.debug("onClick() called");
         if (props.currentToastID) {
             toast.remove(props.currentToastID);
         }

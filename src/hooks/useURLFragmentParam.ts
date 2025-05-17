@@ -93,12 +93,12 @@ export function useURLFragmentParam<T>(
     useEffect(() => {
 
         logger.debug(
-            `useURLFragmentParam: setup: key=${key}`
+            `setup: key=${key}`
         );
 
         function onHashChange(): void {
             logger.debug(
-                `useURLFragmentParam: onHashChange: key=${key}`
+                `onHashChange: key=${key}`
             );
             setParamState(parseValue(getURLFragmentParam(key)));
         }
@@ -106,7 +106,7 @@ export function useURLFragmentParam<T>(
         window.addEventListener("hashchange", onHashChange);
         return (): void => {
             logger.debug(
-                `useURLFragmentParam: cleanup: key=${key}`
+                `cleanup: key=${key}`
             );
             window.removeEventListener("hashchange", onHashChange);
         };

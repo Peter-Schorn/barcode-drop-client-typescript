@@ -621,7 +621,7 @@ export function UserScansRoot(): JSX.Element {
             };
 
             logger.debug(
-                "UserScansTableCore.windowDidResize(): size:",
+                "windowDidResize(): size:",
                 size
             );
 

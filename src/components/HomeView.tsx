@@ -34,7 +34,7 @@ export function HomeView(): JSX.Element {
 
     function onSubmitForm(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        logger.debug(`HomeView.onSubmitForm(): user: "${user}"`);
+        logger.debug(`onSubmitForm(): user: "${user}"`);
 
         // Validate the form
         const form = event.currentTarget;
@@ -52,7 +52,7 @@ export function HomeView(): JSX.Element {
     ): void {
 
         logger.debug(
-            "HomeView.handleFormChange() event.target.value: " +
+            "handleFormChange() event.target.value: " +
             `"${event.target.value}"`
         );
 

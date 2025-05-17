@@ -25,7 +25,7 @@ type EnterBarcodeViewProps = {
 
 
 export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
-    logger.debug("EnterBarcodeView: render");
+    logger.debug("render");
 
     const context = useContext(AppContext);
 
@@ -41,7 +41,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
     ): void {
         const newBarcode = event.target.value;
         logger.debug(
-            "EnterBarcodeView.handleInputChange(): " +
+            "handleInputChange(): " +
             `"${newBarcode}"`
         );
         setBarcode(newBarcode);
@@ -61,7 +61,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
      * Called when the modal is opened.
      */
     function onAfterOpen(): void {
-        logger.debug("EnterBarcodeView.onAfterOpen():");
+        logger.debug("onAfterOpen():");
         barcodeInput.current?.select();
     }
 
@@ -74,7 +74,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
         event.preventDefault();
 
         logger.debug(
-            `EnterBarcodeView.onSubmitForm(): user: "${props.user}"; ` +
+            `onSubmitForm(): user: "${props.user}"; ` +
             `barcode: "${barcode}"`
         );
 
@@ -90,7 +90,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
         props.insertClientScannedBarcodeID(id);
 
         logger.debug(
-            "EnterBarcodeView.scanBarcode(): will scan barcode " +
+            "scanBarcode(): will scan barcode " +
             `for user "${user}": "${barcode}" (id: "${id}")`
         );
 
@@ -99,13 +99,13 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
                 user, barcode, id
             });
             logger.debug(
-                "EnterBarcodeView.scanBarcode(): response: " +
+                "scanBarcode(): response: " +
                 `"${response}"`
             );
             setBarcode("");
         } catch (error) {
             logger.error(
-                "EnterBarcodeView.scanBarcode(): error:",
+                "scanBarcode(): error:",
                 error
             );
             const errorMessage = error instanceof Error ?

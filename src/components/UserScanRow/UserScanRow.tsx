@@ -75,10 +75,10 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     useEffect(() => {
 
-        logger.debug("UserScansRow: useEffect(): begin");
+        logger.debug("useEffect(): begin");
 
         const intervalID = setInterval(() => {
-            logger.debug("UserScansRow: updateDateDifference()");
+            logger.debug("updateDateDifference()");
             const dateDifference = dateDifferenceFromNow(
                 props.barcode.scanned_at
             );
@@ -86,7 +86,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
         }, 5_000);
 
         return (): void => {
-            logger.debug("UserScansRow: useEffect(): cleanup");
+            logger.debug("useEffect(): cleanup");
             clearInterval(intervalID);
         };
 
@@ -104,7 +104,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             // throw new Error("Test cannot copy to clipboard");
 
             logger.debug(
-                "UserScansRow: Copied barcode to clipboard: " +
+                "Copied barcode to clipboard: " +
                 `"${barcodeText}"`
             );
             props.setHighlightedBarcode(props.barcode);
@@ -114,7 +114,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
         } catch (error) {
             logger.error(
-                "UserScansRow: Error copying barcode to clipboard: " +
+                "Error copying barcode to clipboard: " +
                 `"${barcodeText}": ${error}`
             );
             setIsCopying(false);

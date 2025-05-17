@@ -637,7 +637,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     useEffect(() => {
 
-        logger.debug("BarcodeScanner configureScanLoop useEffect begin");
+        logger.debug("configureScanLoop useEffect begin");
 
         const video = videoRef.current;
 
@@ -651,7 +651,7 @@ export function BarcodeScannerView(): JSX.Element {
         }
         else {
             logger.debug(
-                "BarcodeScanner useEffect: camera stream already requested"
+                "useEffect: camera stream already requested"
             );
         }
 
@@ -675,7 +675,7 @@ export function BarcodeScannerView(): JSX.Element {
         window.addEventListener("beforeunload", shutdownCameraStream);
 
         return (): void => {
-            logger.debug("BarcodeScanner configureScanLoop useEffect cleanup");
+            logger.debug("configureScanLoop useEffect cleanup");
             window.removeEventListener("visibilitychange", visibilityChangeHandler);
             window.removeEventListener("beforeunload", shutdownCameraStream);
         };
@@ -685,7 +685,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     useEffect(() => {
 
-        logger.debug("BarcodeScanner useEffect: updateControlsPosition");
+        logger.debug("useEffect: updateControlsPosition");
 
         const video = videoRef.current;
         const cameraControls = cameraControlsRef.current;

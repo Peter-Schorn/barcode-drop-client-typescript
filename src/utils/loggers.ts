@@ -1,6 +1,7 @@
 import log, {
     type LoggingMethod,
-    type LogLevelDesc
+    type LogLevelDesc,
+    type Logger
 } from "loglevel";
 
 // MARK: Log Levels:
@@ -17,6 +18,36 @@ declare global {
         setLogLevelAllLoggers: (level: LogLevelDesc) => void;
     }
 }
+
+// extend the Logger type to include getLevelName
+declare module "loglevel" {
+    interface Logger {
+        getLevelName(): string;
+    }
+}
+
+const loggerProto = Object.getPrototypeOf(log.getLogger("_")) as Logger;
+
+loggerProto.getLevelName = function (): string {
+    const level = this.getLevel();
+    switch (level) {
+        case 0:
+            return "trace";
+        case 1:
+            return "debug";
+        case 2:
+            return "info";
+        case 3:
+            return "warn";
+        case 4:
+            return "error";
+        case 5:
+            return "silent";
+        default:
+            return "unknown";
+    }
+};
+
 
 // expose the log object to the global scope for access in the browser console
 window.log = log;
@@ -53,6 +84,11 @@ log.rebuild();
 
 export const appLogger = log.getLogger("App");
 appLogger.setLevel("trace");
+
+export const barcodeChangedLogger = log.getLogger(
+    "BarcodeChanged"
+);
+barcodeChangedLogger.setLevel("warn");
 
 export const barcodeScannerDialogLogger = log.getLogger(
     "BarcodeScannerDialog"

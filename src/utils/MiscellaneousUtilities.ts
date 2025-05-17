@@ -1,6 +1,9 @@
 import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
-import { appLogger } from "./loggers";
+import {
+    barcodeChangedLogger,
+    appLogger
+} from "./loggers";
 
 /**
  * Calls the function immediately, then calls it every `interval` milliseconds.
@@ -21,7 +24,7 @@ export function setIntervalImmediately(
  * Returns whether the platform is Apple. Apple platforms use the command key
  * as the platform modifier key, while other platforms use the control key.
  *
- * @returns `true` if the platform is Apple, `false` otherwise.
+ * @returns `true` if the platform is Apple; `false` otherwise.
  */
 export function isApplePlatform(): boolean {
     if (import.meta.env.VITE_DEBUG_NON_APPLE_PLATFORM === "true") {
@@ -101,7 +104,7 @@ export function latestBarcodeChanged(
 ): currentBarcode is ScannedBarcodeResponse {
 
     if (!currentBarcode || currentBarcode.id === previousBarcode?.id) {
-        appLogger.debug(
+        barcodeChangedLogger.debug(
             "latestBarcodeChanged(): " +
             "most recent barcode has *NOT* changed at all/is null: " +
             `${JSON.stringify(currentBarcode)}`
@@ -122,7 +125,7 @@ export function latestBarcodeChanged(
         !previousBarcode ||
         currentBarcode.scanned_at >= previousBarcode.scanned_at
     ) {
-        appLogger.debug(
+        barcodeChangedLogger.debug(
             "latestBarcodeChanged(): " +
             "most *RECENT* barcode *HAS* changed from " +
             `${JSON.stringify(previousBarcode)} to ` +
@@ -131,7 +134,7 @@ export function latestBarcodeChanged(
         return true;
     }
     else {
-        appLogger.debug(
+        barcodeChangedLogger.debug(
             "latestBarcodeChanged(): " +
             "most *RECENT* barcode has *NOT* changed from " +
             `${JSON.stringify(previousBarcode)} to ` +

@@ -26,7 +26,7 @@ export function BarcodeScannerLoginView(): JSX.Element {
     function onSubmitForm(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
         logger.debug(
-            `BarcodeScannerLoginView.onSubmitForm(): user: "${user}"`
+            `onSubmitForm(): user: "${user}"`
         );
 
         // validate the form
