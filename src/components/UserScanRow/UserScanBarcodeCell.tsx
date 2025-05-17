@@ -1,3 +1,5 @@
+import "./UserScanBarcodeCell.css";
+
 import { type JSX, type ReactNode } from "react";
 
 import {
@@ -66,7 +68,7 @@ export function UserScanBarcodeCell(
     return (
         <td>
             <span
-                className="display-linebreaks text-break"
+                className="barcode-cell-barcode-text"
             >
                 {barcodeText()}
             </span>
