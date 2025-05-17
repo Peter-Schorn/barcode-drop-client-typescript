@@ -9,6 +9,8 @@ import React, {
 
 import { BarcodeSymbology } from "../model/BarcodeSymbology";
 
+import { barcodeImageModalSymbologyMenuLogger as logger } from "../utils/loggers";
+
 type BarcodeImageModalSymbologyMenuProps = {
     barcode: string;
     symbology: BarcodeSymbology | null;
@@ -52,7 +54,7 @@ export function BarcodeImageModalSymbologyMenu(
             props.setSymbology(selectedSymbology);
         }
         else {
-            console.error(
+            logger.error(
                 "handleSymbologyChange: selectedSymbology not found",
                 selectedSymbologyValue
             );

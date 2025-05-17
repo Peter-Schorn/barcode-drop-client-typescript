@@ -1,5 +1,7 @@
 import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
+import { appLogger } from "./loggers";
+
 /**
  * Calls the function immediately, then calls it every `interval` milliseconds.
  *
@@ -99,8 +101,8 @@ export function latestBarcodeChanged(
 ): currentBarcode is ScannedBarcodeResponse {
 
     if (!currentBarcode || currentBarcode.id === previousBarcode?.id) {
-        console.log(
-            "UserScansRoot.latestBarcodeChanged(): " +
+        appLogger.debug(
+            "latestBarcodeChanged(): " +
             "most recent barcode has *NOT* changed at all/is null: " +
             `${JSON.stringify(currentBarcode)}`
         );
@@ -120,8 +122,8 @@ export function latestBarcodeChanged(
         !previousBarcode ||
         currentBarcode.scanned_at >= previousBarcode.scanned_at
     ) {
-        console.log(
-            "UserScansRoot.latestBarcodeChanged(): " +
+        appLogger.debug(
+            "latestBarcodeChanged(): " +
             "most *RECENT* barcode *HAS* changed from " +
             `${JSON.stringify(previousBarcode)} to ` +
             `${JSON.stringify(currentBarcode)}`
@@ -129,8 +131,8 @@ export function latestBarcodeChanged(
         return true;
     }
     else {
-        console.log(
-            "UserScansRoot.latestBarcodeChanged(): " +
+        appLogger.debug(
+            "latestBarcodeChanged(): " +
             "most *RECENT* barcode has *NOT* changed from " +
             `${JSON.stringify(previousBarcode)} to ` +
             `${JSON.stringify(currentBarcode)}`
@@ -164,7 +166,7 @@ export function debounce<This, Args extends unknown[]>(
     let timeoutId: ReturnType<typeof setTimeout>;
     let isFirstCall = true;
 
-    console.log("making debounced function");
+    appLogger.debug("making debounced function");
 
     return function (this: This, ...args: Args): void {
 

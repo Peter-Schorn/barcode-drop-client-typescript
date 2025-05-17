@@ -17,6 +17,8 @@ import { prefixWithHostIfPort } from "../utils/MiscellaneousUtilities.ts";
 
 import barcodeDropBackground from "../assets/images/barcode_drop_background.svg";
 
+import { homeViewLogger as logger } from "../utils/loggers.ts";
+
 export function HomeView(): JSX.Element {
 
     // const context = useContext(AppContext);
@@ -32,7 +34,7 @@ export function HomeView(): JSX.Element {
 
     function onSubmitForm(event: React.FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        console.log(`HomeView.onSubmitForm(): user: "${user}"`);
+        logger.debug(`HomeView.onSubmitForm(): user: "${user}"`);
 
         // Validate the form
         const form = event.currentTarget;
@@ -49,7 +51,7 @@ export function HomeView(): JSX.Element {
         event: React.ChangeEvent<HTMLInputElement>
     ): void {
 
-        console.log(
+        logger.debug(
             "HomeView.handleFormChange() event.target.value: " +
             `"${event.target.value}"`
         );

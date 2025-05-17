@@ -8,6 +8,8 @@ import Modal from "react-modal";
 
 import Spinner from "react-bootstrap/Spinner";
 
+// import { barcodeScannerDialogLogger as logger } from "../../utils/loggers";
+
 type BarcodeScannerDialogProps = {
     isOpen: boolean;
     isScanning: boolean;

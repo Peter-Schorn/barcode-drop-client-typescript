@@ -7,7 +7,9 @@ import React, {
 import Modal from "react-modal";
 import { type ViewportSize } from "../types/ViewportSize";
 
-import { getURLFragmentParam } from "../hooks/useURLFragment";
+import { getURLFragmentParam } from "../hooks/useURLFragmentParam";
+
+// import { configureLinkModalLogger as logger } from "../utils/loggers";
 
 type ConfigureLinkModalProps = {
     formattedLink: string | null;

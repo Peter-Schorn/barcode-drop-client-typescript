@@ -1,6 +1,8 @@
 import { type JSX } from "react";
 import { Toaster, toast } from "react-hot-toast";
 
+import { userScansToastLogger as logger } from "../utils/loggers";
+
 type UserScansToastProps = {
     currentToastID: string | null;
 };
@@ -8,7 +10,7 @@ type UserScansToastProps = {
 export function UserScansToast(props: UserScansToastProps): JSX.Element {
 
     function onClick(): void {
-        console.log("UserScansToast.onClick() called");
+        logger.debug("UserScansToast.onClick() called");
         if (props.currentToastID) {
             toast.remove(props.currentToastID);
         }

@@ -1,6 +1,8 @@
 import { type JSX } from "react";
 import { Dropdown, Stack } from "react-bootstrap";
 
+// import { userScanRowDropdownMenuLogger as logger } from "../../utils/loggers";
+
 type UserScanRowDropdownMenuProps = {
     didClickGenerateBarcode: () => void;
     onClickDeleteButton: () => void;

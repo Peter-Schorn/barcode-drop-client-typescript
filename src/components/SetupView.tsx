@@ -9,6 +9,8 @@ import QRBarcodeScanner from "../assets/images/QRBarcodeScanner.svg";
 import QRBot from "../assets/images/QRBot.svg";
 import QRBotScreenshot from "../assets/images/QRBotScreenshot.jpeg";
 
+// import { setupViewLogger as logger } from "../utils/loggers";
+
 export function SetupView(): JSX.Element {
 
     const icloudShortcutURL = "https://www.icloud.com/shortcuts/0f7f0a8a0bc3476f807324d922b44fe2";

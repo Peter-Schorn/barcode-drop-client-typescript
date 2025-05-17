@@ -29,6 +29,8 @@ import { MainNavbar } from "../MainNavbar";
 import { AxiosError } from "axios";
 import { AppContext } from "../../model/AppContext";
 
+import { barcodeScannerViewLogger as logger } from "../../utils/loggers";
+
 type BarcodeScannerViewParams = {
     user: string;
 };
@@ -96,7 +98,7 @@ export function BarcodeScannerView(): JSX.Element {
     const getVideoSrcObject = useCallback((): MediaStream | null => {
         const video = videoRef.current;
         if (!video) {
-            console.error("video element not found");
+            logger.error("video element not found");
             return null;
         }
         let videoSrcObject: MediaStream | null;
@@ -115,7 +117,7 @@ export function BarcodeScannerView(): JSX.Element {
         const video = videoRef.current;
 
         if (!video) {
-            console.error("video element not found");
+            logger.error("video element not found");
             return null;
         }
 
@@ -128,7 +130,7 @@ export function BarcodeScannerView(): JSX.Element {
             !isFiniteNonZero(intrinsicVideoWidth) ||
             !isFiniteNonZero(intrinsicVideoHeight)
         ) {
-            console.error("video dimensions are not finite");
+            logger.error("video dimensions are not finite");
             return null;
         }
 
@@ -165,23 +167,23 @@ export function BarcodeScannerView(): JSX.Element {
         if (track) {
             const capabilities = track.getCapabilities();
             if (capabilities.torch) {
-                console.log("camera flash is supported");
+                logger.debug("camera flash is supported");
                 setFlashIsSupported(true);
             }
             else {
-                console.warn("camera flash is not supported");
+                logger.warn("camera flash is not supported");
                 setFlashIsSupported(false);
             }
         }
         else {
-            console.error("video track not found");
+            logger.error("video track not found");
             setFlashIsSupported(false);
         }
 
     }, [getVideoSrcObject]);
 
     async function toggleFlash(): Promise<void> {
-        console.log("toggleFlash");
+        logger.debug("toggleFlash");
         setIsTogglingFlash(true);
 
         const videoSrcObject = getVideoSrcObject();
@@ -192,38 +194,38 @@ export function BarcodeScannerView(): JSX.Element {
             if (capabilities.torch) {
                 const settings = track.getSettings();
                 if (settings.torch) {
-                    console.log("turning off camera flash");
+                    logger.debug("turning off camera flash");
                     try {
                         await track.applyConstraints({
                             advanced: [{ torch: false }]
                         });
-                        console.log("camera flash turned off");
+                        logger.debug("camera flash turned off");
                         setFlashIsOn(false);
 
                     } catch (error) {
-                        console.error("error turning off camera flash:", error);
+                        logger.error("error turning off camera flash:", error);
                     }
                 }
                 else {
-                    console.log("turning on camera flash");
+                    logger.debug("turning on camera flash");
                     try {
                         await track.applyConstraints({
                             advanced: [{ torch: true }]
                         });
-                        console.log("camera flash turned on");
+                        logger.debug("camera flash turned on");
                         setFlashIsOn(true);
 
                     } catch (error) {
-                        console.error("error turning on camera flash:", error);
+                        logger.error("error turning on camera flash:", error);
                     }
                 }
             }
             else {
-                console.warn("camera flash not supported");
+                logger.warn("camera flash not supported");
             }
         }
         else {
-            console.error("video track not found");
+            logger.error("video track not found");
         }
 
         setIsTogglingFlash(false);
@@ -246,7 +248,7 @@ export function BarcodeScannerView(): JSX.Element {
             return;
         }
 
-        console.log("drawBarcodeBox: will draw box for barcode:", barcode);
+        logger.debug("drawBarcodeBox: will draw box for barcode:", barcode);
 
         // clear previous drawings
         canvasContext.clearRect(0, 0, canvas.width, canvas.height);
@@ -254,7 +256,7 @@ export function BarcodeScannerView(): JSX.Element {
 
         const videoDimensions = calculateVideoDimensions();
         if (!videoDimensions) {
-            console.error("could not get video dimensions");
+            logger.error("could not get video dimensions");
             return;
         }
 
@@ -281,7 +283,7 @@ export function BarcodeScannerView(): JSX.Element {
         canvasContext.stroke();
 
         setTimeout(() => {
-            console.log("drawBarcodeBox: clearing canvas");
+            logger.debug("drawBarcodeBox: clearing canvas");
             canvasContext.clearRect(0, 0, canvas.width, canvas.height);
             canvasContext.resetTransform();
         }, barcodeBoxDisplayDuration);
@@ -290,7 +292,7 @@ export function BarcodeScannerView(): JSX.Element {
 
     const postBarcode = useCallback(async (barcode: DetectedBarcode): Promise<void> => {
 
-        console.log(`postBarcode: ${barcode.rawValue}`);
+        logger.debug(`postBarcode: ${barcode.rawValue}`);
         setBarcodeDialogTitle("");
         setIsScanning(true);
 
@@ -301,7 +303,7 @@ export function BarcodeScannerView(): JSX.Element {
                 barcode: barcode.rawValue
             });
 
-            console.log(
+            logger.debug(
                 "postBarcode: post barcode response:",
                 response
             );
@@ -309,7 +311,7 @@ export function BarcodeScannerView(): JSX.Element {
             setBarcodeDialogTitle(`Scanned "${barcode.rawValue}"`);
 
         } catch (error) {
-            console.error(
+            logger.error(
                 "postBarcode: error posting barcode:",
                 error
             );
@@ -341,12 +343,12 @@ export function BarcodeScannerView(): JSX.Element {
         rotation: number = 0
     ): Promise<void> => {
 
-        console.log("handleDetectedBarcode:", barcode);
+        logger.debug("handleDetectedBarcode:", barcode);
 
         stopScanLoop();
 
         if (isProcessingBarcode.current) {
-            console.log(
+            logger.debug(
                 "handleDetectedBarcode: already processing a barcode; ignoring"
             );
             return;
@@ -356,16 +358,16 @@ export function BarcodeScannerView(): JSX.Element {
         void postBarcode(barcode);
 
         if (navigator.vibrate) {
-            console.log("vibrating for 200ms");
+            logger.debug("vibrating for 200ms");
             try {
                 navigator.vibrate(200);
             } catch (error) {
-                console.error("error vibrating:", error);
+                logger.error("error vibrating:", error);
             }
         }
         const audio = new Audio(scannerBeepSound);
         audio.play().catch(error => {
-            console.error(
+            logger.error(
                 "error playing scanner beep sound effect:", error
             );
         });
@@ -380,10 +382,10 @@ export function BarcodeScannerView(): JSX.Element {
     const scanLoop = useCallback(async (): Promise<void> => {
 
         const dateString = new Date().toISOString();
-        // console.log(`[${dateString}] begin scanLoop`);
+        // logger.debug(`[${dateString}] begin scanLoop`);
 
         if (isProcessingBarcode.current) {
-            console.log(
+            logger.debug(
                 "scanLoop: already processing a barcode; ignoring scan loop"
             );
             return;
@@ -391,19 +393,19 @@ export function BarcodeScannerView(): JSX.Element {
 
         const video = videoRef.current;
         if (!video) {
-            console.error("video element not found");
+            logger.error("video element not found");
             return;
         }
 
         const videoCanvas = videoCanvasRef.current;
         if (!videoCanvas) {
-            console.error("video canvas element not found");
+            logger.error("video canvas element not found");
             return;
         }
 
         const videoCanvasCtx = videoCanvas.getContext("2d");
         if (!videoCanvasCtx) {
-            console.error("video canvas context not found");
+            logger.error("video canvas context not found");
             return;
         }
 
@@ -412,7 +414,7 @@ export function BarcodeScannerView(): JSX.Element {
             // detect barcodes on frame
             const barcodes = await barcodeDetector.detect(video);
             if (barcodes.length) {
-                console.log(
+                logger.debug(
                     `[${dateString}] scanLoop detected barcodes:`,
                     barcodes
                 );
@@ -426,7 +428,7 @@ export function BarcodeScannerView(): JSX.Element {
 
             for (const rotation of [-45, -22.5, 22.5, 45]) {
                 if (isProcessingBarcode.current) {
-                    console.log(
+                    logger.debug(
                         "scanLoop: already processing a barcode; ignoring"
                     );
                 }
@@ -437,7 +439,7 @@ export function BarcodeScannerView(): JSX.Element {
                 barcodeDetector.detect(videoCanvas)
                     .then(async barcodes => {
                         if (barcodes.length) {
-                            console.log(
+                            logger.debug(
                                 `[${dateString}] scanLoop detected barcodes ${rotation}:`,
                                 barcodes
                             );
@@ -445,14 +447,14 @@ export function BarcodeScannerView(): JSX.Element {
                         }
                     })
                     .catch(error => {
-                        console.error("scanLoop barcodeDetector.detect error:", error);
+                        logger.error("scanLoop barcodeDetector.detect error:", error);
                     });
                 videoCanvasCtx.restore();
             }
 
 
         } catch (error) {
-            console.error("scanLoop error:", error);
+            logger.error("scanLoop error:", error);
         }
 
         if (scanLoopIsRunning.current) {
@@ -462,7 +464,7 @@ export function BarcodeScannerView(): JSX.Element {
     }, [barcodeDetector, handleDetectedBarcode]);
 
     const restartScanLoop = useCallback((): void => {
-        console.log("restartScanLoop");
+        logger.debug("restartScanLoop");
         if (animationFrameId.current) {
             cancelAnimationFrame(animationFrameId.current);
         }
@@ -471,7 +473,7 @@ export function BarcodeScannerView(): JSX.Element {
     }, [scanLoop]);
 
     function stopScanLoop(): void {
-        console.log("stopScanLoop");
+        logger.debug("stopScanLoop");
         if (animationFrameId.current) {
             cancelAnimationFrame(animationFrameId.current);
         }
@@ -480,7 +482,7 @@ export function BarcodeScannerView(): JSX.Element {
     }
 
     const loadeddataHandler = useCallback((): void => {
-        console.log(
+        logger.debug(
             "loadeddataHandler: video loaded; starting scan loop"
         );
         const videoTrack = getVideoSrcObject()
@@ -489,22 +491,22 @@ export function BarcodeScannerView(): JSX.Element {
         const videoSettings = videoTrack?.getSettings();
         const videoCapabilities = videoTrack?.getCapabilities();
 
-        console.log("video track:", videoTrack);
-        console.log("video settings:", videoSettings);
-        console.log("video capabilities:", videoCapabilities);
+        logger.debug("video track:", videoTrack);
+        logger.debug("video settings:", videoSettings);
+        logger.debug("video capabilities:", videoCapabilities);
 
         updateFlashSupport();
         restartScanLoop();
     }, [getVideoSrcObject, restartScanLoop, updateFlashSupport]);
 
     const shutdownCameraStream = useCallback((): void => {
-        console.log("shutdownCameraStream");
+        logger.debug("shutdownCameraStream");
 
         didRequestVideo.current = false;
 
         const video = videoRef.current;
         if (!video) {
-            console.error("video element not found");
+            logger.error("video element not found");
             return;
         }
 
@@ -515,7 +517,7 @@ export function BarcodeScannerView(): JSX.Element {
         if (videoSrcObject) {
             const tracks = videoSrcObject.getTracks();
             for (const track of tracks) {
-                console.log("stopping track:", track);
+                logger.debug("stopping track:", track);
                 track.stop();
             }
             if ("srcObject" in video) {
@@ -537,26 +539,26 @@ export function BarcodeScannerView(): JSX.Element {
     }, [getVideoSrcObject, loadeddataHandler]);
 
     const configureScanLoop = useCallback((): void => {
-        console.log("configureScanLoop");
+        logger.debug("configureScanLoop");
         const video = videoRef.current;
 
         async function startScanning(): Promise<void> {
 
-            console.log("startScanning begin");
+            logger.debug("startScanning begin");
 
             if (navigator.mediaDevices === undefined) {
-                console.error(
+                logger.error(
                     "cannot access camera: navigator.mediaDevices is undefined"
                 );
                 return;
             }
 
             if (!video) {
-                console.error("video element not found");
+                logger.error("video element not found");
                 return;
             }
 
-            console.log("BarcodeScanner: setting up camera stream");
+            logger.debug("BarcodeScanner: setting up camera stream");
             didRequestVideo.current = true;
 
             try {
@@ -600,7 +602,7 @@ export function BarcodeScannerView(): JSX.Element {
                 video.addEventListener("loadeddata", loadeddataHandler);
 
             } catch (error) {
-                console.error("error starting camera stream:", error);
+                logger.error("error starting camera stream:", error);
                 didRequestVideo.current = false;
                 shutdownCameraStream();
                 const errorMessage = error instanceof Error
@@ -616,31 +618,31 @@ export function BarcodeScannerView(): JSX.Element {
         }
 
         void startScanning().catch(error => {
-            console.error("error starting barcode scanner:", error);
+            logger.error("error starting barcode scanner:", error);
         });
 
     }, [loadeddataHandler, shutdownCameraStream]);
 
     function handleBarcodeDialogClose(): void {
-        console.log("handleBarcodeDialogClose");
+        logger.debug("handleBarcodeDialogClose");
         setDialogIsOpen(false);
         isProcessingBarcode.current = false;
 
         // add a delay before resuming the scan loop
         setTimeout(() => {
-            console.log("resuming scan loop after closing dialog");
+            logger.debug("resuming scan loop after closing dialog");
             restartScanLoop();
         }, resumeScanDelay);
     }
 
     useEffect(() => {
 
-        console.log("BarcodeScanner configureScanLoop useEffect begin");
+        logger.debug("BarcodeScanner configureScanLoop useEffect begin");
 
         const video = videoRef.current;
 
         if (!video) {
-            console.error("video element not found");
+            logger.error("video element not found");
             return;
         }
 
@@ -648,22 +650,22 @@ export function BarcodeScannerView(): JSX.Element {
             configureScanLoop();
         }
         else {
-            console.log(
+            logger.debug(
                 "BarcodeScanner useEffect: camera stream already requested"
             );
         }
 
         function visibilityChangeHandler(): void {
-            console.log(
+            logger.debug(
                 `visibilityChangeHandler: state: ${document.visibilityState}`
             );
 
             if (document.visibilityState === "visible") {
-                console.log("document is visible; configuring scan loop");
+                logger.debug("document is visible; configuring scan loop");
                 configureScanLoop();
             }
             else {
-                console.log("document is hidden; shutting down camera stream");
+                logger.debug("document is hidden; shutting down camera stream");
                 shutdownCameraStream();
             }
         }
@@ -673,7 +675,7 @@ export function BarcodeScannerView(): JSX.Element {
         window.addEventListener("beforeunload", shutdownCameraStream);
 
         return (): void => {
-            console.log("BarcodeScanner configureScanLoop useEffect cleanup");
+            logger.debug("BarcodeScanner configureScanLoop useEffect cleanup");
             window.removeEventListener("visibilitychange", visibilityChangeHandler);
             window.removeEventListener("beforeunload", shutdownCameraStream);
         };
@@ -683,14 +685,14 @@ export function BarcodeScannerView(): JSX.Element {
 
     useEffect(() => {
 
-        console.log("BarcodeScanner useEffect: updateControlsPosition");
+        logger.debug("BarcodeScanner useEffect: updateControlsPosition");
 
         const video = videoRef.current;
         const cameraControls = cameraControlsRef.current;
 
         function updateControlsPosition(event?: Event): void {
 
-            console.log("updateControlsPosition event:", event?.type);
+            logger.debug("updateControlsPosition event:", event?.type);
 
             if (!video || !cameraControls) {
                 return;
@@ -698,7 +700,7 @@ export function BarcodeScannerView(): JSX.Element {
 
             const videoDimensions = calculateVideoDimensions();
             if (!videoDimensions) {
-                console.error("could not get video dimensions");
+                logger.error("could not get video dimensions");
                 return;
             }
 
@@ -716,7 +718,7 @@ export function BarcodeScannerView(): JSX.Element {
         }
 
         function screenOrientationChangeHandler(event: Event): void {
-            console.log("screenOrientationChangeHandler");
+            logger.debug("screenOrientationChangeHandler");
             updateControlsPosition(event);
             setTimeout(
                 () => updateControlsPosition(event),
@@ -728,7 +730,7 @@ export function BarcodeScannerView(): JSX.Element {
         video?.addEventListener("loadeddata", updateControlsPosition);
 
         const resizeObserver = new ResizeObserver(() => {
-            console.log(`[${new Date().toISOString()}] resizeObserver: resize event`);
+            logger.debug(`[${new Date().toISOString()}] resizeObserver: resize event`);
             updateControlsPosition();
         });
         if (video) {

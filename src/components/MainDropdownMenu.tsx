@@ -7,6 +7,8 @@ import Stack from "react-bootstrap/Stack";
 
 import { isApplePlatform } from "../utils/MiscellaneousUtilities.ts";
 
+// import { mainDropdownMenuLogger as logger } from "../utils/loggers.ts";
+
 type MainDropdownMenuProps = {
     disabledClassIfZeroBarcodes: () => string;
     copyAsCSV: () => void;

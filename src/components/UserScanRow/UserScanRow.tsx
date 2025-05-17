@@ -36,6 +36,8 @@ import { type ViewportSize } from "../../types/ViewportSize";
 import { UserScanRowDropdownMenu } from "./UserScanRowDropdownMenu";
 import { UserScanBarcodeCell } from "./UserScanBarcodeCell";
 
+import { userScanRowLogger as logger } from "../../utils/loggers";
+
 type UserScansRowProps = {
     index: number;
     barcode: ScannedBarcodeResponse;
@@ -73,10 +75,10 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     useEffect(() => {
 
-        // console.log("UserScansRow: useEffect(): begin");
+        logger.debug("UserScansRow: useEffect(): begin");
 
         const intervalID = setInterval(() => {
-            // console.log("UserScansRow: updateDateDifference()");
+            logger.debug("UserScansRow: updateDateDifference()");
             const dateDifference = dateDifferenceFromNow(
                 props.barcode.scanned_at
             );
@@ -84,7 +86,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
         }, 5_000);
 
         return (): void => {
-            // console.log("UserScansRow: useEffect(): cleanup");
+            logger.debug("UserScansRow: useEffect(): cleanup");
             clearInterval(intervalID);
         };
 
@@ -101,7 +103,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             await navigator.clipboard.writeText(barcodeText);
             // throw new Error("Test cannot copy to clipboard");
 
-            console.log(
+            logger.debug(
                 "UserScansRow: Copied barcode to clipboard: " +
                 `"${barcodeText}"`
             );
@@ -111,7 +113,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
             }, 250);
 
         } catch (error) {
-            console.error(
+            logger.error(
                 "UserScansRow: Error copying barcode to clipboard: " +
                 `"${barcodeText}": ${error}`
             );
@@ -129,11 +131,11 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
         try {
             const result = await context.api!.deleteScans([barcodeID]);
-            console.log(
+            logger.debug(
                 `Delete barcode ${barcodeString} result: ${result}`
             );
         } catch (error) {
-            console.error(
+            logger.error(
                 `Error deleting barcode: "${barcodeString}":`, error
             );
         }
@@ -146,7 +148,7 @@ export function UserScanRow(props: UserScansRowProps): JSX.Element {
 
     function closeGenerateBarcodeModal(): void {
         setGenerateBarcodeModalIsOpen(false);
-        console.log(
+        logger.debug(
             "Generate Barcode Modal is now closed"
         );
     }

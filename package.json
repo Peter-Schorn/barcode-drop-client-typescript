@@ -19,6 +19,7 @@
         "bootstrap": "^5.3.3",
         "bwip-js": "^4.5.1",
         "csv-stringify": "^6.5.2",
+        "loglevel": "^1.9.2",
         "partysocket": "^1.0.3",
         "react": "^19.0.0",
         "react-bootstrap": "^2.10.7",

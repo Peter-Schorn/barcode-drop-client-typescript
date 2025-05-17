@@ -1,6 +1,8 @@
 import "./CodeBlock.css";
 import { type JSX, useState } from "react";
 
+import { codeBlockLogger as logger } from "../utils/loggers";
+
 type CodeBlockProps = {
     className?: string;
     code: string;
@@ -13,9 +15,9 @@ export function CodeBlock(props: CodeBlockProps): JSX.Element {
     function onClickCopyButton(): void {
 
         navigator.clipboard.writeText(props.code).then(() => {
-            console.log("copied code block to clipboard");
+            logger.debug("copied code block to clipboard");
         }, (error) => {
-            console.error(
+            logger.error(
                 "Failed to copy code block to clipboard: ", error
             );
         });

@@ -13,6 +13,8 @@ import Modal from "react-modal";
 
 import { type ToastMessageType } from "../types/ToastMessageType";
 
+import { enterBarcodeViewLogger as logger } from "../utils/loggers";
+
 type EnterBarcodeViewProps = {
     isOpen: boolean;
     user: string;
@@ -23,7 +25,7 @@ type EnterBarcodeViewProps = {
 
 
 export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
-    console.log("EnterBarcodeView: render");
+    logger.debug("EnterBarcodeView: render");
 
     const context = useContext(AppContext);
 
@@ -38,7 +40,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
         event: React.ChangeEvent<HTMLInputElement>
     ): void {
         const newBarcode = event.target.value;
-        console.log(
+        logger.debug(
             "EnterBarcodeView.handleInputChange(): " +
             `"${newBarcode}"`
         );
@@ -59,7 +61,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
      * Called when the modal is opened.
      */
     function onAfterOpen(): void {
-        console.log("EnterBarcodeView.onAfterOpen():");
+        logger.debug("EnterBarcodeView.onAfterOpen():");
         barcodeInput.current?.select();
     }
 
@@ -71,7 +73,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
     ): Promise<void> {
         event.preventDefault();
 
-        console.log(
+        logger.debug(
             `EnterBarcodeView.onSubmitForm(): user: "${props.user}"; ` +
             `barcode: "${barcode}"`
         );
@@ -87,7 +89,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
         const id = crypto.randomUUID();
         props.insertClientScannedBarcodeID(id);
 
-        console.log(
+        logger.debug(
             "EnterBarcodeView.scanBarcode(): will scan barcode " +
             `for user "${user}": "${barcode}" (id: "${id}")`
         );
@@ -96,13 +98,13 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
             const response = await context.api!.scanBarcode({
                 user, barcode, id
             });
-            console.log(
+            logger.debug(
                 "EnterBarcodeView.scanBarcode(): response: " +
                 `"${response}"`
             );
             setBarcode("");
         } catch (error) {
-            console.error(
+            logger.error(
                 "EnterBarcodeView.scanBarcode(): error:",
                 error
             );

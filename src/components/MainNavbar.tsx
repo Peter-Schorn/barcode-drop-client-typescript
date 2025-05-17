@@ -1,5 +1,7 @@
 import { type JSX } from "react";
 
+// import { mainNavbarLogger as logger } from "../utils/loggers";
+
 type MainNavbarProps = {
     user?: string;
 };

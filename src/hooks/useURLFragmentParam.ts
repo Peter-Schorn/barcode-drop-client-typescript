@@ -4,6 +4,8 @@ import {
     useCallback
 } from "react";
 
+import { useUrlFragmentParamLogger as logger } from "../utils/loggers";
+
 type URLFragmentParamSetter<T> = (
     newValue: T | ((prevValue: T) => T)
 ) => void;
@@ -90,22 +92,22 @@ export function useURLFragmentParam<T>(
 
     useEffect(() => {
 
-        // console.log(
-        //     `useURLFragmentParam: setup: key=${key}`
-        // );
+        logger.debug(
+            `useURLFragmentParam: setup: key=${key}`
+        );
 
         function onHashChange(): void {
-            // console.log(
-            //     `useURLFragmentParam: onHashChange: key=${key}`
-            // );
+            logger.debug(
+                `useURLFragmentParam: onHashChange: key=${key}`
+            );
             setParamState(parseValue(getURLFragmentParam(key)));
         }
 
         window.addEventListener("hashchange", onHashChange);
         return (): void => {
-            // console.log(
-            //     `useURLFragmentParam: cleanup: key=${key}`
-            // );
+            logger.debug(
+                `useURLFragmentParam: cleanup: key=${key}`
+            );
             window.removeEventListener("hashchange", onHashChange);
         };
     }, [key, parseValue]);

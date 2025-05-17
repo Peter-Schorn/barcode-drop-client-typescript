@@ -11,6 +11,8 @@ import {
 
 import { type ViewportSize } from "../types/ViewportSize";
 
+// import { userScansTableLogger as logger } from "../utils/loggers";
+
 type UserScansTableProps = {
     barcodes: ScannedBarcodesResponse;
     user: string;

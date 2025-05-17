@@ -22,6 +22,8 @@ import {
 
 import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
+import { barcodeImageModalViewLogger as logger } from "../utils/loggers";
+
 type BarcodeImageModalViewProps = {
     barcode: ScannedBarcodeResponse;
     generateBarcodeModalIsOpen: boolean;
@@ -46,7 +48,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     ] = useState<BarcodeSymbology | null>(null);
 
     const resizeObserver = new ResizeObserver((): void => {
-        console.log("BarcodeImageModalView: resizeObserver: barcodeImageModal resized");
+        logger.debug("BarcodeImageModalView: resizeObserver: barcodeImageModal resized");
         if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
             drawBarcodeToCanvas(barcodeSymbology);
         }
@@ -61,20 +63,27 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         const canvasHeight = canvasContainer.offsetHeight;
         const canvasWidth = canvasContainer.offsetWidth;
 
-        console.log(
-            `BarcodeImageModalView: canvasContainer height: ${canvasHeight}; width: ${canvasWidth}`
-        );
+        // logger.debug(
+        //     `BarcodeImageModalView: canvasContainer height: ${canvasHeight}; width: ${canvasWidth}`
+        // );
 
         const canvasWidthMM = canvasWidth / 2.835;
         const canvasHeightMM = canvasHeight / 2.835;
 
         const minLengthMM = Math.min(canvasHeightMM, canvasWidthMM);
 
-        return {
+        const dimensions = {
             widthMM: canvasWidthMM,
             heightMM: canvasHeightMM,
             minLengthMM: minLengthMM
         };
+
+        logger.debug(
+            "BarcodeImageModalView: calculateCanvasDimensions:",
+            dimensions
+        );
+
+        return dimensions;
 
     }, []);
 
@@ -85,7 +94,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         const canvas = canvasRef.current;
 
         if (!canvas) {
-            console.warn(
+            logger.warn(
                 "BarcodeImageModalView: Barcode canvas element not found"
             );
             return;
@@ -93,13 +102,13 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
         const canvasContainer = canvasContainerRef.current;
         if (!canvasContainer) {
-            console.warn(
+            logger.warn(
                 "BarcodeImageModalView: Canvas container element not found"
             );
             return;
         }
 
-        console.log(
+        logger.debug(
             "BarcodeImageModalView: drawBarcodeToCanvas: symbology:",
             barcodeSymbology
         );
@@ -126,7 +135,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             canvasRenderOptions.height = Math.min(50, dimensions.heightMM);
         }
 
-        console.log(
+        logger.debug(
             "BarcodeImageModalView: drawBarcodeToCanvas: canvasRenderOptions:",
             canvasRenderOptions
         );
@@ -138,7 +147,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             );
 
         } catch (error) {
-            console.error(
+            logger.error(
                 "BarcodeImageModalView: Error drawing barcode to canvas:", error
             );
 
@@ -149,7 +158,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     // const debouncedDrawBarcodeToCanvas = useDebouncedCallback(
     //     (): void => {
     //         if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
-    //             console.log(
+    //             logger.debug(
     //                 "BarcodeImageModalView: debounced drawBarcodeToCanvas: barcodeSymbology:",
     //                 barcodeSymbology
     //             );
@@ -167,7 +176,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
      * Called after the Modal view for this component is opened.
      */
     function afterOpenGenerateBarcodeModal(): void {
-        console.log(
+        logger.debug(
             "BarcodeImageModalView: Generate Barcode Modal is now open"
         );
         if (barcodeSymbology) {
@@ -175,7 +184,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         }
         const barcodeImageModal = barcodeImageModalRef.current;
         if (barcodeImageModal) {
-            console.log(
+            logger.debug(
                 "BarcodeImageModalView: afterOpenGenerateBarcodeModal: barcodeImageModal element found"
             );
             resizeObserver.observe(barcodeImageModal);
@@ -208,7 +217,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     function handleSymbologyChange(
         symbology: BarcodeSymbology | null
     ): void {
-        console.log("BarcodeImageModalView: handleSymbologyChange: symbology:", symbology);
+        logger.debug("BarcodeImageModalView: handleSymbologyChange: symbology:", symbology);
         setBarcodeSymbology(symbology);
         if (props.generateBarcodeModalIsOpen && symbology) {
             drawBarcodeToCanvas(symbology);

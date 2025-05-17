@@ -8,6 +8,8 @@ import {
 import { type ViewportSize } from "../../types/ViewportSize";
 import { type ScannedBarcodeResponse } from "../../types/ScannedBarcodesResponse";
 
+// import { userScanBarcodeCellLogger as logger } from "../../utils/loggers";
+
 type UserScanBarcodeCellProps = {
     barcode: ScannedBarcodeResponse;
     dateDifference: string;

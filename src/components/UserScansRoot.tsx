@@ -67,12 +67,14 @@ import { type ToastMessageType } from "../types/ToastMessageType.ts";
 
 import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
-import { useURLFragmentParam } from "../hooks/useURLFragment.ts";
+import { useURLFragmentParam } from "../hooks/useURLFragmentParam.ts";
+
+import { userScansRootLogger as logger } from "../utils/loggers.ts";
 
 // MARK: path="/scans/:user"
 export function UserScansRoot(): JSX.Element {
 
-    console.log("UserScansRoot: Rendering");
+    logger.debug("Rendering");
 
     const params = useParams<UserScansRootParams>();
 
@@ -144,8 +146,8 @@ export function UserScansRoot(): JSX.Element {
 
     socketURL.pathname = `/watch/${user}`;
 
-    console.log(
-        `UserScansRoot: socketURL: ${socketURL}`
+    logger.debug(
+        `socketURL: ${socketURL}`
     );
 
     const socket = useRef<WebSocket>(null);
@@ -165,21 +167,21 @@ export function UserScansRoot(): JSX.Element {
 
         const dateString = new Date().toISOString();
 
-        console.log(
-            "UserScansRoot.getUserScans(): Getting scans for " +
+        logger.debug(
+            "getUserScans(): Getting scans for " +
             `user "${user}" at date ${dateString}`
         );
 
         try {
             const barcodes = await context.api!.getUserScans(user);
-            console.log(
-                "UserScansRoot.getUserScans(): result:", barcodes
+            logger.debug(
+                "getUserScans(): result:", barcodes
             );
             setBarcodes(barcodes);
 
         } catch (error) {
-            console.error(
-                `UserScansRoot.getUserScans(): error: ${error}`
+            logger.error(
+                `getUserScans(): error: ${error}`
             );
         }
 
@@ -187,8 +189,8 @@ export function UserScansRoot(): JSX.Element {
 
     const deleteAllUserBarcodes = useCallback(async (): Promise<void> => {
 
-        console.log(
-            "UserScansRoot.deleteAllUserBarcodes(): " +
+        logger.debug(
+            "deleteAllUserBarcodes(): " +
             "Deleting all user barcodes"
         );
 
@@ -197,13 +199,13 @@ export function UserScansRoot(): JSX.Element {
 
         try {
             const result = await context.api!.deleteUserScans({ user: user });
-            console.log(
-                "UserScansRoot.deleteAllUserBarcodes(): " +
+            logger.debug(
+                "deleteAllUserBarcodes(): " +
                 `result: ${result}`
             );
         } catch (error) {
-            console.error(
-                "UserScansRoot.deleteAllUserBarcodes(): " +
+            logger.error(
+                "deleteAllUserBarcodes(): " +
                 `could not delete all user barcodes: ${error}`
             );
         }
@@ -212,14 +214,14 @@ export function UserScansRoot(): JSX.Element {
 
     const removeBarcodesFromState = useCallback((barcodeIDs: Set<string>): void => {
         const barcodeIDsString = setToString(barcodeIDs);
-        console.log(
+        logger.debug(
             `Removing barcode with IDs from state: ${barcodeIDsString}`
         );
 
         setBarcodes((prevBarcodes) => {
             barcodeIDs.forEach(element => deleteIDs.add(element));
 
-            console.log(
+            logger.debug(
                 `removeBarcodesFromState(): ${deleteIDs.size} deleteIDs:`,
                 deleteIDs
             );
@@ -274,7 +276,7 @@ export function UserScansRoot(): JSX.Element {
     }, [currentToastID]);
 
     const showBarcodeCopiedToast = useCallback((barcodeText: string): void => {
-        console.log(`showBarcodeCopiedToast(): barcode: ${barcodeText}`);
+        logger.debug(`showBarcodeCopiedToast(): barcode: ${barcodeText}`);
 
         const formattedBarcodeText = barcodeText.truncated(30);
         const message = `Copied "${formattedBarcodeText}" to the Clipboard`;
@@ -301,7 +303,7 @@ export function UserScansRoot(): JSX.Element {
 
         const barcodeText = barcode.barcode;
         if (barcodeText === null || barcodeText === undefined) {
-            console.error(
+            logger.error(
                 "_writeBarcodeToClipboard: barcode text is null or undefined"
             );
             return;
@@ -310,13 +312,13 @@ export function UserScansRoot(): JSX.Element {
         try {
             await navigator.clipboard.writeText(barcodeText);
 
-            console.log(
+            logger.debug(
                 "_writeTextToClipboard: Copied text to clipboard: " +
                 `"${barcodeText}"`
             );
 
             if (showNotification) {
-                console.log(
+                logger.debug(
                     "_writeTextToClipboard: " +
                     "--- SHOWING BARCODE COPIED TOAST ---" +
                     `(id: ${barcode?.id})`
@@ -325,7 +327,7 @@ export function UserScansRoot(): JSX.Element {
             }
 
             if (highlight) {
-                console.log(
+                logger.debug(
                     "_writeTextToClipboard: --- HIGHLIGHT --- " +
                     `(id: ${barcode?.id})`
                 );
@@ -333,7 +335,7 @@ export function UserScansRoot(): JSX.Element {
             }
 
         } catch (error) {
-            console.error(
+            logger.error(
                 "_writeTextToClipboard: could not copy text to clipboard: " +
                 `"${barcodeText}": ${error}`
             );
@@ -348,8 +350,8 @@ export function UserScansRoot(): JSX.Element {
 
         if (latestBarcode) {
 
-            console.log(
-                "UserScansRoot.copyLastBarcodeToClipboard(): " +
+            logger.debug(
+                "copyLastBarcodeToClipboard(): " +
                 "Copying latest barcode to clipboard: " +
                 `"${JSON.stringify(latestBarcode)}"`
             );
@@ -361,8 +363,8 @@ export function UserScansRoot(): JSX.Element {
             });
         }
         else {
-            console.log(
-                "UserScansRoot.copyLastBarcodeToClipboard(): " +
+            logger.debug(
+                "copyLastBarcodeToClipboard(): " +
                 "latest barcode is null or undefined"
             );
         }
@@ -392,10 +394,10 @@ export function UserScansRoot(): JSX.Element {
 
     const copyAsCSV = useCallback(async (): Promise<void> => {
 
-        console.log("copyAsCSV()");
+        logger.debug("copyAsCSV()");
 
         if (copyLastBarcodeIsDisabled()) {
-            console.error(
+            logger.error(
                 "copyAsCSV(): cannot copy CSV to clipboard: no barcodes"
             );
             return;
@@ -403,15 +405,15 @@ export function UserScansRoot(): JSX.Element {
 
         const csvString = makeCSVString();
 
-        console.log("copyAsCSV(): csvString:", csvString);
+        logger.debug("copyAsCSV(): csvString:", csvString);
 
         try {
             await navigator.clipboard.writeText(csvString);
-            console.log("copyAsCSV(): copied CSV to clipboard");
+            logger.debug("copyAsCSV(): copied CSV to clipboard");
             showToast("Copied CSV to clipboard");
 
         } catch (error) {
-            console.error(
+            logger.error(
                 `copyAsCSV(): could not copy CSV to clipboard: ${error}`
             );
             showToast("Could not copy CSV to clipboard", "error");
@@ -421,12 +423,12 @@ export function UserScansRoot(): JSX.Element {
 
     const exportAsCSV = useCallback((): void => {
 
-        console.log(
+        logger.debug(
             "exportAsCSV(): barcodes:", barcodes
         );
 
         if (copyLastBarcodeIsDisabled()) {
-            console.error(
+            logger.error(
                 "exportAsCSV(): cannot export CSV: no barcodes"
             );
             return;
@@ -437,7 +439,7 @@ export function UserScansRoot(): JSX.Element {
 
         const csvString = makeCSVString();
 
-        console.log("exportAsCSV(): csvString:", csvString);
+        logger.debug("exportAsCSV(): csvString:", csvString);
 
         const blob = new Blob([csvString], { type: "text/csv" });
         const blobURL = URL.createObjectURL(blob);
@@ -458,14 +460,14 @@ export function UserScansRoot(): JSX.Element {
     ): void => {
 
         if (!autoCopyIsEnabled) {
-            console.log(
+            logger.debug(
                 "Auto-copy is disabled; not copying latest barcode"
             );
             return;
         }
 
         if (clientScannedBarcodeIDs.has(barcode.id)) {
-            console.log(
+            logger.debug(
                 "will NOT copy barcode scanned from CLIENT:",
                 barcode
             );
@@ -474,7 +476,7 @@ export function UserScansRoot(): JSX.Element {
 
         setLastAutoCopiedBarcode(barcode);
 
-        console.log(
+        logger.debug(
             `Auto-copying most recent barcode: "${JSON.stringify(barcode)}"`
         );
 
@@ -501,12 +503,12 @@ export function UserScansRoot(): JSX.Element {
     // MARK: handleKeyDown effect
     useEffect(() => {
 
-        console.log("UserScansRoot: useEffect: handleKeyDown: begin");
+        logger.debug("useEffect: handleKeyDown: begin");
 
         function handleKeyDown(e: KeyboardEvent): void {
 
-            // console.log(
-            //     `UserScansRoot.handleKeyDown(): key: ${e.key}; code: ${e.code}; ` +
+            // logger.debug(
+            //     `handleKeyDown(): key: ${e.key}; code: ${e.code}; ` +
             //     `ctrlKey: ${e.ctrlKey}; metaKey: ${e.metaKey}; ` +
             //     `altKey: ${e.altKey}; shiftKey: ${e.shiftKey}`
             // );
@@ -520,40 +522,40 @@ export function UserScansRoot(): JSX.Element {
             if (e.isPlatformModifierKey()) {
 
                 if (e.key === "k" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"k\" pressed: copying barcode"
                     );
                     copyLastBarcodeToClipboard();
                     e.preventDefault();
                 }
                 else if (e.key === "d" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"d\" pressed: DELETING all barcodes"
                     );
                     void deleteAllUserBarcodes();
                     e.preventDefault();
                 }
                 else if (e.key === "e" && e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + shift + \"e\" pressed: EXPORTING all barcodes as CSV"
                     );
                     exportAsCSV();
                     e.preventDefault();
                 }
                 else if (e.key === "e" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"e\" pressed: COPYING all barcodes as CSV"
                     );
                     void copyAsCSV();
                     e.preventDefault();
                 }
                 else if (e.key === "l" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"l\" pressed: " +
                         "SHOWING configure link"
                     );
@@ -562,8 +564,8 @@ export function UserScansRoot(): JSX.Element {
                     e.preventDefault();
                 }
                 else if (e.key === "z" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"a\" pressed: " +
                         "toggling auto copy"
                     );
@@ -571,8 +573,8 @@ export function UserScansRoot(): JSX.Element {
                     e.preventDefault();
                 }
                 else if (e.key === "s" && !e.shiftKey && !e.altKey) {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         "Platform modifier key + \"s\" pressed: " +
                         "SHOWING enter barcode view"
                     );
@@ -580,8 +582,8 @@ export function UserScansRoot(): JSX.Element {
                     e.preventDefault();
                 }
                 else {
-                    console.log(
-                        "UserScansRoot.handleKeyDown(): " +
+                    logger.debug(
+                        "handleKeyDown(): " +
                         `Platform modifier key + "${e.key}" pressed`
                     );
                 }
@@ -593,7 +595,7 @@ export function UserScansRoot(): JSX.Element {
         window.addEventListener("keydown", handleKeyDown);
 
         return (): void => {
-            console.log("UserScansRoot: useEffect: handleKeyDown: cleanup");
+            logger.debug("useEffect: handleKeyDown: cleanup");
             window.removeEventListener("keydown", handleKeyDown);
         };
 
@@ -609,7 +611,7 @@ export function UserScansRoot(): JSX.Element {
     // MARK: windowDidResize effect
     useEffect(() => {
 
-        console.log("UserScansRoot: useEffect: windowDidResize: begin");
+        logger.debug("useEffect: windowDidResize: begin");
 
         function windowDidResize(): void {
 
@@ -618,7 +620,7 @@ export function UserScansRoot(): JSX.Element {
                 height: window.innerHeight
             };
 
-            console.log(
+            logger.debug(
                 "UserScansTableCore.windowDidResize(): size:",
                 size
             );
@@ -630,7 +632,7 @@ export function UserScansRoot(): JSX.Element {
         window.addEventListener("resize", windowDidResize);
 
         return (): void => {
-            console.log("UserScansRoot: useEffect: windowDidResize: cleanup");
+            logger.debug("useEffect: windowDidResize: cleanup");
             window.removeEventListener("resize", windowDidResize);
         };
 
@@ -639,8 +641,8 @@ export function UserScansRoot(): JSX.Element {
     // MARK: promptForClipboardPermission effect
     useEffect(() => {
 
-        console.log(
-            "UserScansRoot: useEffect: promptForClipboardPermission: begin"
+        logger.debug(
+            "useEffect: promptForClipboardPermission: begin"
         );
 
         async function checkClipboardPermissions(): Promise<void> {
@@ -652,16 +654,16 @@ export function UserScansRoot(): JSX.Element {
                 });
 
                 if (["granted", "prompt"].includes(result.state)) {
-                    console.log(
+                    logger.debug(
                         `Clipboard permissions granted: ${result.state}`
                     );
                 } else {
-                    console.error(
+                    logger.error(
                         `Clipboard permissions denied: ${result.state}`
                     );
                 }
             } catch (error) {
-                console.error(
+                logger.error(
                     "Error querying clipboard permissions:", error
                 );
             }
@@ -673,7 +675,7 @@ export function UserScansRoot(): JSX.Element {
 
     // MARK: getUserScans effect
     useEffect(() => {
-        console.log("UserScansRoot: useEffect: getUserScans: begin");
+        logger.debug("useEffect: getUserScans: begin");
         async function getUserScansEffect(): Promise<void> {
             await getUserScans({ user: user });
         }
@@ -683,13 +685,13 @@ export function UserScansRoot(): JSX.Element {
     // MARK: configureSocket effect
     useEffect(() => {
 
-        console.log("UserScansRoot: useEffect: configureSocket: begin");
+        logger.debug("useEffect: configureSocket: begin");
 
         function receiveSocketMessage(event: MessageEvent): void {
 
-            console.log(
+            logger.debug(
                 `[${new Date().toISOString()}] ` +
-                "UserScansRoot.receiveSocketMessage(): " +
+                "receiveSocketMessage(): " +
                 "event:", event
             );
 
@@ -701,8 +703,8 @@ export function UserScansRoot(): JSX.Element {
                 ) as SocketMessage;
 
             } catch (error) {
-                console.error(
-                    "UserScansRoot.receiveSocketMessage(): " +
+                logger.error(
+                    "receiveSocketMessage(): " +
                     "could not parse JSON message:", error
                 );
                 return;
@@ -713,8 +715,8 @@ export function UserScansRoot(): JSX.Element {
                 case SocketMessageTypes.UpsertScans: {
                     const newScans = message.newScans;
 
-                    console.log(
-                        "UserScansRoot.receiveSocketMessage(): " +
+                    logger.debug(
+                        "receiveSocketMessage(): " +
                         `will insert newScans for user ${user}:`, newScans
                     );
 
@@ -738,8 +740,8 @@ export function UserScansRoot(): JSX.Element {
                                 lhs.scanned_at.getTime();
                         });
 
-                        console.log(
-                            "UserScansRoot.receiveSocketMessage(): " +
+                        logger.debug(
+                            "receiveSocketMessage(): " +
                             "returning new barcodes:", newBarcodes
                         );
                         return newBarcodes;
@@ -752,7 +754,7 @@ export function UserScansRoot(): JSX.Element {
                 case SocketMessageTypes.DeleteScans: {
                     const ids = message.ids;
 
-                    console.log(
+                    logger.debug(
                         `socket will delete barcodes with IDs ${ids}`
                     );
                     const idsSet = new Set(ids);
@@ -763,7 +765,7 @@ export function UserScansRoot(): JSX.Element {
                 case SocketMessageTypes.ReplaceAllScans: {
                     const scans = message.scans;
 
-                    console.log(
+                    logger.debug(
                         `socket will replace all scans for user ${user}:`,
                         scans
                     );
@@ -772,8 +774,8 @@ export function UserScansRoot(): JSX.Element {
                     break;
                 }
                 default: {
-                    console.error(
-                        "UserScansRoot.receiveSocketMessage(): " +
+                    logger.error(
+                        "receiveSocketMessage(): " +
                         "socket could not handle message:", message
                     );
                 }
@@ -820,7 +822,7 @@ export function UserScansRoot(): JSX.Element {
 
         socket.current.onopen = (event: Event): void => {
 
-            console.log(
+            logger.debug(
                 `[${new Date().toISOString()}] socket.onopen(): event:`, event
             );
 
@@ -834,7 +836,7 @@ export function UserScansRoot(): JSX.Element {
 
         socket.current.onclose = (event: CloseEvent): void => {
 
-            console.log(
+            logger.debug(
                 `[${new Date().toISOString()}] socket.onclose(): event:`,
                 event
             );
@@ -843,14 +845,14 @@ export function UserScansRoot(): JSX.Element {
 
         socket.current.onerror = (event: ErrorEvent): void => {
 
-            console.error(
+            logger.error(
                 `[${new Date().toISOString()}] socket.onerror(): event:`, event
             );
 
         };
 
         return (): void => {
-            console.log("UserScansRoot: useEffect: configureSocket: cleanup");
+            logger.debug("useEffect: configureSocket: cleanup");
             socket.current?.close();
         };
 
@@ -864,7 +866,7 @@ export function UserScansRoot(): JSX.Element {
     // MARK: Barcodes changed effect
     useEffect(() => {
 
-        console.log("UserScansRoot: useEffect: barcodes changed: begin");
+        logger.debug("useEffect: barcodes changed: begin");
 
         // fast path; might improve performance
         if (barcodes.length === 0) {
@@ -887,8 +889,8 @@ export function UserScansRoot(): JSX.Element {
     function handleAutoCopyChange(e: ChangeEvent<HTMLInputElement>): void {
 
         const enableAutoCopy = e.target.checked;
-        console.log(
-            "UserScansRoot.handleAutoCopyChange(): " +
+        logger.debug(
+            "handleAutoCopyChange(): " +
             `e.target.checked (enable auto-copy): ${enableAutoCopy}`
         );
 
@@ -912,19 +914,19 @@ export function UserScansRoot(): JSX.Element {
 
     function onClickOpenLink(barcode: ScannedBarcodeResponse): void {
 
-        console.log("onClickOpenLink(): barcode:", barcode);
+        logger.debug("onClickOpenLink(): barcode:", barcode);
 
         const barcodeText = barcode.barcode;
 
         if (!formattedLink) {
-            console.error(
+            logger.error(
                 "onClickOpenLink(): formatted link is null or undefined"
             );
             return;
         }
 
         const urlString = formattedLink.replace("%s", barcodeText);
-        console.log(
+        logger.debug(
             `onClickOpenLink(): opening link: "${urlString}" ` +
             `for barcode: "${barcodeText}"`
         );
@@ -935,7 +937,7 @@ export function UserScansRoot(): JSX.Element {
 
             const barcodedropHost = "www.barcodedrop.com";
             if ([barcodedropHost, document.location.host].includes(url.host)) {
-                console.log(
+                logger.debug(
                     "onClickOpenLink(): will NOT open link because same host: " +
                     `"${urlString}" `
                 );
@@ -945,7 +947,7 @@ export function UserScansRoot(): JSX.Element {
             window.open(url, "_blank");
 
         } catch (error) {
-            console.error(
+            logger.error(
                 `onClickOpenLink(): could not open link: "${urlString}": ${error}`
             );
         }
@@ -955,7 +957,7 @@ export function UserScansRoot(): JSX.Element {
     // MARK: --- Configure Link Modal ---
 
     function showConfigureLinkModal(): void {
-        console.log("showConfigureLinkModal():");
+        logger.debug("showConfigureLinkModal():");
         setConfigureLinkModalIsOpen(true);
     }
 
@@ -969,7 +971,7 @@ export function UserScansRoot(): JSX.Element {
         formattedLink: string | null
     ): void {
 
-        console.log("onSubmitConfigureLinkForm()");
+        logger.debug("onSubmitConfigureLinkForm()");
 
         // prevent the form from submitting
         e.preventDefault();
@@ -986,7 +988,7 @@ export function UserScansRoot(): JSX.Element {
         e: React.MouseEvent | React.KeyboardEvent,
         formattedLink: string | null
     ): void {
-        console.log("closeConfigureLinkModal()");
+        logger.debug("closeConfigureLinkModal()");
         setConfigureLinkModalIsOpen(false);
         setFormattedLink(formattedLink);
     }
@@ -998,7 +1000,7 @@ export function UserScansRoot(): JSX.Element {
     }
 
     function closeEnterBarcodeView(): void {
-        console.log("closeEnterBarcodeView()");
+        logger.debug("closeEnterBarcodeView()");
         setEnterBarcodeViewIsOpen(false);
     }
 

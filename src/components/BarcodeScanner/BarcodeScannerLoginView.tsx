@@ -12,6 +12,8 @@ import { Form, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { prefixWithHostIfPort } from "../../utils/MiscellaneousUtilities";
 
+import { barcodeScannerLoginViewLogger as logger } from "../../utils/loggers";
+
 export function BarcodeScannerLoginView(): JSX.Element {
 
     const navigate = useNavigate();
@@ -23,9 +25,11 @@ export function BarcodeScannerLoginView(): JSX.Element {
 
     function onSubmitForm(event: FormEvent<HTMLFormElement>): void {
         event.preventDefault();
-        console.log(`BarcodeScannerLoginView.onSubmitForm(): user: "${user}"`);
+        logger.debug(
+            `BarcodeScannerLoginView.onSubmitForm(): user: "${user}"`
+        );
 
-        // Validate the form
+        // validate the form
         const form = event.currentTarget;
 
         if (form.checkValidity()) {
