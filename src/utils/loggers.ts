@@ -1,13 +1,29 @@
 import log, { type MethodFactory } from "loglevel";
 
+// MARK: Log Levels:
+// 0: trace
+// 1: debug
+// 2: info
+// 3: warn
+// 4: error
+// 5: silent
+
 declare global {
     interface Window {
         log: typeof log;
+        setLogLevelAllLoggers: (level: log.LogLevelDesc) => void;
     }
 }
 
 // expose the log object to the global scope for access in the browser console
 window.log = log;
+
+// expose a function to set the log level for all loggers
+window.setLogLevelAllLoggers = (level: log.LogLevelDesc): void => {
+    for (const logger of Object.values(log.getLoggers())) {
+        logger.setLevel(level);
+    }
+};
 
 const originalFactory = log.methodFactory;
 
@@ -68,11 +84,12 @@ userScanRowDropdownMenuLogger.setLevel("warn");
 export const barcodeImageModalSymbologyMenuLogger = log.getLogger(
     "BarcodeImageModalSymbologyMenu"
 );
+barcodeImageModalSymbologyMenuLogger.setLevel("trace");
 
 export const barcodeImageModalViewLogger = log.getLogger(
     "BarcodeImageModalView"
 );
-barcodeImageModalViewLogger.setLevel("warn");
+barcodeImageModalViewLogger.setLevel("trace");
 
 export const codeBlockLogger = log.getLogger(
     "CodeBlock"
