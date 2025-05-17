@@ -152,15 +152,9 @@ export default tseslint.config(
             // https://sonarsource.github.io/rspec/#/rspec/S2201/javascript
             "sonarjs/no-ignored-return": "error",
 
-            // TODO: might want to reenable these
-            // "@typescript-eslint/no-unsafe-member-access": "off",
-            // "@typescript-eslint/no-unsafe-assignment": "off",
-            // "@typescript-eslint/no-unsafe-call": "off",
-            // "@typescript-eslint/no-unsafe-argument": "off",
-
             // probably should stay off
-            "@typescript-eslint/restrict-template-expressions": "off"
-
+            "@typescript-eslint/restrict-template-expressions": "off",
+            "no-control-regex": "off"
         },
     },
     // Disables rules for the config file itself

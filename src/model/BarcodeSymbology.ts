@@ -1,3 +1,5 @@
+import { isASCII } from "../utils/MiscellaneousUtilities";
+
 type BarcodeSymbologyConstructor = {
     name: string;
     id: string;
@@ -15,8 +17,14 @@ export class BarcodeSymbology {
             isSquareSymbology: false
         }),
         new BarcodeSymbology({
-            name: "Code 39",
-            id: "code39",
+            name: "Code 39 Extended",
+            id: "code39ext",
+            is2DSymbology: false,
+            isSquareSymbology: false
+        }),
+        new BarcodeSymbology({
+            name: "Code 93 Extended",
+            id: "code93ext",
             is2DSymbology: false,
             isSquareSymbology: false
         }),
@@ -168,6 +176,9 @@ export class BarcodeSymbology {
     canEncodeString(
         barcodeText: string
     ): boolean {
+
+        const symbology1DMaxLength = 40;
+
         switch (this.id) {
             /* eslint-disable no-useless-escape */
             case "upca":
@@ -180,15 +191,20 @@ export class BarcodeSymbology {
                 return /^[0-9]{8}$/.test(barcodeText);
             case "itf14":
                 return /^[0-9]{14}$/.test(barcodeText);
-            case "code39":
-                return /^[A-Z0-9\-\.\$\/\+\%\s]+$/.test(barcodeText);
+            case "code39ext":
+            case "code93ext":
+                return isASCII(barcodeText) &&
+                    barcodeText.length <= symbology1DMaxLength;
             case "rationalizedCodabar":
                 return /^[A-D][0-9\-\$\:\/\.\+]+[A-D]$/.test(barcodeText);
             default:
                 // technically, many 1D symbologies can encode text of any
                 // length, but we want to limit the length of the text to avoid
                 // long barcodes that are hard to scan
-                if (!this.is2DSymbology && barcodeText.length > 40) {
+                if (
+                    !this.is2DSymbology &&
+                    barcodeText.length > symbology1DMaxLength
+                ) {
                     return false;
                 }
                 return true;

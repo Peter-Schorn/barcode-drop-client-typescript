@@ -59,8 +59,6 @@ export function BarcodeImageModalSymbologyMenu(
         }
     }
 
-    // TODO: Debounced redraw after resize
-
     return (
         <div className="barcode-image-modal-symbology-menu">
             <label

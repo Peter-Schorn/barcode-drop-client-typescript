@@ -254,3 +254,14 @@ CanvasRenderingContext2D.prototype.rotateAboutCenter = function (
 export function degreesToRadians(degrees: number): number {
     return degrees * (Math.PI / 180);
 }
+
+/**
+ * Checks if the given string contains only ASCII characters.
+ *
+ * @param str The string to check.
+ * @returns `true` if the string contains only ASCII characters; otherwise,
+ * `false`.
+ */
+export function isASCII(str: string): boolean {
+    return /^[\x00-\x7F]*$/.test(str);
+}
