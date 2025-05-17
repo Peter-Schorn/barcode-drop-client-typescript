@@ -243,7 +243,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
                     <canvas ref={canvasRef} />
                 </div>
                 <p
-                    className="barcode-image-modal-text"
+                    className="barcode-image-modal-text barcode-text"
                 >
                     {formattedBarcodeText()}
                 </p>

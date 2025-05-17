@@ -144,6 +144,12 @@ hr.padded-hr {
         'opsz' 24;
 }
 
+.barcode-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
 /* MARK: debug  */
 /* body {
     background-color: red !important;

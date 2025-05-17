@@ -68,7 +68,7 @@ export function UserScanBarcodeCell(
     return (
         <td>
             <span
-                className="barcode-cell-barcode-text"
+                className="barcode-cell-barcode-text barcode-text"
             >
                 {barcodeText()}
             </span>
