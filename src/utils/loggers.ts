@@ -23,6 +23,11 @@ declare global {
 declare module "loglevel" {
     interface Logger {
         getLevelName(): string;
+
+        /**
+         * Sets the log level only in development mode.
+         */
+        setDevelopmentLogLevel(level: LogLevelDesc): void;
     }
 }
 
@@ -48,6 +53,13 @@ loggerProto.getLevelName = function (): string {
     }
 };
 
+loggerProto.setDevelopmentLogLevel = function (level: LogLevelDesc): void {
+    if (import.meta.env.PROD) {
+        return;
+    }
+    this.setLevel(level);
+};
+
 
 // expose the log object to the global scope for access in the browser console
 window.log = log;
@@ -70,7 +82,7 @@ log.methodFactory = (methodName, logLevel, loggerName): LoggingMethod => {
     const method = Function.prototype.bind.call(
         rawMethod,  // the function to bind
         console,  // the `this` context
-        `[${String(loggerName)}]` // permanent first argument
+        `[${String(loggerName)}]` // permanent first argument: the logger name
     ) as LoggingMethod;
 
     // preserve the name of the method
@@ -83,109 +95,109 @@ log.methodFactory = (methodName, logLevel, loggerName): LoggingMethod => {
 log.rebuild();
 
 export const appLogger = log.getLogger("App");
-appLogger.setLevel("trace");
+appLogger.setDevelopmentLogLevel("trace");
 
 export const barcodeChangedLogger = log.getLogger(
     "BarcodeChanged"
 );
-barcodeChangedLogger.setLevel("warn");
+barcodeChangedLogger.setDevelopmentLogLevel("warn");
 
 export const webSocketLogger = log.getLogger(
     "WebSocket"
 );
-webSocketLogger.setLevel("warn");
+webSocketLogger.setDevelopmentLogLevel("warn");
 
 export const barcodeScannerDialogLogger = log.getLogger(
     "BarcodeScannerDialog"
 );
-barcodeScannerDialogLogger.setLevel("warn");
+barcodeScannerDialogLogger.setDevelopmentLogLevel("warn");
 
 export const barcodeScannerLoginViewLogger = log.getLogger(
     "BarcodeScannerLoginView"
 );
-barcodeScannerLoginViewLogger.setLevel("warn");
+barcodeScannerLoginViewLogger.setDevelopmentLogLevel("warn");
 
 export const barcodeScannerViewLogger = log.getLogger(
     "BarcodeScannerView"
 );
-barcodeScannerViewLogger.setLevel("warn");
+barcodeScannerViewLogger.setDevelopmentLogLevel("warn");
 
 export const userScanBarcodeCellLogger = log.getLogger(
     "UserScanBarcodeCell"
 );
-userScanBarcodeCellLogger.setLevel("warn");
+userScanBarcodeCellLogger.setDevelopmentLogLevel("warn");
 
 export const userScanRowLogger = log.getLogger(
     "UserScanRow"
 );
-userScanRowLogger.setLevel("warn");
+userScanRowLogger.setDevelopmentLogLevel("warn");
 
 export const userScanRowDropdownMenuLogger = log.getLogger(
     "UserScanRowDropdownMenu"
 );
-userScanRowDropdownMenuLogger.setLevel("warn");
+userScanRowDropdownMenuLogger.setDevelopmentLogLevel("warn");
 
 export const barcodeImageModalSymbologyMenuLogger = log.getLogger(
     "BarcodeImageModalSymbologyMenu"
 );
-barcodeImageModalSymbologyMenuLogger.setLevel("trace");
+barcodeImageModalSymbologyMenuLogger.setDevelopmentLogLevel("trace");
 
 export const barcodeImageModalViewLogger = log.getLogger(
     "BarcodeImageModalView"
 );
-barcodeImageModalViewLogger.setLevel("trace");
+barcodeImageModalViewLogger.setDevelopmentLogLevel("trace");
 
 export const codeBlockLogger = log.getLogger(
     "CodeBlock"
 );
-codeBlockLogger.setLevel("warn");
+codeBlockLogger.setDevelopmentLogLevel("warn");
 
 export const configureLinkModalLogger = log.getLogger(
     "ConfigureLinkModal"
 );
-configureLinkModalLogger.setLevel("warn");
+configureLinkModalLogger.setDevelopmentLogLevel("warn");
 
 export const enterBarcodeViewLogger = log.getLogger(
     "EnterBarcodeView"
 );
-enterBarcodeViewLogger.setLevel("warn");
+enterBarcodeViewLogger.setDevelopmentLogLevel("warn");
 
 export const homeViewLogger = log.getLogger(
     "HomeView"
 );
-homeViewLogger.setLevel("warn");
+homeViewLogger.setDevelopmentLogLevel("warn");
 
 export const mainDropdownMenuLogger = log.getLogger(
     "MainDropdownMenu"
 );
-mainDropdownMenuLogger.setLevel("warn");
+mainDropdownMenuLogger.setDevelopmentLogLevel("warn");
 
 export const mainNavbarLogger = log.getLogger(
     "MainNavbar"
 );
-mainNavbarLogger.setLevel("warn");
+mainNavbarLogger.setDevelopmentLogLevel("warn");
 
 export const setupViewLogger = log.getLogger(
     "SetupView"
 );
-setupViewLogger.setLevel("warn");
+setupViewLogger.setDevelopmentLogLevel("warn");
 
 export const userScansRootLogger = log.getLogger(
     "UserScansRoot"
 );
-userScansRootLogger.setLevel("warn");
+userScansRootLogger.setDevelopmentLogLevel("warn");
 
 export const userScansTableLogger = log.getLogger(
     "UserScansTable"
 );
-userScansTableLogger.setLevel("warn");
+userScansTableLogger.setDevelopmentLogLevel("warn");
 
 export const userScansToastLogger = log.getLogger(
     "UserScansToast"
 );
-userScansToastLogger.setLevel("warn");
+userScansToastLogger.setDevelopmentLogLevel("warn");
 
 export const useUrlFragmentParamLogger = log.getLogger(
     "useURLFragmentParam"
 );
-useUrlFragmentParamLogger.setLevel("warn");
+useUrlFragmentParamLogger.setDevelopmentLogLevel("warn");

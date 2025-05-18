@@ -194,7 +194,6 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     // create/recreate the throttled function when dependencies change
     useEffect(() => {
         // create new throttled function
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         throttledFnRef.current = throttle(100, () => {
             if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
                 logger.debug(
@@ -208,7 +207,6 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         // cleanup when dependencies change or component unmounts
         return (): void => {
             if (throttledFnRef.current) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
                 throttledFnRef.current.cancel();
             }
         };
@@ -220,7 +218,6 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
     // create a stable function to call the throttled function
     const throttledDrawBarcodeToCanvas = useCallback(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         throttledFnRef.current?.();
     }, []);
 
