@@ -77,6 +77,7 @@ export function BarcodeScannerLoginView(): JSX.Element {
                             placeholder=""
                             value={user}
                             onChange={handleUserInputChange}
+                            maxLength={30}
                             required // requires a value
                         />
 

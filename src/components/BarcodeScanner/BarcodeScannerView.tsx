@@ -23,10 +23,10 @@ import {
     prefixWithHostIfPort,
     isFiniteNonZero,
     sleep,
-    degreesToRadians
+    degreesToRadians,
+    getErrorMessage
 } from "../../utils/MiscellaneousUtilities";
 import { MainNavbar } from "../MainNavbar";
-import { AxiosError } from "axios";
 import { AppContext } from "../../model/AppContext";
 
 import { barcodeScannerViewLogger as logger } from "../../utils/loggers";
@@ -316,18 +316,7 @@ export function BarcodeScannerView(): JSX.Element {
                 error
             );
 
-            let errorMessage: string;
-
-            if (error instanceof AxiosError) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                errorMessage = error.response?.data ?? error.message;
-            }
-            else if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-            else {
-                errorMessage = String(error);
-            }
+            const errorMessage = getErrorMessage(error);
 
             setBarcodeDialogTitle(
                 `Error scanning "${barcode.rawValue}": ${errorMessage}`

@@ -15,6 +15,8 @@ import { type ToastMessageType } from "../types/ToastMessageType";
 
 import { enterBarcodeViewLogger as logger } from "../utils/loggers";
 
+import { getErrorMessage } from "../utils/MiscellaneousUtilities";
+
 type EnterBarcodeViewProps = {
     isOpen: boolean;
     user: string;
@@ -108,8 +110,7 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
                 "scanBarcode(): error:",
                 error
             );
-            const errorMessage = error instanceof Error ?
-                error.message : String(error);
+            const errorMessage = getErrorMessage(error);
             props.showToast(
                 `Error scanning barcode: ${errorMessage}`,
                 "error"

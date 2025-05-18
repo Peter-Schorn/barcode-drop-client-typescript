@@ -143,7 +143,7 @@ export class BarcodeSymbology {
             return BarcodeSymbology.symbology("code128")!;
         }
         else {
-            return BarcodeSymbology.symbology("datamatrix")!;
+            return BarcodeSymbology.symbology("qrcode")!;
         }
 
     }

@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
 import {
@@ -282,4 +283,23 @@ export function isASCII(str: string): boolean {
  */
 export function pixelsToMM(pixels: number): number {
     return pixels / 2.835;
+}
+
+/**
+ * Gets a message from an error object suitable for displaying to the end user.
+ */
+export function getErrorMessage(
+    error: unknown
+): string {
+
+    if (error instanceof AxiosError) {
+        return String(error.response?.data ?? error.message);
+    }
+    if (error instanceof Error) {
+        return error.message;
+    }
+    else if (typeof error === "string") {
+        return error;
+    }
+    return String(error);
 }
