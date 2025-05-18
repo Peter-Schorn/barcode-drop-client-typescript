@@ -25,7 +25,10 @@ import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
 import { barcodeImageModalViewLogger as logger } from "../utils/loggers";
 
-import { pixelsToMM } from "../utils/MiscellaneousUtilities";
+import {
+    pixelsToMM,
+    getErrorMessage
+} from "../utils/MiscellaneousUtilities";
 
 type BarcodeImageModalViewProps = {
     barcode: ScannedBarcodeResponse;
@@ -54,6 +57,11 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         barcodeSymbology,
         setBarcodeSymbology
     ] = useState<BarcodeSymbology | null>(null);
+
+    const [
+        drawBarcodeErrorMessage,
+        setDrawBarcodeErrorMessage
+    ] = useState<string>("");
 
     const resizeObserver = new ResizeObserver((): void => {
         logger.debug("resizeObserver: barcodeImageModal resized");
@@ -93,6 +101,8 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
     const drawBarcodeToCanvas = useCallback((
         barcodeSymbology: BarcodeSymbology
     ): void => {
+
+        setDrawBarcodeErrorMessage("");
 
         const canvas = canvasRef.current;
 
@@ -171,6 +181,10 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         } catch (error) {
             logger.error(
                 "Error drawing barcode to canvas:", error
+            );
+            const errorMessage = getErrorMessage(error);
+            setDrawBarcodeErrorMessage(
+                `Error loading barcode image: ${errorMessage}`
             );
 
         }
@@ -278,6 +292,11 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
                     ref={canvasContainerRef}
                     className="barcode-image-canvas-container"
                 >
+                    <div className="barcode-image-canvas-container-background">
+                        {drawBarcodeErrorMessage && (
+                            drawBarcodeErrorMessage
+                        )}
+                    </div>
                     <canvas ref={canvasRef} />
                 </div>
                 <span
