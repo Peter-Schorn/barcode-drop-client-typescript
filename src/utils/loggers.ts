@@ -90,6 +90,11 @@ export const barcodeChangedLogger = log.getLogger(
 );
 barcodeChangedLogger.setLevel("warn");
 
+export const webSocketLogger = log.getLogger(
+    "WebSocket"
+);
+webSocketLogger.setLevel("warn");
+
 export const barcodeScannerDialogLogger = log.getLogger(
     "BarcodeScannerDialog"
 );

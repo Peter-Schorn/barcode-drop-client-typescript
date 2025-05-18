@@ -270,3 +270,16 @@ export function degreesToRadians(degrees: number): number {
 export function isASCII(str: string): boolean {
     return /^[\x00-\x7F]*$/.test(str);
 }
+
+/**
+ * Converts millimeters to pixels.
+ *
+ * Uses a dpi of 72, which is what the bwip-js barcode writer uses. See
+ * https://github.com/metafloor/bwip-js.
+ *
+ * @param pixels The length in pixels.
+ * @returns The length in millimeters.
+ */
+export function pixelsToMM(pixels: number): number {
+    return pixels / 2.835;
+}

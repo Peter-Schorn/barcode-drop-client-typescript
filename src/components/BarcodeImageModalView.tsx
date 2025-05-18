@@ -4,10 +4,11 @@ import React, {
     type JSX,
     useCallback,
     useRef,
-    useState
+    useState,
+    useEffect
 } from "react";
 
-// import { useDebouncedCallback } from "use-debounce";
+import { throttle } from "throttle-debounce";
 
 import Modal from "react-modal";
 
@@ -24,6 +25,8 @@ import { type ScannedBarcodeResponse } from "../types/ScannedBarcodesResponse";
 
 import { barcodeImageModalViewLogger as logger } from "../utils/loggers";
 
+import { pixelsToMM } from "../utils/MiscellaneousUtilities";
+
 type BarcodeImageModalViewProps = {
     barcode: ScannedBarcodeResponse;
     generateBarcodeModalIsOpen: boolean;
@@ -33,14 +36,19 @@ type BarcodeImageModalViewProps = {
 export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.Element {
 
     type CanvasDimensions = {
+        width: number;
+        height: number;
         widthMM: number;
         heightMM: number;
         minLengthMM: number;
     };
 
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const canvasContainerRef = useRef<HTMLDivElement>(null);
     const barcodeImageModalRef = useRef<HTMLDivElement>(null);
+    const canvasContainerRef = useRef<HTMLDivElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const barcodeTextRef = useRef<HTMLSpanElement>(null);
+
+    const throttledFnRef = useRef<ReturnType<typeof throttle>>(null);
 
     const [
         barcodeSymbology,
@@ -49,10 +57,7 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
     const resizeObserver = new ResizeObserver((): void => {
         logger.debug("resizeObserver: barcodeImageModal resized");
-        if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
-            drawBarcodeToCanvas(barcodeSymbology);
-        }
-        // debouncedDrawBarcodeToCanvas();
+        throttledDrawBarcodeToCanvas();
     });
 
     const barcodeText = props.barcode.barcode;
@@ -63,16 +68,14 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
         const canvasHeight = canvasContainer.offsetHeight;
         const canvasWidth = canvasContainer.offsetWidth;
 
-        // logger.debug(
-        //     `canvasContainer height: ${canvasHeight}; width: ${canvasWidth}`
-        // );
-
-        const canvasWidthMM = canvasWidth / 2.835;
-        const canvasHeightMM = canvasHeight / 2.835;
+        const canvasWidthMM = pixelsToMM(canvasWidth);
+        const canvasHeightMM = pixelsToMM(canvasHeight);
 
         const minLengthMM = Math.min(canvasHeightMM, canvasWidthMM);
 
         const dimensions = {
+            width: canvasWidth,
+            height: canvasHeight,
             widthMM: canvasWidthMM,
             heightMM: canvasHeightMM,
             minLengthMM: minLengthMM
@@ -120,19 +123,38 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
             scale: 1
         };
 
+        canvasContainer.style.height = "100%";
+        // we must calculate the canvas dimensions after the height is set
+        const dimensions = calculateCanvasDimensions(canvasContainer);
+        canvas.width = dimensions.width;
+        canvas.height = dimensions.height;
+
         if (barcodeSymbology.isSquareSymbology) {
-            canvasContainer.style.height = "100%";
-            // we must calculate the canvas dimensions after the height is set
-            const dimensions = calculateCanvasDimensions(canvasContainer);
             canvasRenderOptions.width = dimensions.minLengthMM;
             canvasRenderOptions.height = dimensions.minLengthMM;
         }
         else {
-            canvasContainer.style.height = "auto";
-            // we must calculate the canvas dimensions after the height is set
-            const dimensions = calculateCanvasDimensions(canvasContainer);
             canvasRenderOptions.width = dimensions.widthMM;
-            canvasRenderOptions.height = Math.min(50, dimensions.heightMM);
+            canvasRenderOptions.height = Math.max(
+                Math.min(
+                    50,
+                    dimensions.heightMM - pixelsToMM(20),
+                ),
+                10
+            );
+        }
+
+        canvasContainer.style.height = "auto";
+
+        if (barcodeText.length > 30 || barcodeText.split("\n").length > 2) {
+            if (!barcodeTextRef.current) {
+                logger.warn(
+                    "Barcode text element not found"
+                );
+            }
+            else {
+                barcodeTextRef.current.style.fontSize = "0.8em";
+            }
         }
 
         logger.debug(
@@ -155,22 +177,38 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
     }, [barcodeText, calculateCanvasDimensions]);
 
-    // const debouncedDrawBarcodeToCanvas = useDebouncedCallback(
-    //     (): void => {
-    //         if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
-    //             logger.debug(
-    //                 "debounced drawBarcodeToCanvas: barcodeSymbology:",
-    //                 barcodeSymbology
-    //             );
-    //             drawBarcodeToCanvas(barcodeSymbology);
-    //         }
-    //     },
-    //     250
-    //     // {
-    //     //     // leading: false,
-    //     //     // trailing: true
-    //     // }
-    // );
+    // create/recreate the throttled function when dependencies change
+    useEffect(() => {
+        // create new throttled function
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        throttledFnRef.current = throttle(100, () => {
+            if (props.generateBarcodeModalIsOpen && barcodeSymbology) {
+                logger.debug(
+                    "throttledFnRef: drawing barcode with symbology:",
+                    barcodeSymbology
+                );
+                drawBarcodeToCanvas(barcodeSymbology);
+            }
+        });
+
+        // cleanup when dependencies change or component unmounts
+        return (): void => {
+            if (throttledFnRef.current) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+                throttledFnRef.current.cancel();
+            }
+        };
+    }, [
+        props.generateBarcodeModalIsOpen,
+        barcodeSymbology,
+        drawBarcodeToCanvas
+    ]);
+
+    // create a stable function to call the throttled function
+    const throttledDrawBarcodeToCanvas = useCallback(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        throttledFnRef.current?.();
+    }, []);
 
     /**
      * Called after the Modal view for this component is opened.
@@ -200,14 +238,14 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
 
         let formattedBarcodeText = barcodeText;
 
-        if (formattedBarcodeText.split("\n").length > 3) {
+        if (formattedBarcodeText.split("\n").length > 2) {
             formattedBarcodeText = formattedBarcodeText
                 .split("\n")
-                .slice(0, 3)
-                .join("\n");
+                .slice(0, 2)
+                .join("\n") + "...";
         }
-        if (formattedBarcodeText.length > 40) {
-            formattedBarcodeText = formattedBarcodeText.substring(0, 40) + "...";
+        if (formattedBarcodeText.length > 80) {
+            formattedBarcodeText = formattedBarcodeText.substring(0, 80) + "...";
         }
 
         return formattedBarcodeText;
@@ -242,11 +280,12 @@ export function BarcodeImageModalView(props: BarcodeImageModalViewProps): JSX.El
                 >
                     <canvas ref={canvasRef} />
                 </div>
-                <p
+                <span
+                    ref={barcodeTextRef}
                     className="barcode-image-modal-text barcode-text"
                 >
                     {formattedBarcodeText()}
-                </p>
+                </span>
                 <BarcodeImageModalSymbologyMenu
                     barcode={barcodeText}
                     setSymbology={handleSymbologyChange}

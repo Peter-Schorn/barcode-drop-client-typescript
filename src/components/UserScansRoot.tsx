@@ -69,7 +69,10 @@ import { scannedBarcodesReviver } from "../utils/parsing.ts";
 
 import { useURLFragmentParam } from "../hooks/useURLFragmentParam.ts";
 
-import { userScansRootLogger as logger } from "../utils/loggers.ts";
+import {
+    userScansRootLogger as logger,
+    webSocketLogger
+ } from "../utils/loggers.ts";
 
 // MARK: path="/scans/:user"
 export function UserScansRoot(): JSX.Element {
@@ -810,8 +813,9 @@ export function UserScansRoot(): JSX.Element {
         const wsOptions: WebSocketOptions = {
             minReconnectionDelay: 500,  // half a second
             maxReconnectionDelay: 10_000,  // 10 seconds
-            connectionTimeout: 10_000,  //
-            debug: true
+            connectionTimeout: 10_000,  // 10 seconds
+            debug: true,
+            debugLogger: webSocketLogger.debug.bind(webSocketLogger),
         };
 
         socket.current = new WebSocket(
