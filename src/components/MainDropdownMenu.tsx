@@ -3,7 +3,8 @@ import {
 } from "react";
 
 import Dropdown from "react-bootstrap/Dropdown";
-import Stack from "react-bootstrap/Stack";
+
+import { DropdownItem } from "./DropDownItem.tsx";
 
 import { isApplePlatform } from "../utils/MiscellaneousUtilities.ts";
 
@@ -47,94 +48,49 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                <Dropdown.Item
-                    className={props.disabledClassIfZeroBarcodes()}
-                    onClick={props.copyAsCSV}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa fa-file-csv"></i>
-                        <span>Copy as CSV</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {copyAsCSVKeyboardShortcutString()}
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
-                <Dropdown.Item
-                    className={props.disabledClassIfZeroBarcodes()}
-                    onClick={props.exportAsCSV}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa-solid fa-file-export"></i>
-                        <span>Export as CSV</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {exportAsCSVKeyboardShortcutString()}
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
-                <Dropdown.Divider className="" />
-                <Dropdown.Item
-                    className={props.disabledClassIfZeroBarcodes()}
-                    onClick={props.copyLastBarcodeToClipboard}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa-solid fa-copy"></i>
-                        <span>Copy Latest Barcode</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {copyLastBarcodeKeyboardShortcutString()}
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
-                <Dropdown.Divider className="" />
-                {/* *** === Open Enter Barcode View === *** */}
-                <Dropdown.Item
-                    onClick={props.openEnterBarcodeView}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa-solid fa-barcode"></i>
-                        <span>Enter Barcode...</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {enterBarcodeKeyboardShortcutString()}
-                        </span>
 
-                    </Stack>
-                </Dropdown.Item>
-                {/* *** === Configure Link *** === */}
-                <Dropdown.Item
+                <DropdownItem
+                    icon="fa fa-file-csv"
+                    text="Copy as CSV"
+                    keyboardShortcutString={copyAsCSVKeyboardShortcutString()}
+                    onClick={props.copyAsCSV}
+                    className={props.disabledClassIfZeroBarcodes}
+                />
+
+                <DropdownItem
+                    icon="fa-solid fa-file-export"
+                    text="Export as CSV"
+                    keyboardShortcutString={exportAsCSVKeyboardShortcutString()}
+                    onClick={props.exportAsCSV}
+                    className={props.disabledClassIfZeroBarcodes}
+                />
+
+                <Dropdown.Divider/>
+
+                <DropdownItem
+                    icon="fa-solid fa-copy"
+                    text="Copy Latest Barcode"
+                    keyboardShortcutString={copyLastBarcodeKeyboardShortcutString()}
+                    onClick={props.copyLastBarcodeToClipboard}
+                    className={props.disabledClassIfZeroBarcodes}
+                />
+
+                <Dropdown.Divider/>
+
+                <DropdownItem
+                    icon="fa-solid fa-barcode"
+                    text="Enter Barcode..."
+                    keyboardShortcutString={enterBarcodeKeyboardShortcutString()}
+                    onClick={props.openEnterBarcodeView}
+                />
+
+                <DropdownItem
+                    icon="fa fa-link"
+                    text="Configure Link..."
+                    keyboardShortcutString={configureLinkKeyboardShortcutString()}
                     onClick={props.showConfigureLinkModal}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa fa-link"></i>
-                        <span>Configure Link...</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                            {configureLinkKeyboardShortcutString()}
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
+                />
+
             </Dropdown.Menu>
         </Dropdown>
     );

@@ -1,5 +1,9 @@
+import "./UserScanRowDropdownMenu.css";
+
 import { type JSX } from "react";
-import { Dropdown, Stack } from "react-bootstrap";
+import { Dropdown } from "react-bootstrap";
+
+import { DropdownItem } from "../DropDownItem";
 
 // import { userScanRowDropdownMenuLogger as logger } from "../../utils/loggers";
 
@@ -19,39 +23,22 @@ export function UserScanRowDropdownMenu(
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                <Dropdown.Item
+
+                <DropdownItem
+                    icon="fa-solid fa-barcode"
+                    text="Generate Barcode"
                     onClick={props.didClickGenerateBarcode}
-                    style={{
-                        color: "#076b05"
-                    }}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa-solid fa-barcode"></i>
-                        <span>Generate Barcode</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                        <span style={{
-                            color: "gray",
-                        }}>
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
-                <Dropdown.Divider className="" />
-                <Dropdown.Item
-                    style={{
-                        color: "#ed432d",
-                    }}
+                />
+
+                <Dropdown.Divider/>
+
+                <DropdownItem
+                    icon="fa fa-trash"
+                    text="Delete"
                     onClick={props.onClickDeleteButton}
-                >
-                    <Stack direction="horizontal" gap={3}>
-                        <i className="fa fa-trash"></i>
-                        <span>Delete</span>
-                        <span className="ms-auto">
-                            {/* --- Spacer --- */}
-                        </span>
-                    </Stack>
-                </Dropdown.Item>
+                    className="user-scan-row-delete-dropdown-item"
+                />
+
             </Dropdown.Menu>
         </Dropdown>
     );
