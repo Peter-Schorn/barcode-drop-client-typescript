@@ -4,7 +4,7 @@ import {
 
 import Dropdown from "react-bootstrap/Dropdown";
 
-import { DropdownItem } from "./DropDownItem.tsx";
+import { DropdownItem } from "./DropdownItem.tsx";
 
 import { isApplePlatform } from "../utils/MiscellaneousUtilities.ts";
 

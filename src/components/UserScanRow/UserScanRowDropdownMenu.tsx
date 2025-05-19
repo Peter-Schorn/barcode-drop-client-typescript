@@ -3,7 +3,7 @@ import "./UserScanRowDropdownMenu.css";
 import { type JSX } from "react";
 import { Dropdown } from "react-bootstrap";
 
-import { DropdownItem } from "../DropDownItem";
+import { DropdownItem } from "../DropdownItem.tsx";
 
 // import { userScanRowDropdownMenuLogger as logger } from "../../utils/loggers";
 
