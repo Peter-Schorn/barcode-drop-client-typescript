@@ -594,9 +594,7 @@ export function BarcodeScannerView(): JSX.Element {
                 logger.error("error starting camera stream:", error);
                 didRequestVideo.current = false;
                 shutdownCameraStream();
-                const errorMessage = error instanceof Error
-                    ? error.message
-                    : String(error);
+                const errorMessage = getErrorMessage(error);
                 setCameraLoadErrorMessage(
                     `Error loading camera: ${errorMessage}`
                 );
