@@ -939,15 +939,6 @@ export function UserScansRoot(): JSX.Element {
 
             const url = new URL(urlString);
 
-            const barcodedropHost = "www.barcodedrop.com";
-            if ([barcodedropHost, document.location.host].includes(url.host)) {
-                logger.debug(
-                    "onClickOpenLink(): will NOT open link because same host: " +
-                    `"${urlString}" `
-                );
-                return;
-            }
-
             window.open(url, "_blank");
 
         } catch (error) {
