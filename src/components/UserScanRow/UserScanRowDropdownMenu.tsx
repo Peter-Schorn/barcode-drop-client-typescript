@@ -1,7 +1,13 @@
 import "./UserScanRowDropdownMenu.css";
 
 import { type JSX } from "react";
-import { Dropdown } from "react-bootstrap";
+
+import {
+    MDBDropdown,
+    MDBDropdownMenu,
+    MDBDropdownToggle,
+    MDBDropdownItem
+} from "mdb-react-ui-kit";
 
 import { DropdownItem } from "../DropdownItem.tsx";
 
@@ -17,12 +23,12 @@ export function UserScanRowDropdownMenu(
 ): JSX.Element {
 
     return (
-        <Dropdown className="ms-1">
-            <Dropdown.Toggle variant="success" className="text-center">
+        <MDBDropdown className="ms-1">
+            <MDBDropdownToggle variant="success" className="text-center">
                 <i className="fa fa-ellipsis-v px-2" />
-            </Dropdown.Toggle>
+            </MDBDropdownToggle>
 
-            <Dropdown.Menu>
+            <MDBDropdownMenu>
 
                 <DropdownItem
                     icon="fa-solid fa-barcode"
@@ -30,17 +36,17 @@ export function UserScanRowDropdownMenu(
                     onClick={props.didClickGenerateBarcode}
                 />
 
-                <Dropdown.Divider/>
+                <MDBDropdownItem divider />
 
                 <DropdownItem
                     icon="fa fa-trash"
                     text="Delete"
                     onClick={props.onClickDeleteButton}
-                    className="user-scan-row-delete-dropdown-item"
+                    additionalClasses="user-scan-row-delete-dropdown-item"
                 />
 
-            </Dropdown.Menu>
-        </Dropdown>
+            </MDBDropdownMenu>
+        </MDBDropdown>
     );
 
 }

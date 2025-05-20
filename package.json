@@ -14,12 +14,14 @@
         "build-preview-https": "npm run build && npm run preview-https"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-free": "^6.7.2",
         "axios": "^1.7.9",
         "barcode-detector": "^3.0.2",
         "bootstrap": "^5.3.3",
         "bwip-js": "^4.5.1",
         "csv-stringify": "^6.5.2",
         "loglevel": "^1.9.2",
+        "mdb-react-ui-kit": "^9.0.0",
         "partysocket": "^1.0.3",
         "react": "^19.0.0",
         "react-bootstrap": "^2.10.7",

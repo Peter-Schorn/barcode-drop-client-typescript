@@ -1,5 +1,5 @@
 .user-scan-row-delete-dropdown-item,
 .user-scan-row-delete-dropdown-item:hover,
 .user-scan-row-delete-dropdown-item:focus {
-    color: var(--color-danger);
+    color: var(--color-danger) !important;
 }

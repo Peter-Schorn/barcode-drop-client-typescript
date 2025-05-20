@@ -2,7 +2,12 @@ import {
     type JSX
 } from "react";
 
-import Dropdown from "react-bootstrap/Dropdown";
+import {
+    MDBDropdown,
+    MDBDropdownMenu,
+    MDBDropdownToggle,
+    MDBDropdownItem
+} from "mdb-react-ui-kit";
 
 import { DropdownItem } from "./DropdownItem.tsx";
 
@@ -42,57 +47,62 @@ export function MainDropdownMenu(props: MainDropdownMenuProps): JSX.Element {
     }
 
     return (
-        <Dropdown>
-            <Dropdown.Toggle variant="success">
+        <MDBDropdown>
+            <MDBDropdownToggle>
                 <i className="fa fa-ellipsis-v px-2"></i>
-            </Dropdown.Toggle>
+            </MDBDropdownToggle>
 
-            <Dropdown.Menu>
-
-                <DropdownItem
-                    icon="fa fa-file-csv"
-                    text="Copy as CSV"
-                    keyboardShortcutString={copyAsCSVKeyboardShortcutString()}
-                    onClick={props.copyAsCSV}
-                    className={props.disabledClassIfZeroBarcodes}
-                />
+            <MDBDropdownMenu>
 
                 <DropdownItem
-                    icon="fa-solid fa-file-export"
-                    text="Export as CSV"
-                    keyboardShortcutString={exportAsCSVKeyboardShortcutString()}
-                    onClick={props.exportAsCSV}
-                    className={props.disabledClassIfZeroBarcodes}
-                />
+                    text="Export"
+                >
+                    <DropdownItem
+                        text="Copy as CSV"
+                        icon="fa fa-file-csv"
+                        keyboardShortcutString={copyAsCSVKeyboardShortcutString()}
+                        onClick={props.copyAsCSV}
+                        additionalClasses={props.disabledClassIfZeroBarcodes()}
+                    />
 
-                <Dropdown.Divider/>
+                    <DropdownItem
+                        text="Export as CSV"
+                        icon="fa-solid fa-file-export"
+                        keyboardShortcutString={exportAsCSVKeyboardShortcutString()}
+                        onClick={props.exportAsCSV}
+                        additionalClasses={props.disabledClassIfZeroBarcodes()}
+                    />
+                </DropdownItem>
+
+
+                <MDBDropdownItem divider />
 
                 <DropdownItem
-                    icon="fa-solid fa-copy"
                     text="Copy Latest Barcode"
+                    icon="fa-solid fa-copy"
                     keyboardShortcutString={copyLastBarcodeKeyboardShortcutString()}
                     onClick={props.copyLastBarcodeToClipboard}
-                    className={props.disabledClassIfZeroBarcodes}
+                    additionalClasses={props.disabledClassIfZeroBarcodes()}
                 />
 
-                <Dropdown.Divider/>
+                <MDBDropdownItem divider />
 
                 <DropdownItem
-                    icon="fa-solid fa-barcode"
                     text="Enter Barcode..."
+                    icon="fa-solid fa-barcode"
                     keyboardShortcutString={enterBarcodeKeyboardShortcutString()}
                     onClick={props.openEnterBarcodeView}
                 />
 
                 <DropdownItem
-                    icon="fa fa-link"
                     text="Configure Link..."
+                    icon="fa fa-link"
                     keyboardShortcutString={configureLinkKeyboardShortcutString()}
                     onClick={props.showConfigureLinkModal}
                 />
 
-            </Dropdown.Menu>
-        </Dropdown>
+            </MDBDropdownMenu>
+        </MDBDropdown>
     );
 
 }

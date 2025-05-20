@@ -170,7 +170,12 @@ homeViewLogger.setDevelopmentLogLevel("warn");
 export const mainDropdownMenuLogger = log.getLogger(
     "MainDropdownMenu"
 );
-mainDropdownMenuLogger.setDevelopmentLogLevel("warn");
+mainDropdownMenuLogger.setDevelopmentLogLevel("trace");
+
+export const dropdownItemLogger = log.getLogger(
+    "DropdownItem"
+);
+dropdownItemLogger.setDevelopmentLogLevel("trace");
 
 export const mainNavbarLogger = log.getLogger(
     "MainNavbar"
