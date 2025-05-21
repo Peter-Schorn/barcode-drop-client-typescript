@@ -85,6 +85,8 @@
     border-bottom-right-radius: 8px;
     appearance: none;
     border: none;
+    width: 70px;
+
 }
 
 /* style the button when the user clicks on it */

@@ -11,6 +11,8 @@ import { AppContext } from "../model/AppContext";
 
 import Modal from "react-modal";
 
+import Spinner from "react-bootstrap/Spinner";
+
 import { type ToastMessageType } from "../types/ToastMessageType";
 
 import { enterBarcodeViewLogger as logger } from "../utils/loggers";
@@ -34,6 +36,8 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
     const barcodeInput = useRef<HTMLInputElement>(null);
 
     const [barcode, setBarcode] = useState("");
+
+    const [isPostingBarcode, setIsPostingBarcode] = useState(false);
 
     /**
      * Called when the user types in the barcode input field.
@@ -86,6 +90,8 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
             return;
         }
 
+        setIsPostingBarcode(true);
+
         const user = props.user;
 
         const id = crypto.randomUUID();
@@ -116,6 +122,8 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
                 "error"
             );
         }
+
+        setIsPostingBarcode(false);
     }
 
     return (
@@ -152,11 +160,20 @@ export function EnterBarcodeView(props: EnterBarcodeViewProps): JSX.Element {
                     className="enter-barcode-input"
                 />
                 <button
-                    disabled={!barcode}
+                    disabled={!barcode || isPostingBarcode}
                     className="enter-barcode-submit-button"
                     type="submit"
                 >
-                    Submit
+                    {isPostingBarcode ? (
+                        <Spinner
+                            animation="border"
+                            role="status"
+                            className=""
+                            size="sm"
+                        />
+                    ) : (
+                        "Submit"
+                    )}
                 </button>
             </form>
         </Modal>
